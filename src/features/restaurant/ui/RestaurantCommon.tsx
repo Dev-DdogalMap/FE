@@ -1,9 +1,7 @@
 import {
-    ArrowLeft,
-    MapPin,
-    Share2,
-    Star
+    ArrowLeft, MapPin, Share2, Star
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface TagProps {
     text: string;
@@ -18,6 +16,8 @@ const Tag = ({ text }: TagProps) => {
 };
 
 const RestaurantCommon = () => {
+    const navigate = useNavigate();
+
     return (
         <section>
             {/* IMAGE */}
@@ -25,18 +25,37 @@ const RestaurantCommon = () => {
                 <img
                     src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop"
                     alt="restaurant"
-                    className="w-full h-[200px] object-cover"
+                    className="w-full h-[180px] object-cover"
                 />
 
                 {/* TOP BUTTONS */}
                 <div className="absolute top-6 left-4">
-                    <button className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+                    <button
+                        onClick={() => navigate(-1)}
+                        aria-label="뒤로 가기"
+                        className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center" >
+
                         <ArrowLeft color="white" />
                     </button>
                 </div>
 
                 <div className="absolute top-6 right-4 flex gap-3">
-                    <button className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+                    <button
+                        onClick={async () => {
+                            if (!navigator.share) return;
+
+                            try { 
+                                await navigator.share({
+                                    title: "장소명",
+                                    url: window.location.href,
+                                });
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        }}
+                        aria-label="공유하기"
+                        className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center"
+                    >
                         <Share2 color="white" size={20} />
                     </button>
                 </div>
