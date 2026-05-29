@@ -3,9 +3,9 @@ import { useState } from "react";
 import RestaurantCommon from "@/features/restaurant/ui/RestaurantCommon";
 import RestaurantTabs from "@/features/restaurant/ui/RestaurantTabs";
 
-import RestaurantScoreTab from "@/features/restaurant/ui/tabs/RestaurantScoreTab";
 import RestaurantInfoTab from "@/features/restaurant/ui/tabs/RestaurantInfoTab";
 import RestaurantReviewTab from "@/features/restaurant/ui/tabs/RestaurantReviewTab";
+import RestaurantScoreTab from "@/features/restaurant/ui/tabs/RestaurantScoreTab";
 
 import RestaurantBottom from "@/features/restaurant/ui/RestaurantBottom";
 
@@ -30,4 +30,4 @@ const RestaurantPage = () => {
     );
 };
 
-export default RestaurantPage
+export default RestaurantPage;
