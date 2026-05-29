@@ -8,7 +8,7 @@ const RestaurantTabs = ({
   onChange,
 }: Props) => {
   return (
-    <div className="sticky top-0 z-20 bg-white border-b" role="tablist">
+    <div className="sticky top-0 z-20 bg-white" role="tablist">
       <div className="flex">
         <button
           role="tab"

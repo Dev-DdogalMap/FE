@@ -41,9 +41,16 @@ const RestaurantCommon = () => {
 
                 <div className="absolute top-6 right-4 flex gap-3">
                     <button
-                        onClick={() => {
-                            if (navigator.share) {
-                                navigator.share({ title: '성수동 스테이크 하우스', url: window.location.href });
+                        onClick={async () => {
+                            if (!navigator.share) return;
+
+                            try { 
+                                await navigator.share({
+                                    title: "장소명",
+                                    url: window.location.href,
+                                });
+                            } catch (error) {
+                                console.error(error);
                             }
                         }}
                         aria-label="공유하기"
