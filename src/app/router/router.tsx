@@ -8,7 +8,8 @@ import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
-//import RequireAuth from "@/shared/auth/RequireAuth";
+import RestaurantPage from "@/pages/restaurant/RestaurantPage";
+// import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
   {
@@ -19,7 +20,6 @@ export const router = createBrowserRouter([
     path: "/oauth/success",
     element: <OAuthSuccessPage />,
   },
-
   {
     path: "/terms",
     element: <TermsPage />,
@@ -39,20 +39,23 @@ export const router = createBrowserRouter([
         path: "/search",
         element: <SearchPage />,
       },
-      //{
-        //element: <RequireAuth />,
-        //children: [
-          // 로그인 필요한 페이지는 여기에 추가
-          // {
-          //   path: "/my",
-          //   element: <MyPage />,
-          // },
-          // {
-          //   path: "/chat",
-          //   element: <ChatPage />,
-          // },
-        //],
-      //},
+      {
+        path: "/restaurants",
+        element: <RestaurantPage />,
+      },
+      // {
+      //   element: <RequireAuth />,
+      //   children: [
+      //     {
+      //       path: "/my",
+      //       element: <MyPage />,
+      //     },
+      //     {
+      //       path: "/chat",
+      //       element: <ChatPage />,
+      //     },
+      //   ],
+      // },
     ],
   },
 ]);
