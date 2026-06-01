@@ -5,6 +5,8 @@ import MobileLayout from "@/layouts/MobileLayout";
 import MapPage from "@/pages/map/MapPage";
 import SearchPage from "@/pages/search/SearchPage";
 
+import ReviewPage from "@/pages/review/ReviewPage";
+
 export const router = createBrowserRouter([
   {
     element: <MobileLayout />,
@@ -16,6 +18,10 @@ export const router = createBrowserRouter([
       {
         path: "/search",
         element: <SearchPage />
+      },
+      {
+        path: "/review/write",
+        element: <ReviewPage/>
       }
     ],
   },
