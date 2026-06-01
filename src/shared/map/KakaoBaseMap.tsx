@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import {
@@ -6,15 +7,24 @@ import {
   MapMarker,
   useKakaoLoader,
 } from "react-kakao-maps-sdk";
+import type { ReactNode } from "react";
 
 type Props = {
   center: {
     lat: number;
     lng: number;
   };
+  children?: ReactNode; // 지도 안에 표시할 요소
+  onCreate?: (map: kakao.maps.Map) => void; // 지도 객체 처음 생성됐을 때 실행
+  onIdle?: (map: kakao.maps.Map) => void; // 지도 이동이나 확대/축소가 끝났을 때 실행
 };
 
-export default function KakaoBaseMap({ center }: Props) {
+export default function KakaoBaseMap({ 
+  center,
+  children,
+  onCreate,
+  onIdle, 
+}: Props) {
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_APP_KEY,
     libraries: ["services", "clusterer"],
@@ -27,7 +37,7 @@ export default function KakaoBaseMap({ center }: Props) {
   } = useWatchLocation();
 
   const [mapCenter, setMapCenter] = useState(center);
-  const [map, setMap] = useState<any>(null);
+  const [map, setMap] = useState<kakao.maps.Map | null>(null);
 
   const hasInitialCentered = useRef(false);
 
@@ -43,6 +53,11 @@ export default function KakaoBaseMap({ center }: Props) {
     setMapCenter(nextCenter);
     hasInitialCentered.current = true;
   }, [currentLocation]);
+
+  const handleCreateMap = (createdMap: kakao.maps.Map) => {
+    setMap(createdMap);
+    onCreate?.(createdMap);
+  };
 
   const moveToCurrentLocation = () => {
     if (!currentLocation) return;
@@ -78,12 +93,15 @@ export default function KakaoBaseMap({ center }: Props) {
       <Map
         center={mapCenter}
         level={4}
-        onCreate={setMap}
+        onCreate={handleCreateMap}
+        onIdle={onIdle}
         style={{
           width: "100%",
           height: "100%",
         }}
       >
+        {children}
+
         {currentLocation && (
           <>
             <MapMarker
