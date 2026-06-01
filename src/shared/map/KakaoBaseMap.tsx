@@ -1,4 +1,11 @@
-import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
+import { useEffect, useRef, useState } from "react";
+import { useWatchLocation } from "@/shared/location/useWatchLocation";
+import {
+  Circle,
+  Map,
+  MapMarker,
+  useKakaoLoader,
+} from "react-kakao-maps-sdk";
 
 type Props = {
   center: {
@@ -13,6 +20,52 @@ export default function KakaoBaseMap({ center }: Props) {
     libraries: ["services", "clusterer"],
   });
 
+  const {
+    location: currentLocation,
+    loading: locationLoading,
+    errorMessage,
+  } = useWatchLocation();
+
+  const [mapCenter, setMapCenter] = useState(center);
+  const [map, setMap] = useState<any>(null);
+
+  const hasInitialCentered = useRef(false);
+
+  useEffect(() => {
+    if (!currentLocation) return;
+    if (hasInitialCentered.current) return;
+
+    const nextCenter = {
+      lat: currentLocation.lat,
+      lng: currentLocation.lng,
+    };
+
+    setMapCenter(nextCenter);
+    hasInitialCentered.current = true;
+  }, [currentLocation]);
+
+  const moveToCurrentLocation = () => {
+    if (!currentLocation) return;
+
+    const nextCenter = {
+      lat: currentLocation.lat,
+      lng: currentLocation.lng,
+    };
+
+    setMapCenter(nextCenter);
+
+    if (map && (window as any).kakao) {
+      const kakao = (window as any).kakao;
+
+      map.panTo(
+        new kakao.maps.LatLng(
+          currentLocation.lat,
+          currentLocation.lng
+        )
+      );
+    }
+  };
+
   if (loading) return <div>지도 로딩중...</div>;
 
   if (error) {
@@ -21,13 +74,62 @@ export default function KakaoBaseMap({ center }: Props) {
   }
 
   return (
-    <Map
-      center={center}
-      level={4}
-      style={{
-        width: "100%",
-        height: "100%",
-      }}
-    />
+    <div className="relative h-full w-full">
+      <Map
+        center={mapCenter}
+        level={4}
+        onCreate={setMap}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        {currentLocation && (
+          <>
+            <MapMarker
+              position={{
+                lat: currentLocation.lat,
+                lng: currentLocation.lng,
+              }}
+            />
+
+            <Circle
+              center={{
+                lat: currentLocation.lat,
+                lng: currentLocation.lng,
+              }}
+              radius={currentLocation.accuracy}
+              strokeWeight={1}
+              strokeColor="#FF6B00"
+              strokeOpacity={0.6}
+              fillColor="#FF6B00"
+              fillOpacity={0.15}
+            />
+          </>
+        )}
+      </Map>
+
+      {locationLoading && (
+        <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-gray-600 shadow">
+          현재 위치 확인 중...
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="absolute left-4 right-4 top-4 z-10 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-red-500 shadow">
+          {errorMessage}
+        </div>
+      )}
+
+      {currentLocation && (
+        <button
+          type="button"
+          onClick={moveToCurrentLocation}
+          className="absolute bottom-5 right-4 z-10 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98]"
+        >
+          내 위치
+        </button>
+      )}
+    </div>
   );
 }
