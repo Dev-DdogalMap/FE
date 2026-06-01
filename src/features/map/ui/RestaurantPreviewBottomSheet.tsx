@@ -1,4 +1,4 @@
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
