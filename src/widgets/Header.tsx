@@ -2,8 +2,8 @@ import { Bell, Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/images/logo.png";
 import { useAuth } from "@/shared/auth/AuthContext";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { clearStoredAccessToken } from "@/shared/auth/token";
+import { API_BASE_URL } from "@/shared/config/api";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ export default function Header() {
         credentials: "include",
       });
 
+      clearStoredAccessToken();
       await checkAuth();
       navigate("/", { replace: true });
     } catch (error) {

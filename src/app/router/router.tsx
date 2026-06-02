@@ -13,7 +13,7 @@ import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
-// import RequireAuth from "@/shared/auth/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
   {
@@ -48,38 +48,30 @@ export const router = createBrowserRouter([
         element: <RestaurantPage />,
       },
       {
-        path: "/chat",
-        element: <ChatPage />,
+        element: <RequireAuth />,
+        children: [
+          {
+            path: "/chat",
+            element: <ChatPage />,
+          },
+          {
+            path: "/chat/direct/:directChatRoomId",
+            element: <DirectChatPage />,
+          },
+          {
+            path: "/chat/groups",
+            element: <GroupChatPage />,
+          },
+          {
+            path: "/chat/groups/create",
+            element: <CreateGroupChatPage />,
+          },
+          {
+            path: "/chat/groups/:groupId",
+            element: <GroupChatPage />,
+          },
+        ],
       },
-      {
-        path: "/chat/direct/:userId",
-        element: <DirectChatPage />,
-      },
-      {
-        path: "/chat/groups",
-        element: <GroupChatPage />,
-      },
-      {
-        path: "/chat/groups/create",
-        element: <CreateGroupChatPage />,
-      },
-      {
-        path: "/chat/groups/:groupId",
-        element: <GroupChatPage />,
-      },
-      // {
-      //   element: <RequireAuth />,
-      //   children: [
-      //     {
-      //       path: "/my",
-      //       element: <MyPage />,
-      //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
-      // },
     ],
   },
 ]);

@@ -5,10 +5,14 @@ import {
   MessageSquareMore,
 } from "lucide-react";
 
-import { getTasteExperts } from "@/features/chat/api/getTasteExperts";
-import { mockGroupChats } from "@/features/chat/model/mockTasteExperts";
+import {
+  createDirectChat,
+  getDirectChats,
+  getTasteExperts,
+} from "@/features/chat/api/getTasteExperts";
 import type {
   ChatTabKey,
+  DirectChatRoomSummary,
   TasteExpert,
   TasteExpertFilters,
 } from "@/features/chat/model/types";
@@ -27,21 +31,6 @@ const defaultFilters: TasteExpertFilters = {
   size: 20,
 };
 
-const mockConversations = [
-  {
-    id: 1,
-    name: "미식가 김민지",
-    summary: "성수동 파스타 맛집 리스트 보내드릴게요!",
-    time: "오후 1:20",
-  },
-  {
-    id: 2,
-    name: "맛탐험가 이준호",
-    summary: "스테이크 코스는 예약하고 가시는 걸 추천해요.",
-    time: "어제",
-  },
-];
-
 export default function ChatPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] =
@@ -50,17 +39,47 @@ export default function ChatPage() {
     useState<TasteExpertFilters>(defaultFilters);
   const [experts, setExperts] = useState<TasteExpert[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversations, setConversations] = useState<
+    DirectChatRoomSummary[]
+  >([]);
+  const [isConversationLoading, setIsConversationLoading] =
+    useState(false);
 
   useEffect(() => {
+    if (activeTab !== "recommended") {
+      return;
+    }
     setIsLoading(true);
     void getTasteExperts(filters)
       .then((response) => {
         setExperts(response.content);
       })
+      .catch((error) => {
+        console.error(error);
+        setExperts([]);
+      })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filters]);
+  }, [activeTab, filters]);
+
+  useEffect(() => {
+    if (activeTab !== "conversations") {
+      return;
+    }
+    setIsConversationLoading(true);
+    void getDirectChats()
+      .then((response) => {
+        setConversations(response);
+      })
+      .catch((error) => {
+        console.error(error);
+        setConversations([]);
+      })
+      .finally(() => {
+        setIsConversationLoading(false);
+      });
+  }, [activeTab]);
 
   const handleTabChange = (tab: ChatTabKey) => {
     if (tab === "groups") {
@@ -68,6 +87,16 @@ export default function ChatPage() {
       return;
     }
     setActiveTab(tab);
+  };
+
+  const handleCreateDirectChat = async (userId: number) => {
+    try {
+      const room = await createDirectChat(userId);
+      navigate(ROUTES.directChat(room.directChatRoomId));
+    } catch (error) {
+      console.error(error);
+      alert("채팅방 생성에 실패했습니다.");
+    }
   };
 
   return (
@@ -135,9 +164,7 @@ export default function ChatPage() {
                 ) : (
                   <TasteExpertList
                     experts={experts}
-                    onChatClick={(userId) =>
-                      navigate(ROUTES.directChat(userId))
-                    }
+                    onChatClick={handleCreateDirectChat}
                   />
                 )}
               </>
@@ -145,32 +172,61 @@ export default function ChatPage() {
 
             {activeTab === "conversations" && (
               <div className="space-y-3 px-1">
-                {mockConversations.map((conversation) => (
+                {isConversationLoading ? (
+                  <div className="bg-white px-4 py-12 text-center text-sm text-gray-500">
+                    대화 목록을 불러오는 중입니다.
+                  </div>
+                ) : conversations.length === 0 ? (
+                  <div className="bg-white px-4 py-12 text-center text-sm text-gray-500">
+                    아직 시작한 대화가 없습니다.
+                  </div>
+                ) : (
+                  conversations.map((conversation) => (
                   <button
-                    key={conversation.id}
+                    key={conversation.directChatRoomId}
                     type="button"
                     onClick={() =>
-                      navigate(ROUTES.directChat(conversation.id))
+                      navigate(
+                        ROUTES.directChat(conversation.directChatRoomId),
+                      )
                     }
                     className="flex w-full items-center gap-3 rounded-3xl border border-gray-200 bg-[#fffaf7] px-4 py-4 text-left"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#ff4b0b] shadow-sm">
-                      <MessageSquareMore className="h-5 w-5" />
+                      {conversation.targetProfileImageUrl ? (
+                        <img
+                          src={conversation.targetProfileImageUrl}
+                          alt={conversation.targetNickname}
+                          className="h-12 w-12 rounded-2xl object-cover"
+                        />
+                      ) : (
+                        <MessageSquareMore className="h-5 w-5" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-gray-900">
-                        {conversation.name}
+                        {conversation.targetNickname}
                       </p>
                       <p className="mt-1 truncate text-sm text-gray-500">
-                        {conversation.summary}
+                        {conversation.lastMessage ?? "대화를 시작해보세요."}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <span>{conversation.time}</span>
+                      <span>
+                        {conversation.lastMessageAt
+                          ? new Date(
+                              conversation.lastMessageAt,
+                            ).toLocaleTimeString("ko-KR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </span>
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   </button>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>
