@@ -186,30 +186,36 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     </div>
                 )}
 
-                {/* 평점 / 후기 */}
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-gray-50 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                            <Star fill="#ff8a00" color="#ff8a00" size={18} />
-                            <span className="text-xl font-bold text-gray-900">
-                                {averageScoreText}
-                            </span>
-                        </div>
+                {/* 평점 */}
+                <div className="mt-5 flex items-center gap-2 text-sm">
+                    {restaurant.reviewCount > 0 ? (
+                        <>
+                        <Star
+                            size={16}
+                            fill="#ff8a00"
+                            color="#ff8a00"
+                        />
 
-                        <div className="mt-1 text-xs font-medium text-gray-500">
-                            평균 평점
-                        </div>
-                    </div>
+                        <span className="font-semibold text-gray-900">
+                            {averageScoreText}
+                        </span>
 
-                    <div className="rounded-2xl bg-gray-50 py-4 text-center">
-                        <div className="text-xl font-bold text-gray-900">
-                            {restaurant.reviewCount}
-                        </div>
+                        <span className="text-gray-500">
+                            ({restaurant.reviewCount})
+                        </span>
+                        </>
+                    ) : (
+                        <>
+                        <Star
+                            size={16}
+                            color="#d1d5db"
+                        />
 
-                        <div className="mt-1 text-xs font-medium text-gray-500">
-                            후기
-                        </div>
-                    </div>
+                        <span className="text-gray-500">
+                            아직 등록된 후기가 없어요
+                        </span>
+                        </>
+                    )}
                 </div>
             </div>
         </section>
