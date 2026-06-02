@@ -4,12 +4,31 @@ import ChatHeader from "@/features/groupChat/ui/ChatHeader";
 import { useNavigate } from "react-router-dom";
 import { useGroupChat } from "@/features/groupChat/hooks/useGroupChat";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { useGroupChatSocket } from "@/features/groupChat/hooks/useGroupChatSocket";
+import { useParams } from "react-router-dom";
+import type { ChatMessageResponse } from "@/features/groupChat/model/groupChatTypes";
 
 
 export default function ChatRoomPage() {
   const navigate = useNavigate();
-  const { messages, loading } = useGroupChat();
+  const { roomId } = useParams();  //문자열로 반환
+  const { messages, setMessages, loading } = useGroupChat(Number(roomId));  //숫자로 바꾸기
   const { user } = useAuth();
+  const { sendMessage } = useGroupChatSocket(Number(roomId), (data) => {
+    const newMessage: ChatMessageResponse = {
+      chatMessageId: Date.now(),  // 임시 id
+      chatRoomId: data.roomId,
+      senderId: data.senderId,
+      senderNickname: data.senderNickname ?? "",
+      senderProfileImage: data.senderProfileImage ?? "",
+      senderLevel: data.senderLevel,
+      status: data.status,
+      content: data.content,
+      createdAt: data.sentAt,  // sentAt → createdAt으로 매핑
+    };
+    console.log("소켓 메시지:", data); // 형식 확인
+    setMessages((prev) => [...prev, newMessage]); // 새 메시지 오면 목록에 추가
+  });
 
   return (
     <div className="min-h-screen w-full bg-gray-100">
@@ -29,9 +48,7 @@ export default function ChatRoomPage() {
           </div>
 
           <MessageInput
-            onSendMessage={(content) => {
-              console.log(content);
-            }}
+            onSendMessage={sendMessage}
           />
         </div>
       </div>

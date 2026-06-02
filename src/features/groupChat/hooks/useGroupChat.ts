@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-
 import { getGroupChatMessages } from "../api/groupChatApi";
 import type { ChatMessageResponse } from "../model/groupChatTypes";
 
-export function useGroupChat() {
-  const { roomId } = useParams();
-
+export function useGroupChat(roomId: number) {
   const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +28,7 @@ export function useGroupChat() {
   return {
     roomId: Number(roomId),
     messages,
+    setMessages,
     loading,
   };
 }

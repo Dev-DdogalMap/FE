@@ -23,10 +23,8 @@ export default function MessageInput({
     setMessage("");
   };
 
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {  //한글 입력 시 조합 기다려야함
       event.preventDefault();
       handleSend();
     }
