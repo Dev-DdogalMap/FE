@@ -1,14 +1,14 @@
-import { MarkerClusterer } from "react-kakao-maps-sdk";
 import { useEffect, useRef } from "react";
+import { MarkerClusterer } from "react-kakao-maps-sdk";
 
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import RestaurantMarker from "./RestaurantMarker";
 
-import type { MapBounds, RestaurantMapItem } from "../model/mapTypes";
-import { 
-    CLUSTER_CALCULATOR, 
-    CLUSTER_STYLES, 
+import {
+    CLUSTER_CALCULATOR,
+    CLUSTER_STYLES,
 } from "../constants/clusterStyles";
+import type { MapBounds, RestaurantMapItem } from "../model/mapTypes";
 
 type Props = {
     center: {

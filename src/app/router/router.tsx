@@ -2,17 +2,17 @@ import { createBrowserRouter } from "react-router-dom";
 
 import MobileLayout from "@/layouts/MobileLayout";
 
-import MapPage from "@/pages/map/MapPage";
-import SearchPage from "@/pages/search/SearchPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
-import TermsPage from "@/pages/policy/TermsPage";
-import PrivacyPage from "@/pages/policy/PrivacyPage";
-import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
-import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+import MapPage from "@/pages/map/MapPage";
+import PrivacyPage from "@/pages/policy/PrivacyPage";
+import TermsPage from "@/pages/policy/TermsPage";
+import RestaurantPage from "@/pages/restaurant/RestaurantPage";
+import SearchPage from "@/pages/search/SearchPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
