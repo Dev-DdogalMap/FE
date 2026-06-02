@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 import { getTasteExperts } from "@/features/chat/api/getTasteExperts";
-import { mockGroupChats } from "@/features/chat/model/mockTasteExperts";
+
 import type {
   ChatTabKey,
   TasteExpert,
