@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { getRestaurantInfo } from "../../api/getRestaurantInfo";
 import type { RestaurantInfoResponse } from "../../model/restaurantTypes";
+import RestaurantLocationMap from "../RestaurantLocationMap";
 
 const RestaurantInfoTab = () => {
     const { restaurantId } = useParams();
