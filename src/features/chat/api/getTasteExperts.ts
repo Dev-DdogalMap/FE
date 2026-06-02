@@ -34,8 +34,8 @@ export async function getTasteExperts(
     const matchesKeyword =
       keyword.length === 0 ||
       expert.nickname.toLowerCase().includes(keyword) ||
-      expert.specialty.toLowerCase().includes(keyword) ||
-      expert.bio.toLowerCase().includes(keyword);
+      expert.specialty.toLowerCase().includes(keyword);
+
 
     const matchesRegion =
       filters.region === "전체" || expert.region === filters.region;
