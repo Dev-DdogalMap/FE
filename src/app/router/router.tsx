@@ -14,6 +14,7 @@ import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
+import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
   {
     path: "/privacy",
     element: <PrivacyPage />,
+  },
+  {
+    path: "/chat/group/room",
+    element: <GroupChatRoomPage />
   },
   {
     element: <MobileLayout />,
