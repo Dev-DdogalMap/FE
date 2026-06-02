@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight,
@@ -10,8 +10,10 @@ import {
   getDirectChats,
   getTasteExperts,
 } from "@/features/chat/api/getTasteExperts";
+import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import type {
   ChatTabKey,
+  DirectChatMessage,
   DirectChatRoomSummary,
   TasteExpert,
   TasteExpertFilters,
@@ -19,6 +21,8 @@ import type {
 import ChatFilters from "@/features/chat/ui/ChatFilters";
 import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
+import { useAuth } from "@/shared/auth/AuthContext";
+import { getStoredAccessToken } from "@/shared/auth/token";
 import { ROUTES } from "@/shared/constants/routes";
 
 const defaultFilters: TasteExpertFilters = {
@@ -31,8 +35,55 @@ const defaultFilters: TasteExpertFilters = {
   size: 20,
 };
 
+const READ_DIRECT_CHAT_MARKERS_KEY = "ddogalmap.readDirectChatMarkers";
+
+const getReadDirectChatMarkers = () => {
+  try {
+    const rawValue = window.localStorage.getItem(
+      READ_DIRECT_CHAT_MARKERS_KEY,
+    );
+    return rawValue
+      ? (JSON.parse(rawValue) as Record<string, string>)
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const setReadDirectChatMarker = (
+  directChatRoomId: number,
+  lastMessageAt?: string | null,
+) => {
+  if (!lastMessageAt) {
+    return;
+  }
+
+  const markers = getReadDirectChatMarkers();
+  markers[String(directChatRoomId)] = lastMessageAt;
+  window.localStorage.setItem(
+    READ_DIRECT_CHAT_MARKERS_KEY,
+    JSON.stringify(markers),
+  );
+};
+
+const hasUnreadConversation = (conversation: DirectChatRoomSummary) => {
+  if (!conversation.lastMessageAt) {
+    return conversation.unreadCount > 0;
+  }
+
+  const markers = getReadDirectChatMarkers();
+  const lastReadMessageAt = markers[String(conversation.directChatRoomId)];
+
+  if (lastReadMessageAt) {
+    return lastReadMessageAt !== conversation.lastMessageAt;
+  }
+
+  return conversation.unreadCount > 0;
+};
+
 export default function ChatPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] =
     useState<ChatTabKey>("recommended");
   const [filters, setFilters] =
@@ -44,6 +95,17 @@ export default function ChatPage() {
   >([]);
   const [isConversationLoading, setIsConversationLoading] =
     useState(false);
+  const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+  const conversationRoomIdList = useMemo(
+    () =>
+      conversations
+        .map((conversation) => conversation.directChatRoomId)
+        .sort((a, b) => a - b),
+    [conversations],
+  );
+  const conversationRoomIds = conversationRoomIdList.join(",");
 
   useEffect(() => {
     if (activeTab !== "recommended") {
@@ -71,6 +133,15 @@ export default function ChatPage() {
     void getDirectChats()
       .then((response) => {
         setConversations(response);
+        setUnreadRoomIds((prev) => {
+          const next = new Set(prev);
+          response.forEach((conversation) => {
+            if (hasUnreadConversation(conversation)) {
+              next.add(conversation.directChatRoomId);
+            }
+          });
+          return next;
+        });
       })
       .catch((error) => {
         console.error(error);
@@ -80,6 +151,80 @@ export default function ChatPage() {
         setIsConversationLoading(false);
       });
   }, [activeTab]);
+
+  useEffect(() => {
+    const accessToken = getStoredAccessToken();
+    if (
+      activeTab !== "conversations" ||
+      !accessToken ||
+      conversationRoomIdList.length === 0
+    ) {
+      return;
+    }
+
+    const handleMessage = (receivedMessage: DirectChatMessage) => {
+      setConversations((prev) => {
+        const updated = prev.map((conversation) => {
+          if (
+            conversation.directChatRoomId !==
+            receivedMessage.directChatRoomId
+          ) {
+            return conversation;
+          }
+
+          return {
+            ...conversation,
+            lastMessage: receivedMessage.message,
+            lastMessageAt: receivedMessage.createdAt,
+          };
+        });
+
+        return updated.sort((a, b) => {
+          const aTime = a.lastMessageAt ?? a.createdAt;
+          const bTime = b.lastMessageAt ?? b.createdAt;
+          return (
+            new Date(bTime).getTime() - new Date(aTime).getTime()
+          );
+        });
+      });
+
+      if (receivedMessage.senderId === user?.userId) {
+        setReadDirectChatMarker(
+          receivedMessage.directChatRoomId,
+          receivedMessage.createdAt,
+        );
+        setUnreadRoomIds((prev) => {
+          const next = new Set(prev);
+          next.delete(receivedMessage.directChatRoomId);
+          return next;
+        });
+        return;
+      }
+
+      if (receivedMessage.senderId !== user?.userId) {
+        setUnreadRoomIds((prev) => {
+          const next = new Set(prev);
+          next.add(receivedMessage.directChatRoomId);
+          return next;
+        });
+      }
+    };
+
+    const sockets = conversationRoomIdList.map((directChatRoomId) =>
+      connectDirectChatSocket({
+        directChatRoomId,
+        accessToken,
+        onMessage: handleMessage,
+        onError: (errorMessage) => {
+          console.error(errorMessage);
+        },
+      }),
+    );
+
+    return () => {
+      sockets.forEach((socket) => socket.disconnect());
+    };
+  }, [activeTab, conversationRoomIds, user?.userId]);
 
   const handleTabChange = (tab: ChatTabKey) => {
     if (tab === "groups") {
@@ -97,6 +242,19 @@ export default function ChatPage() {
       console.error(error);
       alert("채팅방 생성에 실패했습니다.");
     }
+  };
+
+  const handleOpenDirectChat = (conversation: DirectChatRoomSummary) => {
+    setReadDirectChatMarker(
+      conversation.directChatRoomId,
+      conversation.lastMessageAt,
+    );
+    setUnreadRoomIds((prev) => {
+      const next = new Set(prev);
+      next.delete(conversation.directChatRoomId);
+      return next;
+    });
+    navigate(ROUTES.directChat(conversation.directChatRoomId));
   };
 
   return (
@@ -185,11 +343,7 @@ export default function ChatPage() {
                   <button
                     key={conversation.directChatRoomId}
                     type="button"
-                    onClick={() =>
-                      navigate(
-                        ROUTES.directChat(conversation.directChatRoomId),
-                      )
-                    }
+                    onClick={() => handleOpenDirectChat(conversation)}
                     className="flex w-full items-center gap-3 rounded-3xl border border-gray-200 bg-[#fffaf7] px-4 py-4 text-left"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#ff4b0b] shadow-sm">
@@ -212,6 +366,12 @@ export default function ChatPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
+                      {unreadRoomIds.has(conversation.directChatRoomId) && (
+                        <span
+                          aria-label="새 메시지"
+                          className="h-2 w-2 rounded-full bg-red-500"
+                        />
+                      )}
                       <span>
                         {conversation.lastMessageAt
                           ? new Date(
