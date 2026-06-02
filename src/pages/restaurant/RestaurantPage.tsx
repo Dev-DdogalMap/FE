@@ -54,12 +54,16 @@ const RestaurantPage = () => {
         fetchRestaurant();
     }, [isInvalidRestaurantId, restaurantIdNumber, location?.lat, location?.lng]);
 
-    if (error) {
+    if (isInvalidRestaurantId || error) {
         return (
             <ErrorView
                 heightClassName="min-h-screen"
                 title="음식점 정보를 불러오지 못했어요"
-                description={"잠시 후 다시 시도해주세요"}
+                description={
+                    isInvalidRestaurantId
+                    ? "잘못된 음식점 주소입니다."
+                    : "잠시 후 다시 시도해주세요"
+                }
             />
         );
     }
@@ -85,8 +89,6 @@ const RestaurantPage = () => {
                 <RestaurantBottom />
             </>
             )}
-
-            <RestaurantBottom />
         </div>
     );
 };
