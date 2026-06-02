@@ -1,33 +1,15 @@
-import type { ChatMessage } from "@/features/groupChat/model/groupChatTypes";
-import MessageBubble from "@/features/groupChat/ui/MessageBubble";
 import MessageList from "@/features/groupChat/ui/MessageList";
 import MessageInput from "@/features/groupChat/ui/MessageInput";
 import ChatHeader from "@/features/groupChat/ui/ChatHeader";
 import { useNavigate } from "react-router-dom";
+import { useGroupChat } from "@/features/groupChat/hooks/useGroupChat";
+import { useAuth } from "@/shared/auth/AuthContext";
+
 
 export default function ChatRoomPage() {
   const navigate = useNavigate();
-
-  const messages = [
-    {
-      messageId: 1,
-      senderId: 1,
-      senderName: "녹차라떼",
-      senderLevel: 4,
-      senderProfileImage: "/profile.png",
-      content: "파스타도 꼭 드셔보세요!",
-      createdAt: "13:05",
-    },
-    {
-      messageId: 2,
-      senderId: 2,
-      senderName: "누렁이",
-      senderLevel: 2,
-      senderProfileImage: "/profile.png",
-      content: "오 좋은데요",
-      createdAt: "13:06",
-    },
-  ];
+  const { messages, loading } = useGroupChat();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen w-full bg-gray-100">
@@ -43,7 +25,7 @@ export default function ChatRoomPage() {
           />
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-[#F7F7F7]">
-            <MessageList messages={messages} currentUserId={2} />
+            <MessageList messages={messages} currentUserId={user?.userId ?? -1} />
           </div>
 
           <MessageInput

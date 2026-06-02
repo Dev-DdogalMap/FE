@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
     element: <PrivacyPage />,
   },
   {
-    path: "/chat/group/room",
+    path: "/chat/group/room/:roomId",
     element: <GroupChatRoomPage />
   },
   {

@@ -1,8 +1,8 @@
 import MessageBubble from "./MessageBubble";
-import type { ChatMessage } from "@/features/groupChat/model/groupChatTypes";
+import type { ChatMessageResponse } from "@/features/groupChat/model/groupChatTypes";
 
 interface MessageListProps {
-  messages: ChatMessage[];
+  messages: ChatMessageResponse[];
   currentUserId: number;
 }
 
@@ -15,6 +15,7 @@ export default function MessageList({
     <div className="flex flex-col p-4 overflow-y-auto">
       {messages.map((message) => (
         <MessageBubble
+          key={message.chatMessageId}
           message={message}
           currentUserId={currentUserId}
         />

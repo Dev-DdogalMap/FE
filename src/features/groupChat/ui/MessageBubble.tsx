@@ -1,9 +1,14 @@
-import type { ChatMessage } from "../model/groupChatTypes";
+import type { ChatMessageResponse } from "../model/groupChatTypes";
 
 interface MessageBubbleProps {
-  message: ChatMessage;
+  message: ChatMessageResponse;
   currentUserId: number;
 }
+
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+};
 
 export default function MessageBubble({
     message,
@@ -17,7 +22,7 @@ export default function MessageBubble({
       <div className="flex justify-end mb-6">
         <div className="flex items-end gap-2">
           <span className="text-sm text-gray-400">
-            {message.createdAt}
+            {formatTime(message.createdAt)}
           </span>
 
           <div
@@ -45,7 +50,7 @@ export default function MessageBubble({
       {/* 프로필 */}
       <img
         src={message.senderProfileImage}
-        alt={message.senderName}
+        alt={message.senderNickname}
         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
       />
 
@@ -53,7 +58,7 @@ export default function MessageBubble({
         {/* 이름 + 레벨 */}
         <div className="flex items-center gap-2 mb-1">
           <span className="font-bold text-sm">
-            {message.senderName}
+            {message.senderNickname}
           </span>
 
           <span className="font-bold text-orange-500 text-sm">
@@ -80,7 +85,7 @@ export default function MessageBubble({
           </div>
 
           <span className="text-sm text-gray-400">
-            {message.createdAt}
+            {formatTime(message.createdAt)}
           </span>
         </div>
       </div>
