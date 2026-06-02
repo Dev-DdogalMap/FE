@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { getStoredAccessToken } from "@/shared/auth/token";
+import { API_BASE_URL } from "@/shared/config/api";
 
 export default function RequireAuth() {
   const location = useLocation();
@@ -12,9 +12,15 @@ export default function RequireAuth() {
   useEffect(() => {
     const checkLogin = async () => {
       try {
+        const token = getStoredAccessToken();
         const response = await fetch(`${API_BASE_URL}/api/users/me`, {
           method: "GET",
           credentials: "include",
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : undefined,
         });
 
         if (!response.ok) {

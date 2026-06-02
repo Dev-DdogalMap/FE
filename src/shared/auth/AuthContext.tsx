@@ -5,8 +5,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from "@/shared/config/api";
+import { getStoredAccessToken } from "@/shared/auth/token";
 
 type User = {
   userId: number;
@@ -27,9 +27,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
+      const token = getStoredAccessToken();
       const response = await fetch(`${API_BASE_URL}/api/users/me`, {
         method: "GET",
         credentials: "include",
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
       });
 
       if (!response.ok) {
