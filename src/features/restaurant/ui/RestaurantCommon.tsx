@@ -1,7 +1,20 @@
 import {
-    ArrowLeft, MapPin, Share2, Star
+    ArrowLeft,
+    MapPin,
+    Share2,
+    Star,
+    UtensilsCrossed,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+import LoadingView from "@/shared/ui/LoadingView";
+import ErrorView from "@/shared/ui/ErrorView";
+import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+
+interface Props {
+    restaurant: RestaurantPreview | null;
+    loading: boolean;
+}
 
 interface TagProps {
     text: string;
@@ -9,121 +22,200 @@ interface TagProps {
 
 const Tag = ({ text }: TagProps) => {
     return (
-        <div className="px-4 py-2 rounded-xl bg-green-50 text-green-700 text-sm font-medium">
-            {text}
+        <div className="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-[#ff6b00]">
+        {text}
         </div>
     );
 };
 
-const RestaurantCommon = () => {
+const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const navigate = useNavigate();
+
+    if (loading) {
+        return (
+            <LoadingView
+                heightClassName="min-h-[360px]"
+                title="음식점 정보를 불러오는 중이에요"
+                description={"맛집 정보를\n준비하고 있습니다"}
+            />
+        );
+    }
+
+    if (!restaurant) {
+        return (
+            <ErrorView
+                heightClassName="min-h-[360px]"
+                title="음식점 정보를 불러오지 못했어요"
+                description="잠시 후 다시 시도해주세요"
+            />
+        );
+    }
+
+    const hasImage = !!restaurant.imageUrl;
+
+    const distanceText =
+        restaurant.distance !== null ? `${Math.round(restaurant.distance)}m` : null;
+
+    const foodScoreText =
+        restaurant.foodScore !== null ? `${restaurant.foodScore}%` : "-";
+
+    const averageScoreText =
+        restaurant.averageScore !== null
+        ? restaurant.averageScore.toFixed(1)
+        : "-";
 
     return (
         <section>
-            {/* IMAGE */}
-            <div className="relative">
-                <img
-                    src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop"
-                    alt="restaurant"
-                    className="w-full h-[180px] object-cover"
-                />
+            {/* 대표 이미지 */}
+            <div className="relative h-[280px] overflow-hidden bg-orange-50">
+                {hasImage ? (
+                <>
+                    <img
+                        src={restaurant.imageUrl!}
+                        alt={restaurant.placeName}
+                        className="h-full w-full object-cover"
+                    /> 
 
-                {/* TOP BUTTONS */}
-                <div className="absolute top-6 left-4">
-                    <button
-                        onClick={() => navigate(-1)}
-                        aria-label="뒤로 가기"
-                        className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center" >
+                    {/* 이미지가 있을 때만 상단 버튼 가독성을 위한 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
+                </>
+                ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                    {/* 음식점 기본 아이콘 */}
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white">
+                    <UtensilsCrossed size={36} className="text-[#ff6b00]" />
+                    </div>
 
-                        <ArrowLeft color="white" />
-                    </button>
+                    <p className="mt-4 text-base font-semibold text-gray-700">
+                    등록된 사진이 없습니다
+                    </p>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                    음식점 정보를 준비 중이에요
+                    </p>
                 </div>
+                )}
 
-                <div className="absolute top-6 right-4 flex gap-3">
-                    <button
-                        onClick={async () => {
-                            if (!navigator.share) return;
+                {/* 뒤로 가기 버튼 */}
+                <button
+                    onClick={() => navigate(-1)}
+                    aria-label="뒤로 가기"
+                    className={`absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95`}
+                >
+                    <ArrowLeft
+                        size={22}
+                        className="text-gray-800"
+                    />
+                </button>
 
-                            try { 
-                                await navigator.share({
-                                    title: "장소명",
-                                    url: window.location.href,
-                                });
-                            } catch (error) {
-                                console.error(error);
-                            }
-                        }}
-                        aria-label="공유하기"
-                        className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center"
-                    >
-                        <Share2 color="white" size={20} />
-                    </button>
-                </div>
+                {/* 공유 버튼 */}
+                <button
+                    onClick={async () => {
+                        if (!navigator.share) return;
+
+                        try {
+                            await navigator.share({
+                                title: restaurant.placeName,
+                                url: window.location.href,
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }}
+                    aria-label="공유하기"
+                    className={`absolute right-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95`}
+                >
+                    <Share2
+                        size={20}
+                        className={"text-gray-800"}
+                    />
+                </button>
             </div>
 
-            {/* CONTENT */}
-            <div className="bg-white rounded-t-[32px] -mt-6 relative z-10 px-6 pt-8">
-                {/* TITLE */}
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-[1.6em] font-bold leading-tight">
-                            성수동 스테이크 하우스
+            {/* 음식점 기본 정보 */}
+            <div className="relative z-10 -mt-8 rounded-t-[32px] bg-white px-6 pt-8">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                        {/* 음식점 이름 */}
+                        <h1 className="line-clamp-2 text-[28px] font-extrabold leading-tight text-gray-900">
+                            {restaurant.placeName}
                         </h1>
 
-                        {/* LOCAL BADGE */}
-                        <div className="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-orange-50 text-[#ff6b00] font-semibold text-sm">
-                            ⭐ 성수 로컬 추천
-                        </div>
-
-                        {/* CATEGORY */}
-                        <div className="flex items-center gap-2 mt-5 text-gray-500">
-                            <span>양식</span>
-                            <span>·</span>
-                            <span>스테이크</span>
-                        </div>
-
-                        {/* LOCATION */}
-                        <div className="flex items-center gap-2 mt-4 text-gray-500">
-                            <MapPin size={18} />
-                            <span>성수동1가</span>
-                            <span>·</span>
-                            <span>120m</span>
+                        {/* 음식 카테고리 */}
+                        <div className="mt-3">
+                            <span className="text-base font-semibold text-gray-700">
+                                {restaurant.foodType}
+                            </span>
                         </div>
                     </div>
 
-                    {/* SCORE */}
-                    <div className="text-right">
-                        <div className="text-[56px] font-bold text-[#ff6b00] leading-none">
-                            98%
+                    {/* 맛집 지수 */}
+                    <div className="flex shrink-0 flex-col items-center">
+                        <div className="text-[32px] font-black leading-none text-[#ff6b00]">
+                            {foodScoreText}
                         </div>
 
-                        <div className="text-sm font-semibold mt-2">
-                            맛집 지수
+                        <div className="mt-1 text-xs font-semibold text-gray-500">
+                            맛집지수
                         </div>
                     </div>
                 </div>
 
-                {/* TAGS */}
-                <div className="flex flex-wrap gap-3 mt-8">
-                    <Tag text="혼밥 가능" />
-                    <Tag text="분위기 좋음" />
-                    <Tag text="위생 인증" />
+                {/* 위치 */}
+                <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
+                    <MapPin size={17} />
+                    <span className="line-clamp-1">{restaurant.addressName}</span>
+
+                    {distanceText && (
+                        <>
+                        <span>·</span>
+                        <span>{distanceText}</span>
+                        </>
+                    )}
                 </div>
 
-                {/* STATS */}
-                <div className="flex flex-wrap items-center gap-6 mt-8 text-gray-700">
-                    <div className="flex items-center gap-2">
+                {/* 태그 */}
+                {restaurant.topTags.length > 0 && (
+                    <div className="mt-8 flex flex-wrap gap-2">
+                        {restaurant.topTags.map((tag) => (
+                            <Tag
+                                key={tag}
+                                text={tag}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* 평점 */}
+                <div className="mt-5 flex items-center gap-2 text-sm">
+                    {restaurant.reviewCount > 0 ? (
+                        <>
                         <Star
+                            size={16}
                             fill="#ff8a00"
                             color="#ff8a00"
-                            size={20}
                         />
 
-                        <span className="font-semibold">4.6</span>
+                        <span className="font-semibold text-gray-900">
+                            {averageScoreText}
+                        </span>
 
-                        <span>(312)</span>
-                    </div>
+                        <span className="text-gray-500">
+                            ({restaurant.reviewCount})
+                        </span>
+                        </>
+                    ) : (
+                        <>
+                        <Star
+                            size={16}
+                            color="#d1d5db"
+                        />
 
+                        <span className="text-gray-500">
+                            아직 등록된 후기가 없어요
+                        </span>
+                        </>
+                    )}
                 </div>
             </div>
         </section>
