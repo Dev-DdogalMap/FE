@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Circle, MapMarker } from "react-kakao-maps-sdk";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import {
@@ -24,6 +25,7 @@ const getDistanceMeter = (
   const EARTH_RADIUS_METER = 6371000;
   const toRad = (value: number) => (value * Math.PI) / 180;
 
+
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
 
@@ -41,7 +43,7 @@ const getDistanceMeter = (
 const VisitVerificationPage = () => {
   const navigate = useNavigate();
   const { restaurantId } = useParams();
-
+  const { accessToken, refreshAccessToken } = useAuth();
   const [restaurant, setRestaurant] =
     useState<GetRestaurantInfoResponse | null>(null);
 
@@ -183,12 +185,18 @@ const VisitVerificationPage = () => {
     try {
       setSubmitting(true);
 
-      await createVisitVerification({
-        restaurantId: Number(restaurantId),
-        userLatitude: userLocation.latitude,
-        userLongitude: userLocation.longitude,
-        accuracyMeter: accuracyMeter ?? 0,
-      });
+      await createVisitVerification(
+        {
+          restaurantId: Number(restaurantId),
+          userLatitude: userLocation.latitude,
+          userLongitude: userLocation.longitude,
+          accuracyMeter: accuracyMeter ?? 0,
+        },
+        {
+          accessToken,
+          refreshAccessToken,
+        },
+      );
 
       setIsCompleteModalOpen(true);
     } catch (error) {

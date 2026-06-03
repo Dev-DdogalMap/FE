@@ -3,13 +3,15 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import { API_BASE_URL } from "@/shared/config/api";
-import { getStoredAccessToken } from "@/shared/auth/token";
 
 type User = {
   userId: number;
+  nickname?: string;
+  profileImageUrl?: string;
 };
 
 type AuthContextValue = {
@@ -18,6 +20,8 @@ type AuthContextValue = {
   isLoading: boolean;
   accessToken: string | null;
   checkAuth: () => Promise<boolean>;
+  refreshAccessToken: () => Promise<string | null>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -27,54 +31,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const checkAuth = async () => {
+  const refreshAccessToken = useCallback(async () => {
     try {
-      const token = getStoredAccessToken();
-      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-        method: "GET",
+      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: "POST",
         credentials: "include",
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
       });
 
       if (!response.ok) {
         setUser(null);
-        return false;
+        setAccessToken(null);
+        return null;
       }
 
       const data = await response.json();
-      setUser(data);
 
-      // 토큰 가져오기
-      const tokenResponse = await fetch(`${API_BASE_URL}/api/chat-rooms/auth/token`, {
-        method: "GET",
-        credentials: "include",
+      setAccessToken(data.accessToken);
+
+      setUser({
+        userId: data.userId,
+        nickname: data.nickname,
+        profileImageUrl: data.profileImageUrl,
       });
 
-      if (tokenResponse.ok) {
-        const tokenData = await tokenResponse.json();
-        setAccessToken(tokenData.accessToken); // 메모리에 저장
-      }
+      console.log("accessToken 재발급 성공");
 
-      return true;
+      return data.accessToken;
     } catch (error) {
       console.error(error);
       setUser(null);
-      return false;
+      setAccessToken(null);
+      return null;
+    }
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const newAccessToken = await refreshAccessToken();
+
+      return !!newAccessToken;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [refreshAccessToken]);
+
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+    }
+  }, []);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
+
+  useEffect(() => {
+    console.log("메모리 accessToken 변경됨 =", accessToken);
+  }, [accessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, isLoading, accessToken, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn: !!user && !!accessToken,
+        isLoading,
+        accessToken,
+        checkAuth,
+        refreshAccessToken,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
