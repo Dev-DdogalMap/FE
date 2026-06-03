@@ -14,7 +14,7 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-import NotFoundPage from "@/pages/error/NotFoundPage";
+//import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
