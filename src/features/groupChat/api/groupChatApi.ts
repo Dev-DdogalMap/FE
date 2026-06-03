@@ -1,6 +1,6 @@
 import axios from "@/shared/api/axios";
 
-import type { ChatMessageResponse, ChatRoomInfoResponse } from "../model/groupChatTypes";
+import type { ChatMessageResponse, ChatRoomInfoResponse, CreateGroupChatRequest, CreateGroupChatResponse } from "../model/groupChatTypes";
 
 // Params 객체 - 확장성
 interface GetGroupChatMessagesParams {
@@ -36,6 +36,21 @@ export async function getGroupChatRoomInfo(
     roomId:number) {
     const { data } = await axios.get<ChatRoomInfoResponse>(
         `/api/chat-rooms/${roomId}`
+    );
+
+    return data;
+}
+
+/**
+ * 그룹 채팅방 생성
+ * POST /api/chat-rooms
+ */
+export async function createGroupChat(
+    request: CreateGroupChatRequest,
+) {
+    const { data } = await axios.post<CreateGroupChatResponse>(
+        "/api/chat-rooms",
+        request,
     );
 
     return data;
