@@ -1,13 +1,16 @@
 
-import { useEffect, useRef, useState } from "react";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
+import { MapPinned, Navigation } from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Circle,
   Map,
   MapMarker,
   useKakaoLoader,
 } from "react-kakao-maps-sdk";
-import type { ReactNode } from "react";
+import ErrorView from "../ui/ErrorView";
+import LoadingView from "../ui/LoadingView";
 
 type Props = {
   center: {
@@ -17,6 +20,7 @@ type Props = {
   children?: ReactNode; // 지도 안에 표시할 요소
   onCreate?: (map: kakao.maps.Map) => void; // 지도 객체 처음 생성됐을 때 실행
   onIdle?: (map: kakao.maps.Map) => void; // 지도 이동이나 확대/축소가 끝났을 때 실행
+  bottomSheetHeight?: number; 
 };
 
 export default function KakaoBaseMap({ 
@@ -24,6 +28,7 @@ export default function KakaoBaseMap({
   children,
   onCreate,
   onIdle, 
+  bottomSheetHeight = 0,
 }: Props) {
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_APP_KEY,
@@ -40,6 +45,8 @@ export default function KakaoBaseMap({
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
 
   const hasInitialCentered = useRef(false);
+  const currentLocationButtonBottom =
+    bottomSheetHeight > 0? bottomSheetHeight + 30: 20;
 
   useEffect(() => {
     if (!currentLocation) return;
@@ -81,11 +88,37 @@ export default function KakaoBaseMap({
     }
   };
 
-  if (loading) return <div>지도 로딩중...</div>;
+  if (loading) {
+    return (
+      <LoadingView
+        icon={
+          <Navigation
+            size={32}
+            className="animate-pulse text-[#FF6B00]"
+          />
+        }
+        title="현재 위치를 확인하고 있어요"
+        description={`주변의 로컬 맛집 정보를\n불러오고 있습니다`}
+      />
+    );
+  }
 
+  
   if (error) {
     console.error("Kakao Map Load Error:", error);
-    return <div>지도 로딩 실패</div>;
+
+    return (
+      <ErrorView
+        icon={
+          <MapPinned
+            size={32}
+            className="text-[#FF6B00]"
+          />
+        }
+        title="지도를 불러오지 못했어요"
+        description={"네트워크 상태를 확인하거나\n잠시 후 다시 시도해주세요"}
+      />
+    );
   }
 
   return (
@@ -143,7 +176,8 @@ export default function KakaoBaseMap({
         <button
           type="button"
           onClick={moveToCurrentLocation}
-          className="absolute bottom-5 right-4 z-10 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98]"
+          style={{ bottom: currentLocationButtonBottom }}
+          className="absolute right-4 z-10 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98]"
         >
           내 위치
         </button>

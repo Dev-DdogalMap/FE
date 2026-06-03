@@ -41,7 +41,7 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                             </span>
                         </div>
 
-                        <h3 className="mt-2 truncate text-lg font-bold text-gray-900">
+                        <h3 className="mt-2 line-clamp-2 text-lg font-bold text-gray-900">
                             {restaurant.placeName}
                         </h3>
                     </div>

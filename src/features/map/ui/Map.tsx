@@ -1,14 +1,14 @@
-import { MarkerClusterer } from "react-kakao-maps-sdk";
 import { useEffect, useRef } from "react";
+import { MarkerClusterer } from "react-kakao-maps-sdk";
 
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import RestaurantMarker from "./RestaurantMarker";
 
-import type { MapBounds, RestaurantMapItem } from "../model/mapTypes";
-import { 
-    CLUSTER_CALCULATOR, 
-    CLUSTER_STYLES, 
+import {
+    CLUSTER_CALCULATOR,
+    CLUSTER_STYLES,
 } from "../constants/clusterStyles";
+import type { MapBounds, RestaurantMapItem } from "../model/mapTypes";
 
 type Props = {
     center: {
@@ -18,6 +18,7 @@ type Props = {
     restaurants: RestaurantMapItem[];
     onLoadRestaurants: (bounds: MapBounds) => void;
     onSelectRestaurant: (restaurantId: number) => void;
+    bottomSheetHeight?: number;
 };
 
 export default function Map({
@@ -25,6 +26,7 @@ export default function Map({
     restaurants,
     onLoadRestaurants,
     onSelectRestaurant,
+    bottomSheetHeight=0,
     }: Props) {
 
     const timerRef = useRef<number | null>(null);
@@ -71,13 +73,14 @@ export default function Map({
             center={center}
             onCreate={handleLoadRestaurants}
             onIdle={handleLoadRestaurants}
+            bottomSheetHeight={bottomSheetHeight}
         >
             <MarkerClusterer 
                 averageCenter 
-                minLevel={2}
+                minLevel={3}
                 calculator={CLUSTER_CALCULATOR}
                 styles={CLUSTER_STYLES}
-                minClusterSize={4}
+                minClusterSize={5}
             >
                 {restaurants.map((restaurant) => (
                     <RestaurantMarker
