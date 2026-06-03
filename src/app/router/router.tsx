@@ -9,6 +9,7 @@ import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
+import ReviewPage from "@/pages/review/ReviewPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -43,6 +44,10 @@ export const router = createBrowserRouter([
         path: "/restaurants",
         element: <RestaurantPage />,
       },
+      {
+        path: "/review",
+        element: <ReviewPage />,
+      }
       // {
       //   element: <RequireAuth />,
       //   children: [
