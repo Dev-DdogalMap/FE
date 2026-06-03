@@ -15,6 +15,7 @@ import PrivacyPage from "@/pages/policy/PrivacyPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import SearchPage from "@/pages/search/SearchPage";
+import NotFoundPage from "@/pages/error/NotFoundPage";
 //import RequireAuth from "@/shared/auth/RequireAuth";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 
@@ -82,6 +83,10 @@ export const router = createBrowserRouter([
         path: "/mypage",
         element:
                   <MyPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
 
 
