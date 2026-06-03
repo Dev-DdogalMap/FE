@@ -37,3 +37,15 @@ export interface MemberInfo {
   userId: number;
   userProfileImage: string | null;
 }
+
+//그룹 채팅방 생성 정보
+export interface CreateGroupChatRequest {
+  roomName: string;
+  region: string;
+  foodTypeId?: number;
+  maxParticipantCount: number;
+}
+
+export interface CreateGroupChatResponse {
+    chatRoomId: number;
+}

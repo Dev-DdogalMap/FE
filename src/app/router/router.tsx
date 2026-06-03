@@ -6,7 +6,7 @@ import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import BookmarkPage from "@/pages/bookmark/BookmarkPage";
 import ChatPage from "@/pages/chat/ChatPage";
-import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+//import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import MapPage from "@/pages/map/MapPage";
@@ -17,6 +17,7 @@ import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import SearchPage from "@/pages/search/SearchPage";
 import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
+import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
