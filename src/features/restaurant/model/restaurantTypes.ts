@@ -45,3 +45,11 @@ export interface RestaurantInfoResponse {
     latitude: number;
     longitude: number;
 }
+
+/**
+ * 음식 카테고리 응답
+ */
+export interface FoodTypeOption {
+    foodTypeId: number;
+    type: string;
+}

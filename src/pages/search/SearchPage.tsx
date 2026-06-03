@@ -9,6 +9,7 @@ import type {
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import { useSearchParams } from "react-router-dom";
 
 interface FoodTypeOption {
     foodTypeId: number;
@@ -49,12 +50,25 @@ export default function SearchPage() {
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
-    const [keyword, setKeyword] = useState("");
+
     const [region, setRegion] = useState("");
-    const [selectedFoodTypeId, setSelectedFoodTypeId] = useState<number | undefined>(undefined);
     const [foodTypes, setFoodTypes] = useState<FoodTypeOption[]>([]);
     const [foodTypesError, setFoodTypesError] = useState<string | null>(null);
     const [sort, setSort] = useState<SearchSort>("distance");
+
+    // 검색 파라미터
+    const [searchParams] = useSearchParams();
+
+    const [keyword, setKeyword] = useState(
+        () => searchParams.get("keyword")?.trim() ?? "",
+    );
+
+    const [selectedFoodTypeId, setSelectedFoodTypeId] = useState<number | undefined>(
+        () => {
+            const value = searchParams.get("foodTypeId");
+            return value ? Number(value) : undefined;
+        },
+    );
 
     // 최신 검색 요청만 반영하기 위한 카운터. 새 요청이 시작될 때마다 증가시키고,
     // 응답이 도착하면 그 시점 id 와 현재 ref 를 비교해 stale 응답을 무시.
