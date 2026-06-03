@@ -5,6 +5,7 @@ import SearchIcon from "@/shared/ui/SearchIcon";
 import BookmarkIcon from "@/shared/ui/BookmarkIcon";
 import ChatIcon from "@/shared/ui/ChatIcon";
 import UserIcon from "@/shared/ui/UserIcon";
+import { COLORS } from "@/shared/constants/colors";
 
 const menus = [
   {
@@ -49,11 +50,10 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <div
-                  className={`flex flex-col items-center ${
-                    isActive
-                      ? "text-orange-500"
-                      : "text-gray-400"
-                  }`}
+                  style={{
+                    color: isActive ? COLORS.PRIMARY : "#9CA3AF",
+                  }}
+                  className="flex flex-col items-center"
                 >
                   <Icon className="h-6 w-6" />
                   <span className="text-xs">

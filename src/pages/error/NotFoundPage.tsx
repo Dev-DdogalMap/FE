@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import marker from "@/assets/images/marker.png";
+import { COLORS } from "@/shared/constants/colors";
 
 export default function NotFoundPage() {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function NotFoundPage() {
                 />
             </div>
 
-        <h1 className="text-6xl font-bold text-orange-500">404</h1>
+        <h1 className="text-6xl font-bold" style={{ color: COLORS.PRIMARY }}>404</h1>
 
         <h2 className="mt-4 text-xl font-semibold">
             찾으시는 페이지를 찾을 수 없어요
@@ -35,7 +36,8 @@ export default function NotFoundPage() {
 
             <button
                 onClick={() => navigate("/")}
-                className="rounded-xl bg-orange-500 px-4 py-2 text-sm text-white"
+                className="rounded-xl px-4 py-2 text-sm text-white"
+                style={{ backgroundColor: COLORS.PRIMARY }}
             >
             홈으로 가기
             </button>
