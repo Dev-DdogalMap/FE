@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
+import { COLORS } from "@/shared/constants/colors";
 
 type LoadingViewProps = {
     title?: string;
@@ -16,13 +17,14 @@ export default function LoadingView({
 }: LoadingViewProps) {
     return (
         <div
-        className={`flex ${heightClassName} w-full flex-col items-center justify-center bg-gradient-to-b from-orange-50 to-white px-6`}
+        className={`flex ${heightClassName} w-full flex-col items-center justify-center bg-gradient-to-b from-[#FFF3E8] to-white px-6`}
         >
         <div className="mb-10 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg">
             {icon ?? (
             <LoaderCircle
                 size={36}
-                className="animate-spin text-[#FF6B00]"
+                color={COLORS.PRIMARY}
+                className="animate-spin"
             />
             )}
         </div>

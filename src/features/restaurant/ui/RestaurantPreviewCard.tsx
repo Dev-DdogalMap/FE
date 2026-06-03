@@ -4,7 +4,7 @@ import {
     Star,
     MessageSquareMore,
 } from "lucide-react";
-
+import { COLORS } from "@/shared/constants/colors";
 import type { RestaurantPreview } from "../model/restaurantTypes";
 
 type Props = {
@@ -32,11 +32,18 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                 <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="rounded-full bg-orange-50 px-2 py-1 text-xs font-semibold text-[#FF6B00]">
+                            <span 
+                                className="rounded-full px-2 py-1 text-xs font-semibold"
+                                style={{ 
+                                    backgroundColor: COLORS.PRIMARY_PALE, 
+                                    color: COLORS.PRIMARY}}>
                                 {restaurant.foodType}
                             </span>
 
-                            <span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-[#FF6B00]">
+                            <span className="rounded-full px-2 py-1 text-xs font-bold"
+                                style={{ 
+                                    backgroundColor: COLORS.PRIMARY_LIGHT, 
+                                    color: COLORS.PRIMARY}}>
                                 맛집지수 {restaurant.foodScore ?? "--"}%
                             </span>
                         </div>
@@ -49,9 +56,9 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                     <button
                         type="button"
                         aria-label="맛집 저장"
-                        className="shrink-0 rounded-full p-1.5 text-gray-400 transition hover:bg-orange-50 hover:text-[#FF6B00]"
+                        className="shrink-0 rounded-full p-1.5 text-gray-400 transition hover:bg-[#FFF3E8] hover:text-[#FF6B00]"
                     >
-                        <Bookmark size={22} />
+                        <Bookmark size={22}/>
                     </button>
                 </div>
 
@@ -59,8 +66,8 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                     <div className="flex items-center gap-1">
                         <Star
                             size={15}
-                            fill="#FFB800"
-                            className="text-[#FFB800]"
+                            fill={COLORS.WARNING}
+                            color={COLORS.WARNING}
                         />
                         <span className="text-sm font-semibold text-gray-800">
                             {restaurant.averageScore ?? "-"}
@@ -89,11 +96,12 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                 <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
                     <Navigation
                         size={14}
-                        className="shrink-0 text-[#FF6B00]"
+                        className="shrink-0"
+                        color={COLORS.PRIMARY}
                     />
 
                     {restaurant.distance !== null && (
-                        <span className="shrink-0 font-semibold text-[#FF6B00]">
+                        <span className="shrink-0 font-semibold" style={{ color: COLORS.PRIMARY }}>
                             {restaurant.distance}m
                         </span>
                     )}

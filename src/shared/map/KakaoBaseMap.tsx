@@ -2,6 +2,7 @@ import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { MapPinned, Navigation } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { COLORS } from "@/shared/constants/colors";
 import {
   Circle,
   Map,
@@ -24,6 +25,7 @@ type Props = {
   shouldMoveToCurrentLocationOnLoad?: boolean;
   showCurrentLocationMarker?: boolean;
   showCurrentLocationButton?: boolean;
+  locationMessageTop?: number;
 };
 
 export default function KakaoBaseMap({
@@ -36,6 +38,7 @@ export default function KakaoBaseMap({
   shouldMoveToCurrentLocationOnLoad = true,
   showCurrentLocationMarker = true,
   showCurrentLocationButton = true,
+  locationMessageTop = 16,
 }: Props) {
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_APP_KEY,
@@ -54,7 +57,7 @@ export default function KakaoBaseMap({
   const hasInitialCentered = useRef(false);
 
   const currentLocationButtonBottom =
-    bottomSheetHeight > 0 ? 310 : 90;
+    bottomSheetHeight > 0? bottomSheetHeight + 100: 80;
 
   useEffect(() => {
     if (shouldMoveToCurrentLocationOnLoad) return;
@@ -129,7 +132,8 @@ export default function KakaoBaseMap({
         icon={
           <Navigation
             size={32}
-            className="animate-pulse text-[#FF6B00]"
+            className="animate-pulse"
+            color={COLORS.PRIMARY}
           />
         }
         title="현재 위치를 확인하고 있어요"
@@ -146,7 +150,7 @@ export default function KakaoBaseMap({
         icon={
           <MapPinned
             size={32}
-            className="text-[#FF6B00]"
+            style={{ color: COLORS.PRIMARY }}
           />
         }
         title="지도를 불러오지 못했어요"
@@ -186,9 +190,9 @@ export default function KakaoBaseMap({
               }}
               radius={currentLocation.accuracy}
               strokeWeight={1}
-              strokeColor="#FF6B00"
+              strokeColor={COLORS.PRIMARY}
               strokeOpacity={0.6}
-              fillColor="#FF6B00"
+              fillColor={COLORS.PRIMARY}
               fillOpacity={0.15}
             />
           </>
@@ -196,13 +200,17 @@ export default function KakaoBaseMap({
       </Map>
 
       {locationLoading && (
-        <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-gray-600 shadow">
+        <div
+          style={{ top: locationMessageTop }} 
+          className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-gray-600 shadow">
           현재 위치 확인 중...
         </div>
       )}
 
       {errorMessage && (
-        <div className="absolute left-4 right-4 top-4 z-10 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-red-500 shadow">
+        <div 
+          style={{ top: locationMessageTop }}
+          className="absolute left-4 right-4 z-10 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-red-500 shadow">
           {errorMessage}
         </div>
       )}
