@@ -27,7 +27,7 @@ type Props = {
   showCurrentLocationMarker?: boolean;
   showCurrentLocationButton?: boolean;
   locationMessageTop?: number;
-  showCurrentLocation?: boolean; // 현재 위치 표시 추가
+  showCurrentLocation?: boolean; // 현재 위치 표시
 };
 
 export default function KakaoBaseMap({
@@ -41,7 +41,7 @@ export default function KakaoBaseMap({
   showCurrentLocationMarker = true,
   showCurrentLocationButton = true,
   locationMessageTop = 16,
-  showCurrentLocation = true,  // 현재 위치 표시 추가
+  showCurrentLocation = true,
 }: Props) {
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_APP_KEY,
@@ -49,9 +49,8 @@ export default function KakaoBaseMap({
   });
 
   const shouldWatchLocation =
-    showCurrentLocation ||
-    showCurrentLocationMarker ||
-    showCurrentLocationButton;
+    showCurrentLocation &&
+    (showCurrentLocationMarker || showCurrentLocationButton);
 
   const {
     location: currentLocation,
@@ -66,7 +65,7 @@ export default function KakaoBaseMap({
 
   const hasInitialCentered = useRef(false);
   const currentLocationButtonBottom =
-    bottomSheetHeight > 0? bottomSheetHeight + 100: 80;
+    bottomSheetHeight > 0 ? bottomSheetHeight + 100 : 80;
 
   useEffect(() => {
     if (shouldMoveToCurrentLocationOnLoad) return;
@@ -101,7 +100,7 @@ export default function KakaoBaseMap({
       }, 0);
     }
 
-  }, [currentLocation, map, shouldMoveToCurrentLocationOnLoad, showCurrentLocation]); //showCurrentLocation 추가
+  }, [currentLocation, map, shouldMoveToCurrentLocationOnLoad, showCurrentLocation]);
 
   useEffect(() => {
     if (!map) return;
@@ -191,7 +190,7 @@ export default function KakaoBaseMap({
       >
         {children}
 
-        {showCurrentLocationMarker && showCurrentLocation && currentLocation && ( 
+        {showCurrentLocationMarker && showCurrentLocation && currentLocation && (
           <>
             <MapMarker
               key={`current-${currentLocation.lat}-${currentLocation.lng}`}
@@ -220,14 +219,14 @@ export default function KakaoBaseMap({
 
       {locationLoading && (
         <div
-          style={{ top: locationMessageTop }} 
+          style={{ top: locationMessageTop }}
           className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-gray-600 shadow">
           현재 위치 확인 중...
         </div>
       )}
 
       {errorMessage && (
-        <div 
+        <div
           style={{ top: locationMessageTop }}
           className="absolute left-4 right-4 z-10 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-red-500 shadow">
           {errorMessage}
