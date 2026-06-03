@@ -9,6 +9,8 @@ import ChatPage from "@/pages/chat/ChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
+import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import MapPage from "@/pages/map/MapPage";
 import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
@@ -78,6 +80,10 @@ export const router = createBrowserRouter([
       {
         path: "/chat/groups/:groupId",
         element: <GroupChatPage />,
+      },
+      {
+        path: "/restaurants/:restaurantId/visit",
+        element: <VisitVerificationPage />,
       },
       {
         path: "/mypage",
