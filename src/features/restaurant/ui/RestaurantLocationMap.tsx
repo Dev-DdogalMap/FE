@@ -21,6 +21,8 @@ const RestaurantLocationMap = ({
                 lng: longitude,
             }}
             showCurrentLocation={false}
+            showCurrentLocationMarker={false}
+            showCurrentLocationButton={false}
         >
             <MapMarker
                 position={{
