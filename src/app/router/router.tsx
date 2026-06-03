@@ -13,6 +13,7 @@ import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -67,6 +68,10 @@ export const router = createBrowserRouter([
         path: "/chat/groups/:groupId",
         element: <GroupChatPage />,
       },
+      {
+        path: "/restaurants/:restaurantId/visit",
+        element: <VisitVerificationPage />,
+      }
       // {
       //   element: <RequireAuth />,
       //   children: [

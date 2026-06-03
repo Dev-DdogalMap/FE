@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { MapPinned, Navigation } from "lucide-react";
@@ -17,18 +16,26 @@ type Props = {
     lat: number;
     lng: number;
   };
-  children?: ReactNode; // 지도 안에 표시할 요소
-  onCreate?: (map: kakao.maps.Map) => void; // 지도 객체 처음 생성됐을 때 실행
-  onIdle?: (map: kakao.maps.Map) => void; // 지도 이동이나 확대/축소가 끝났을 때 실행
-  bottomSheetHeight?: number; 
+  level?: number;
+  children?: ReactNode;
+  onCreate?: (map: kakao.maps.Map) => void;
+  onIdle?: (map: kakao.maps.Map) => void;
+  bottomSheetHeight?: number;
+  shouldMoveToCurrentLocationOnLoad?: boolean;
+  showCurrentLocationMarker?: boolean;
+  showCurrentLocationButton?: boolean;
 };
 
-export default function KakaoBaseMap({ 
+export default function KakaoBaseMap({
   center,
+  level = 4,
   children,
   onCreate,
-  onIdle, 
+  onIdle,
   bottomSheetHeight = 0,
+  shouldMoveToCurrentLocationOnLoad = true,
+  showCurrentLocationMarker = true,
+  showCurrentLocationButton = true,
 }: Props) {
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_APP_KEY,
@@ -45,10 +52,18 @@ export default function KakaoBaseMap({
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
 
   const hasInitialCentered = useRef(false);
+
   const currentLocationButtonBottom =
-    bottomSheetHeight > 0? bottomSheetHeight + 30: 20;
+    bottomSheetHeight > 0 ? 310 : 90;
 
   useEffect(() => {
+    if (shouldMoveToCurrentLocationOnLoad) return;
+
+    setMapCenter(center);
+  }, [center.lat, center.lng, shouldMoveToCurrentLocationOnLoad]);
+
+  useEffect(() => {
+    if (!shouldMoveToCurrentLocationOnLoad) return;
     if (!currentLocation) return;
     if (hasInitialCentered.current) return;
 
@@ -59,7 +74,26 @@ export default function KakaoBaseMap({
 
     setMapCenter(nextCenter);
     hasInitialCentered.current = true;
-  }, [currentLocation]);
+
+    if (map && (window as any).kakao) {
+      const kakao = (window as any).kakao;
+
+      setTimeout(() => {
+        map.relayout();
+        map.panTo(
+          new kakao.maps.LatLng(currentLocation.lat, currentLocation.lng),
+        );
+      }, 0);
+    }
+  }, [currentLocation, map, shouldMoveToCurrentLocationOnLoad]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    setTimeout(() => {
+      map.relayout();
+    }, 0);
+  }, [map, currentLocation, children]);
 
   const handleCreateMap = (createdMap: kakao.maps.Map) => {
     setMap(createdMap);
@@ -67,7 +101,10 @@ export default function KakaoBaseMap({
   };
 
   const moveToCurrentLocation = () => {
-    if (!currentLocation) return;
+    if (!currentLocation) {
+      alert("현재 위치를 확인 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
 
     const nextCenter = {
       lat: currentLocation.lat,
@@ -79,11 +116,9 @@ export default function KakaoBaseMap({
     if (map && (window as any).kakao) {
       const kakao = (window as any).kakao;
 
+      map.relayout();
       map.panTo(
-        new kakao.maps.LatLng(
-          currentLocation.lat,
-          currentLocation.lng
-        )
+        new kakao.maps.LatLng(currentLocation.lat, currentLocation.lng),
       );
     }
   };
@@ -103,7 +138,6 @@ export default function KakaoBaseMap({
     );
   }
 
-  
   if (error) {
     console.error("Kakao Map Load Error:", error);
 
@@ -125,7 +159,7 @@ export default function KakaoBaseMap({
     <div className="relative h-full w-full">
       <Map
         center={mapCenter}
-        level={4}
+        level={level}
         onCreate={handleCreateMap}
         onIdle={onIdle}
         style={{
@@ -135,9 +169,10 @@ export default function KakaoBaseMap({
       >
         {children}
 
-        {currentLocation && (
+        {showCurrentLocationMarker && currentLocation && (
           <>
             <MapMarker
+              key={`current-${currentLocation.lat}-${currentLocation.lng}`}
               position={{
                 lat: currentLocation.lat,
                 lng: currentLocation.lng,
@@ -172,12 +207,13 @@ export default function KakaoBaseMap({
         </div>
       )}
 
-      {currentLocation && (
+      {showCurrentLocationButton && (
         <button
           type="button"
           onClick={moveToCurrentLocation}
+          disabled={!currentLocation}
           style={{ bottom: currentLocationButtonBottom }}
-          className="absolute right-4 z-10 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98]"
+          className="absolute right-4 z-[100] rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98] disabled:text-gray-400 disabled:opacity-70"
         >
           내 위치
         </button>
