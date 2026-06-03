@@ -36,7 +36,7 @@ const menus = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 h-16 w-full max-w-[430px] -translate-x-1/2 rounded-t-3xl bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+    <nav className="fixed bottom-0 left-1/2 z-50 h-16 w-full max-w-[430px] -translate-x-1/2 border-t border-gray-100 bg-white">
       <div className="flex h-full items-center justify-around">
         {menus.map((menu) => {
           const Icon = menu.icon;
