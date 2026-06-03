@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/chat/group/room/:roomId",
-    element: <GroupChatRoomPage />
+    element: <GroupChatRoomPage />,
   },
   {
     element: <MobileLayout />,
@@ -80,53 +80,18 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
         path: "/bookmark",
         element: <BookmarkPage />,
       },
       {
-        path: "/chat",
-        element: <ChatPage />,
-      },
-      {
-        path: "/chat/direct/:userId",
-        element: <DirectChatPage />,
-      },
-      {
-        path: "/chat/groups",
-        element: <GroupChatPage />,
-      },
-      {
-        path: "/chat/groups/create",
-        element: <CreateGroupChatPage />,
-      },
-      {
-        path: "/chat/groups/:groupId",
-        element: <GroupChatPage />,
-      },
-      {
         path: "/mypage",
-        element:
-                  <MyPage />,
+        element: <MyPage />,
       },
       {
         path: "*",
         element: <NotFoundPage />,
       },
-
-
-      // {
-      //   element: <RequireAuth />,
-      //   children: [
-      //     {
-      //       path: "/mypage",
-      //       element: <MyPage />,
-      //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
-      // },
     ],
   },
 ]);
