@@ -49,3 +49,19 @@ export interface CreateGroupChatRequest {
 export interface CreateGroupChatResponse {
     chatRoomId: number;
 }
+
+//그룹 채팅방 전체 목록 조회
+export interface ChatRoomListResponse {
+    hasNext: boolean;
+    chatRoomList: ChatRoomListThumbnailResponse[];
+}
+
+export interface ChatRoomListThumbnailResponse {
+    roomId: number;
+    roomImageUrl: string;
+    roomName: string;
+    participantCount: number;
+    maxParticipantCount: number;
+    createdAt: string;
+    latestMessageTime: string;
+}
