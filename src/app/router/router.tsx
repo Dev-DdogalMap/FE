@@ -16,6 +16,7 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import SearchPage from "@/pages/search/SearchPage";
 //import RequireAuth from "@/shared/auth/RequireAuth";
+import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
   {
     path: "/privacy",
     element: <PrivacyPage />,
+  },
+  {
+    path: "/chat/group/room/:roomId",
+    element: <GroupChatRoomPage />
   },
   {
     element: <MobileLayout />,
