@@ -12,7 +12,7 @@ import type { ChatMessageResponse } from "@/features/groupChat/model/groupChatTy
 export default function ChatRoomPage() {
   const navigate = useNavigate();
   const { roomId } = useParams();  //문자열로 반환
-  const { messages, setMessages, loading } = useGroupChat(Number(roomId));  //숫자로 바꾸기
+  //const { messages, setMessages, loading } = useGroupChat(Number(roomId));  //숫자로 바꾸기
   const { user } = useAuth();
   const { sendMessage } = useGroupChatSocket(Number(roomId), (data) => {
     const newMessage: ChatMessageResponse = {
@@ -29,16 +29,39 @@ export default function ChatRoomPage() {
     console.log("소켓 메시지:", data); // 형식 확인
     setMessages((prev) => [...prev, newMessage]); // 새 메시지 오면 목록에 추가
   });
+  const {
+    messages,
+    roomInfo,
+    loading,
+    setMessages,
+  } = useGroupChat(Number(roomId));
+
+  //데이터 로딩 전 화면
+  if (loading || !roomInfo) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-white">
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-orange-500" />
+
+        <h2 className="text-lg font-semibold text-gray-800">
+          채팅방 입장 중
+        </h2>
+
+        <p className="mt-1 text-sm text-gray-500">
+          잠시만 기다려 주세요
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-gray-100">
       <div className="relative mx-auto min-h-screen w-full max-w-[430px] bg-white">
         <div className="flex h-screen flex-col">
           <ChatHeader
-            roomName="성수동 양식 맛집 탐방"
-            currentCount={10}
-            maxCount={10}
-            thumbnailUrl="/restaurant.jpg"
+            roomName={roomInfo?.roomName}
+            currentCount={roomInfo?.participantCount}
+            maxCount={roomInfo?.maxParticipantCount}
+            thumbnailUrl={roomInfo?.roomImage ?? ""}  //null 대신 기본값
             onBack={() => navigate(-1)}
             onMenuClick={() => console.log("메뉴 클릭")}
           />

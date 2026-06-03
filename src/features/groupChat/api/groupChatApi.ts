@@ -1,6 +1,6 @@
 import axios from "@/shared/api/axios";
 
-import type { ChatMessageResponse } from "../model/groupChatTypes";
+import type { ChatMessageResponse, ChatRoomInfoResponse } from "../model/groupChatTypes";
 
 // Params 객체 - 확장성
 interface GetGroupChatMessagesParams {
@@ -10,7 +10,7 @@ interface GetGroupChatMessagesParams {
 
 /**
  * 그룹 채팅 메시지 조회
- * GET /chat-rooms/{roomId}/messages
+ * GET /api/chat-rooms/{roomId}/messages
  */
 export async function getGroupChatMessages({
     roomId,
@@ -23,6 +23,19 @@ export async function getGroupChatMessages({
                 size,
             },
         },
+    );
+
+    return data;
+}
+
+/**
+ * 그룹 채팅방 정보 조회
+ * GET /api/chat-rooms/{roomId}
+ */
+export async function getGroupChatRoomInfo(
+    roomId:number) {
+    const { data } = await axios.get<ChatRoomInfoResponse>(
+        `/api/chat-rooms/${roomId}`
     );
 
     return data;
