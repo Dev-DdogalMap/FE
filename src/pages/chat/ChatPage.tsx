@@ -229,6 +229,7 @@ export default function ChatPage() {
             )}
 
             {/* 그룹 채팅 목록 */}
+            {/* 코드가 좀 길어졌는데 시간나면 리팩토링하겠습니다.. */}
             {activeTab === "groups" && (
               <div className="space-y-3 px-1">
                 {/* 그룹 채팅 만들기 버튼 */}

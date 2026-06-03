@@ -19,6 +19,7 @@ import SearchPage from "@/pages/search/SearchPage";
 //import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
+import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
   {
     path: "/chat/group/room/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
     element: <GroupChatRoomPage />,
+  },
+  {
+    path: "/chat/group/info/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
+    element: <GroupInfoPage />,
   },
   {
     element: <MobileLayout />,
