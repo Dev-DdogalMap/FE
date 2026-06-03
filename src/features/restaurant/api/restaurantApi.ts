@@ -1,12 +1,12 @@
 import axios from "@/shared/api/axios";
 
 import type {
+  CreateVisitVerificationRequest,
+  CreateVisitVerificationResponse,
+  FoodTypeOption,
+  GetRestaurantInfoResponse,
   GetRestaurantPreviewParams,
   GetRestaurantPreviewResponse,
-  GetRestaurantInfoResponse,
-    FoodTypeOption,
-    CreateVisitVerificationRequest,
-  CreateVisitVerificationResponse,
 } from "../model/restaurantTypes";
 
 /**

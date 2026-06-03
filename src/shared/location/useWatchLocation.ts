@@ -31,7 +31,13 @@ const getDistanceMeter = (
   return EARTH_RADIUS_METER * c;
 };
 
-export function useWatchLocation() {
+type UseWatchLocationProps = {
+  enabled?: boolean;
+};
+
+export function useWatchLocation({
+  enabled = true,
+}: UseWatchLocationProps = {}) {
   const [location, setLocation] = useState<CurrentLocation | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +45,8 @@ export function useWatchLocation() {
   const lastLocationRef = useRef<CurrentLocation | null>(null);
 
   useEffect(() => {
+    if (!enabled) return; 
+
     if (!navigator.geolocation) {
       setErrorMessage("현재 브라우저에서는 위치 기능을 지원하지 않습니다.");
       setLoading(false);
@@ -99,7 +107,7 @@ export function useWatchLocation() {
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, []);
+  }, [enabled]);
 
   return {
     location,

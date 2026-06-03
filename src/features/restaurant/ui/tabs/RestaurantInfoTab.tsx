@@ -80,7 +80,7 @@ const RestaurantInfoTab = () => {
             href={`https://map.kakao.com/link/to/${encodeURIComponent(info.placeName)},${info.latitude},${info.longitude}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 transition"
+            className="inline-flex items-center px-3 py-1 rounded-full bg-[#FF6B00] text-white text-[11px] font-medium hover:bg-orange-600 transition"
           >
             길찾기
           </a>
@@ -93,8 +93,8 @@ const RestaurantInfoTab = () => {
             {info.phone ? (
               <a
                 href={`tel:${info.phone}`}
-                className="text-blue-500 hover:underline"
-              >
+                className="text-black-500 hover:text-[#FF6B00]"
+              > 
                 {info.phone}
               </a>
             ) : (
@@ -104,24 +104,6 @@ const RestaurantInfoTab = () => {
             )}
           </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-500">장소 URL</span>
-
-            {info.placeUrl ? (
-              <a
-                href={info.placeUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-500"
-              >
-                바로가기
-              </a>
-            ) : (
-              <span className="text-gray-400">
-                정보 없음
-              </span>
-            )}
-          </div>
         </div>
       </div>
     </div>
