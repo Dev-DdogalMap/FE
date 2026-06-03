@@ -4,16 +4,18 @@ import MobileLayout from "@/layouts/MobileLayout";
 
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
+import BookmarkPage from "@/pages/bookmark/BookmarkPage";
 import ChatPage from "@/pages/chat/ChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import MapPage from "@/pages/map/MapPage";
+import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import SearchPage from "@/pages/search/SearchPage";
-// import RequireAuth from "@/shared/auth/RequireAuth";
+//import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +50,10 @@ export const router = createBrowserRouter([
         element: <RestaurantPage />,
       },
       {
+        path: "/bookmark",
+        element: <BookmarkPage />,
+      },
+      {
         path: "/chat",
         element: <ChatPage />,
       },
@@ -67,11 +73,18 @@ export const router = createBrowserRouter([
         path: "/chat/groups/:groupId",
         element: <GroupChatPage />,
       },
+      {
+        path: "/mypage",
+        element:
+                  <MyPage />,
+      },
+
+
       // {
       //   element: <RequireAuth />,
       //   children: [
       //     {
-      //       path: "/my",
+      //       path: "/mypage",
       //       element: <MyPage />,
       //     },
       //     {
