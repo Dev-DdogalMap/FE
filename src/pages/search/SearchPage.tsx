@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import axios from "@/shared/api/axios";
 import { searchRestaurants } from "@/features/search/api/searchApi";
@@ -45,6 +46,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
  * - 검색 실패 시 에러 메시지 표시
  */
 export default function SearchPage() {
+    const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
@@ -96,7 +98,7 @@ export default function SearchPage() {
             foodTypeId: searchFoodTypeId,
             sort: searchSort,
             page: 1,
-            size: 20,
+            size: 50,
         })
             .then((res) => {
                 if (currentId !== requestIdRef.current) return;
@@ -222,7 +224,8 @@ export default function SearchPage() {
                 {items.map((item) => (
                     <li
                         key={item.restaurantId}
-                        className="rounded-2xl border border-gray-200 p-3"
+                        onClick={() => navigate(`/restaurants/${item.restaurantId}`)}
+                        className="cursor-pointer rounded-2xl border border-gray-200 p-3 transition hover:shadow-md"
                     >
                         <RestaurantPreviewCard restaurant={toPreview(item)} />
                     </li>
