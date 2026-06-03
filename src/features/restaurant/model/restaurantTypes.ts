@@ -57,6 +57,8 @@ export interface CreateVisitVerificationResponse {
   visitVerificationId: number;
   restaurantId: number;
   verifiedAt: string;
+}
+
 /**
  * 음식점 정보 조회 응답
  */

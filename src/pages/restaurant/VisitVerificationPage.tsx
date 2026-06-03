@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Circle, MapMarker } from "react-kakao-maps-sdk";
 
@@ -167,20 +167,6 @@ const VisitVerificationPage = () => {
     hasAutoCheckedRef.current = true;
     checkUserInsideRestaurantRadius();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restaurant]);
-
-  const mapCenter = useMemo(() => {
-    if (!restaurant) {
-      return {
-        lat: 37.5665,
-        lng: 126.978,
-      };
-    }
-
-    return {
-      lat: restaurant.latitude,
-      lng: restaurant.longitude,
-    };
   }, [restaurant]);
 
   const handleVisitVerificationSubmit = async () => {

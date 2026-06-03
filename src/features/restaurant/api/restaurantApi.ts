@@ -5,8 +5,8 @@ import type {
   GetRestaurantPreviewResponse,
   GetRestaurantInfoResponse,
     FoodTypeOption,
-    GetRestaurantPreviewParams,
-    GetRestaurantPreviewResponse,
+    CreateVisitVerificationRequest,
+  CreateVisitVerificationResponse,
 } from "../model/restaurantTypes";
 
 /**
