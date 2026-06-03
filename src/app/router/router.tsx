@@ -9,7 +9,6 @@ import ChatPage from "@/pages/chat/ChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
-import RequireAuth from "@/shared/auth/RequireAuth";
 import MapPage from "@/pages/map/MapPage";
 import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
@@ -18,6 +17,7 @@ import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import SearchPage from "@/pages/search/SearchPage";
 import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
+// import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
   {
@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/chat/group/room/:roomId",
-    element: <GroupChatRoomPage />
+    element: <GroupChatRoomPage />,
   },
   {
     element: <MobileLayout />,
@@ -56,30 +56,6 @@ export const router = createBrowserRouter([
         element: <RestaurantPage />,
       },
       {
-        element: <RequireAuth />,
-        children: [
-          {
-            path: "/chat",
-            element: <ChatPage />,
-          },
-          {
-            path: "/chat/direct/:directChatRoomId",
-            element: <DirectChatPage />,
-          },
-          {
-            path: "/chat/groups",
-            element: <GroupChatPage />,
-          },
-          {
-            path: "/chat/groups/create",
-            element: <CreateGroupChatPage />,
-          },
-          {
-            path: "/chat/groups/:groupId",
-            element: <GroupChatPage />,
-          },
-        ],
-      },
         path: "/bookmark",
         element: <BookmarkPage />,
       },
@@ -88,7 +64,7 @@ export const router = createBrowserRouter([
         element: <ChatPage />,
       },
       {
-        path: "/chat/direct/:userId",
+        path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
@@ -105,28 +81,12 @@ export const router = createBrowserRouter([
       },
       {
         path: "/mypage",
-        element:
-                  <MyPage />,
+        element: <MyPage />,
       },
       {
         path: "*",
         element: <NotFoundPage />,
       },
-
-
-      // {
-      //   element: <RequireAuth />,
-      //   children: [
-      //     {
-      //       path: "/mypage",
-      //       element: <MyPage />,
-      //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
-      // },
     ],
   },
 ]);
