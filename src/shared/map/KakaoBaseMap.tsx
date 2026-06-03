@@ -240,7 +240,7 @@ export default function KakaoBaseMap({
           onClick={moveToCurrentLocation}
           disabled={!currentLocation}
           style={{ bottom: currentLocationButtonBottom }}
-          className="absolute right-4 z-[100] rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98]"
+          className="absolute right-4 z-[100] rounded-full bg-white px-4 py-3 text-sm font-bold text-[#FF6B00] shadow active:scale-[0.98] disabled:text-gray-400 disabled:opacity-70"
         >
           내 위치
         </button>
