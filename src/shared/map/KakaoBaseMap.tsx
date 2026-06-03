@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState } from "react";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { MapPinned, Navigation } from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Circle,
   Map,
   MapMarker,
   useKakaoLoader,
 } from "react-kakao-maps-sdk";
-import type { ReactNode } from "react";
-import LoadingView from "../ui/LoadingView";
 import ErrorView from "../ui/ErrorView";
+import LoadingView from "../ui/LoadingView";
 
 type Props = {
   center: {

@@ -2,18 +2,23 @@ import { createBrowserRouter } from "react-router-dom";
 
 import MobileLayout from "@/layouts/MobileLayout";
 
-import MapPage from "@/pages/map/MapPage";
-import SearchPage from "@/pages/search/SearchPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
-import TermsPage from "@/pages/policy/TermsPage";
-import PrivacyPage from "@/pages/policy/PrivacyPage";
-import RestaurantPage from "@/pages/restaurant/RestaurantPage";
+import BookmarkPage from "@/pages/bookmark/BookmarkPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
 import GroupChatPage from "@/pages/chat/GroupChatPage";
 import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
+import MapPage from "@/pages/map/MapPage";
+import MyPage from "@/pages/myPage/MyPage";
+import PrivacyPage from "@/pages/policy/PrivacyPage";
+import TermsPage from "@/pages/policy/TermsPage";
+import RestaurantPage from "@/pages/restaurant/RestaurantPage";
+import SearchPage from "@/pages/search/SearchPage";
+import NotFoundPage from "@/pages/error/NotFoundPage";
+import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -34,6 +39,10 @@ export const router = createBrowserRouter([
     element: <PrivacyPage />,
   },
   {
+    path: "/chat/group/room/:roomId",
+    element: <GroupChatRoomPage />,
+  },
+  {
     element: <MobileLayout />,
     children: [
       {
@@ -49,11 +58,15 @@ export const router = createBrowserRouter([
         element: <RestaurantPage />,
       },
       {
+        path: "/bookmark",
+        element: <BookmarkPage />,
+      },
+      {
         path: "/chat",
         element: <ChatPage />,
       },
       {
-        path: "/chat/direct/:userId",
+        path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
@@ -71,20 +84,15 @@ export const router = createBrowserRouter([
       {
         path: "/restaurants/:restaurantId/visit",
         element: <VisitVerificationPage />,
-      }
-      // {
-      //   element: <RequireAuth />,
-      //   children: [
-      //     {
-      //       path: "/my",
-      //       element: <MyPage />,
-      //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
-      // },
+      },
+      {
+        path: "/mypage",
+        element: <MyPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
     ],
   },
 ]);

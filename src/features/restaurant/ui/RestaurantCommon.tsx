@@ -164,7 +164,7 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 {/* 위치 */}
                 <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
                     <MapPin size={17} />
-                    <span className="line-clamp-1">{restaurant.addressName}</span>
+                    <span className="line-clamp-2">{restaurant.addressName}</span>
 
                     {distanceText && (
                         <>

@@ -4,6 +4,9 @@ import type {
   GetRestaurantPreviewParams,
   GetRestaurantPreviewResponse,
   GetRestaurantInfoResponse,
+    FoodTypeOption,
+    GetRestaurantPreviewParams,
+    GetRestaurantPreviewResponse,
 } from "../model/restaurantTypes";
 
 /**
@@ -51,4 +54,18 @@ export async function createVisitVerification(
   );
 
   return data;
+    return data;
+}
+
+/**
+ * 음식 카테고리 목록 조회
+ *
+ * GET /api/food-types
+ */
+export async function getFoodTypes() {
+    const { data } = await axios.get<FoodTypeOption[]>(
+        "/api/food-types",
+    );
+
+    return data;
 }

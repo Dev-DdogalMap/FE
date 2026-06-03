@@ -57,4 +57,23 @@ export interface CreateVisitVerificationResponse {
   visitVerificationId: number;
   restaurantId: number;
   verifiedAt: string;
+/**
+ * 음식점 정보 조회 응답
+ */
+export interface RestaurantInfoResponse {
+    restaurantId: number;
+    placeName: string;
+    roadAddressName: string;
+    phone: string | null;
+    placeUrl: string | null;
+    latitude: number;
+    longitude: number;
+}
+
+/**
+ * 음식 카테고리 응답
+ */
+export interface FoodTypeOption {
+    foodTypeId: number;
+    type: string;
 }
