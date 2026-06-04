@@ -21,6 +21,7 @@ import type {
 import ChatFilters from "@/features/chat/ui/ChatFilters";
 import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
+import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { ROUTES } from "@/shared/constants/routes";
 
@@ -92,6 +93,7 @@ export default function ChatPage() {
   const [filters, setFilters] =
     useState<TasteExpertFilters>(defaultFilters);
   const [experts, setExperts] = useState<TasteExpert[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<
     DirectChatRoomSummary[]
@@ -109,6 +111,17 @@ export default function ChatPage() {
     [conversations],
   );
   const conversationRoomIds = conversationRoomIdList.join(",");
+
+  useEffect(() => {
+    void getFoodTypes()
+      .then((foodTypes) => {
+        setCategoryOptions(foodTypes.map((foodType) => foodType.type));
+      })
+      .catch((error) => {
+        console.error(error);
+        setCategoryOptions([]);
+      });
+  }, []);
 
   useEffect(() => {
     if (activeTab !== "recommended") {
@@ -266,6 +279,7 @@ export default function ChatPage() {
           keyword={filters.keyword}
           region={filters.region}
           category={filters.category}
+          categoryOptions={categoryOptions}
           minLevel={filters.minLevel}
           onKeywordChange={(value) =>
             setFilters((prev) => ({
