@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Circle, MapMarker } from "react-kakao-maps-sdk";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import {
@@ -11,7 +12,7 @@ import type { GetRestaurantInfoResponse } from "@/features/restaurant/model/rest
 import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
 
 const VERIFY_RADIUS_METER = 50;
-//const USE_MOCK_INSIDE_RADIUS = true;
+const USE_MOCK_INSIDE_RADIUS = true;
 
 type VerifyStatus = "idle" | "success" | "fail" | "permission-error";
 
@@ -23,6 +24,7 @@ const getDistanceMeter = (
 ) => {
   const EARTH_RADIUS_METER = 6371000;
   const toRad = (value: number) => (value * Math.PI) / 180;
+
 
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
@@ -41,7 +43,7 @@ const getDistanceMeter = (
 const VisitVerificationPage = () => {
   const navigate = useNavigate();
   const { restaurantId } = useParams();
-
+  const { accessToken, refreshAccessToken } = useAuth();
   const [restaurant, setRestaurant] =
     useState<GetRestaurantInfoResponse | null>(null);
 
@@ -105,15 +107,15 @@ const VisitVerificationPage = () => {
         const restaurantLatitude = restaurant.latitude;
         const restaurantLongitude = restaurant.longitude;
 
-        const userLatitude = position.coords.latitude;
-        const userLongitude = position.coords.longitude;
-        // const userLatitude = USE_MOCK_INSIDE_RADIUS
-        //   ? restaurantLatitude + 0.0001
-        //   : position.coords.latitude;
+        // const userLatitude = position.coords.latitude;
+        // const userLongitude = position.coords.longitude;
+        const userLatitude = USE_MOCK_INSIDE_RADIUS
+          ? restaurantLatitude + 0.0001
+          : position.coords.latitude;
 
-        // const userLongitude = USE_MOCK_INSIDE_RADIUS
-        //   ? restaurantLongitude + 0.0001
-        //   : position.coords.longitude;
+        const userLongitude = USE_MOCK_INSIDE_RADIUS
+          ? restaurantLongitude + 0.0001
+          : position.coords.longitude;
 
         const calculatedDistance = getDistanceMeter(
           restaurantLatitude,
@@ -183,12 +185,18 @@ const VisitVerificationPage = () => {
     try {
       setSubmitting(true);
 
-      await createVisitVerification({
-        restaurantId: Number(restaurantId),
-        userLatitude: userLocation.latitude,
-        userLongitude: userLocation.longitude,
-        accuracyMeter: accuracyMeter ?? 0,
-      });
+      await createVisitVerification(
+        {
+          restaurantId: Number(restaurantId),
+          userLatitude: userLocation.latitude,
+          userLongitude: userLocation.longitude,
+          accuracyMeter: accuracyMeter ?? 0,
+        },
+        {
+          accessToken,
+          refreshAccessToken,
+        },
+      );
 
       setIsCompleteModalOpen(true);
     } catch (error) {
