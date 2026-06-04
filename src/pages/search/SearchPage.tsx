@@ -106,17 +106,21 @@ export default function SearchPage() {
         searchFoodTypeId: number | undefined,
         searchSort: SearchSort,
     ) => {
-        if (!location) return;
         const currentId = ++requestIdRef.current;
         setLoading(true);
         setSearchError(null);
+        // 좌표 없으면 distance 정렬 의미 없음 → jjinScore 로 normalize 후 전송
+        const effectiveSort: SearchSort =
+            searchSort === "distance" && (!location?.lat || !location?.lng)
+                ? "jjinScore"
+                : searchSort;
         searchRestaurants({
-            lat: location.lat,
-            lng: location.lng,
+            lat: location?.lat,
+            lng: location?.lng,
             keyword: searchKeyword || undefined,
             region: searchRegion || undefined,
             foodTypeId: searchFoodTypeId,
-            sort: searchSort,
+            sort: effectiveSort,
             page: 1,
             size: 50,
         })
@@ -142,9 +146,7 @@ export default function SearchPage() {
     }, []);
 
     useEffect(() => {
-        if (location) {
-            fetchSearch(keyword, region, selectedFoodTypeId, sort);
-        }
+        fetchSearch(keyword, region, selectedFoodTypeId, sort);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location?.lat, location?.lng]);
 
