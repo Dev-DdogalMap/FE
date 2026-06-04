@@ -2,24 +2,16 @@ import { Bell, Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/images/logo.png";
 import { useAuth } from "@/shared/auth/AuthContext";
-import { clearStoredAccessToken } from "@/shared/auth/token";
-import { API_BASE_URL } from "@/shared/config/api";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoggedIn, isLoading, checkAuth } = useAuth();
-  const isChatRoute = location.pathname.startsWith("/chat/-1");
+  const { isLoggedIn, isLoading, logout } = useAuth();
+  const isChatRoute = location.pathname.startsWith("/chat/avas");
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      clearStoredAccessToken();
-      await checkAuth();
+      await logout();
       navigate("/", { replace: true });
     } catch (error) {
       console.error(error);

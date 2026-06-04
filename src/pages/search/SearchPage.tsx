@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import axios from "@/shared/api/axios";
 import { searchRestaurants } from "@/features/search/api/searchApi";
 import type {
     RestaurantSearchItem,
     SearchSort,
 } from "@/features/search/model/searchTypes";
+import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
@@ -140,8 +140,8 @@ export default function SearchPage() {
     };
 
     useEffect(() => {
-        axios.get<FoodTypeOption[]>("/api/food-types")
-            .then((res) => setFoodTypes(res.data))
+        getFoodTypes()
+            .then(setFoodTypes)
             .catch(() => setFoodTypesError("음식 종류 목록을 불러오지 못했습니다."));
     }, []);
 

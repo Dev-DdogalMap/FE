@@ -16,7 +16,7 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-import NotFoundPage from "@/pages/error/NotFoundPage";
+//import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
@@ -39,14 +39,6 @@ export const router = createBrowserRouter([
   {
     path: "/privacy",
     element: <PrivacyPage />,
-  },
-  {
-    path: "/chat/group/room/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
-    element: <GroupChatRoomPage />,
-  },
-  {
-    path: "/chat/group/info/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
-    element: <GroupInfoPage />,
   },
   {
     element: <MobileLayout />,
@@ -76,7 +68,7 @@ export const router = createBrowserRouter([
         element: <ChatPage />,
       },
       {
-        path: "/chat/direct/:userId",
+        path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
@@ -97,9 +89,13 @@ export const router = createBrowserRouter([
                   <MyPage />,
       },
       {
-        path: "*",
-        element: <NotFoundPage />
-      }
+        path: "/chat/group/room/:roomId",
+        element: <GroupChatRoomPage />,
+      },
+      {
+        path: "/chat/group/info/:roomId",
+        element: <GroupInfoPage />,
+      },
       // {
       //   element: <RequireAuth />,
       //   children: [

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { getGroupChatRoomInfo } from "../api/groupChatApi";
 import type { ChatRoomInfoResponse } from "../model/groupChatTypes";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 export function useGroupChatInfo(roomId: number) {
+  const { accessToken, refreshAccessToken } = useAuth();
   const [roomInfo, setRoomInfo] =
     useState<ChatRoomInfoResponse | null>(null);
 
@@ -18,7 +20,7 @@ export function useGroupChatInfo(roomId: number) {
     try {
       setLoading(true);
 
-      const data = await getGroupChatRoomInfo(roomId);
+      const data = await getGroupChatRoomInfo(roomId, { accessToken, refreshAccessToken });
 
       setRoomInfo(data);
     } catch (err) {
