@@ -65,11 +65,6 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
         restaurant.averageScore !== null
             ? restaurant.averageScore.toFixed(1)
             : "-";
-    
-    const walkingTime =
-        restaurant.distance != null
-            ? `약 도보 ${Math.ceil(restaurant.distance / 80)}분`
-            : null;
 
     return (
         <section>
