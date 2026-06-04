@@ -121,13 +121,18 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                             try {
                                 await navigator.share(shareData);
                             } catch (error) {
-                                console.error(error);
+                                // 사용자가 공유를 취소한 경우는 무시
+                                if (error instanceof Error && error.name === 'AbortError') {
+                                    return;
+                                }
+                                console.error('공유 실패:', error);
                             }
                         } else {
                             try {
                                 await navigator.clipboard.writeText(window.location.href);
                                 toast.success('링크가 복사되었습니다!');
                             } catch (error) {
+                                console.error('클립보드 복사 실패:', error);
                                 toast.error('복사에 실패했습니다');
                             }
                         }

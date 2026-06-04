@@ -14,6 +14,8 @@ const RestaurantInfoSection = ({ info }: Props) => {
     const isMobile = useIsMobile();
 
     const handleCopyPhone = async () => {
+         if (!info.phone) return; 
+         
         try {
             await navigator.clipboard.writeText(info.phone);
             toast.success('전화번호가 복사되었습니다!');
