@@ -26,6 +26,9 @@ import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
 import { ROUTES } from "@/shared/constants/routes";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { joinChatRoom } from "@/features/groupChat/api/groupChatApi";
+import { JoinConfirmModal } from "@/features/groupChat/ui/JoinConfirmModal";
+import { JoinFailModal } from "@/features/groupChat/ui/JoinFailModal";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
@@ -70,6 +73,9 @@ export default function ChatPage() {
   const [groupPage, setGroupPage] = useState(0);
   const [hasNextGroup, setHasNextGroup] = useState(false);
   const { accessToken, refreshAccessToken } = useAuth();
+  const [joiningRoom, setJoiningRoom] = useState<ChatRoomListThumbnailResponse | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinFailed, setJoinFailed] = useState(false);
 
   useEffect(() => {
     if (activeTab !== "recommended") return;
@@ -100,7 +106,7 @@ export default function ChatPage() {
     if (activeTab !== "groups") return;
     setIsGroupLoading(true);
     setGroupPage(0);
-    void getGroupChatRoomList({ page: 0, size: 20 }, { accessToken, refreshAccessToken})
+    void getGroupChatRoomList({ page: 0, size: 20 }, { accessToken, refreshAccessToken })
       .then((response) => {
         setGroupChats(response.chatRoomList);
         setHasNextGroup(response.hasNext);
@@ -135,8 +141,37 @@ export default function ChatPage() {
     }
   };
 
+  const handleJoinConfirm = async () => {
+    if (!joiningRoom) return;
+    setIsJoining(true);
+    try {
+      await joinChatRoom(joiningRoom.roomId, { accessToken, refreshAccessToken });
+      setJoiningRoom(null);
+      navigate(ROUTES.groupChatRoom(joiningRoom.roomId));
+    } catch {
+      setJoiningRoom(null);
+      setJoinFailed(true);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px-64px)] bg-[#fafafa] px-4 pb-24 pt-4">
+      {/* 참여 확인 모달 */}
+      {joiningRoom && (
+        <JoinConfirmModal
+          room={joiningRoom}
+          onConfirm={handleJoinConfirm}
+          onCancel={() => setJoiningRoom(null)}
+          isLoading={isJoining}
+        />
+      )}
+
+      {/* 참여 실패 모달 */}
+      {joinFailed && (
+        <JoinFailModal onClose={() => setJoinFailed(false)} />
+      )}
       <div className="space-y-4">
         <ChatFilters
           keyword={filters.keyword}
@@ -258,7 +293,7 @@ export default function ChatPage() {
                       <button
                         key={room.roomId}
                         type="button"
-                        onClick={() => navigate(ROUTES.groupChatRoom(room.roomId))}
+                        onClick={() => setJoiningRoom(room)}
                         className="flex w-full items-start gap-3 border-b border-gray-100 py-5 text-left"
                       >
                         {/* 썸네일 */}
