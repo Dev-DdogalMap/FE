@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/shared/auth/AuthContext";
 import {
   getGroupChatMessages,
   getGroupChatRoomInfo,
@@ -10,6 +11,7 @@ import type {
 } from "../model/groupChatTypes";
 
 export function useGroupChat(roomId: number) {
+  const { accessToken, refreshAccessToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
   const [roomInfo, setRoomInfo] =
     useState<ChatRoomInfoResponse | null>(null);
@@ -22,11 +24,8 @@ export function useGroupChat(roomId: number) {
 
       try {
         const [messageData, roomInfoData] = await Promise.all([  //Promise.all = 두 API 동시 호출
-          getGroupChatMessages({
-            roomId,
-            size: 50,
-          }),
-          getGroupChatRoomInfo(roomId),
+          getGroupChatMessages({ roomId, size: 50,}, { accessToken, refreshAccessToken }),
+          getGroupChatRoomInfo(roomId, { accessToken, refreshAccessToken }),
         ]);
 
         setMessages(messageData);

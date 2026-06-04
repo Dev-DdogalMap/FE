@@ -16,7 +16,7 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-import NotFoundPage from "@/pages/error/NotFoundPage";
+//import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
@@ -39,14 +39,6 @@ export const router = createBrowserRouter([
   {
     path: "/privacy",
     element: <PrivacyPage />,
-  },
-  {
-    path: "/chat/group/room/:roomId",
-    element: <GroupChatRoomPage />,
-  },
-  {
-    path: "/chat/group/info/:roomId",
-    element: <GroupInfoPage />,
   },
   {
     element: <MobileLayout />,
@@ -93,11 +85,16 @@ export const router = createBrowserRouter([
       },
       {
         path: "/mypage",
-        element: <MyPage />,
+        element:
+                  <MyPage />,
       },
       {
-        path: "*",
-        element: <NotFoundPage />,
+        path: "/chat/group/room/:roomId",
+        element: <GroupChatRoomPage />,
+      },
+      {
+        path: "/chat/group/info/:roomId",
+        element: <GroupInfoPage />,
       },
       // {
       //   element: <RequireAuth />,
