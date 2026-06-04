@@ -1,3 +1,4 @@
+//common
 import {
     ArrowLeft,
     MapPin,
@@ -7,9 +8,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import LoadingView from "@/shared/ui/LoadingView";
-import ErrorView from "@/shared/ui/ErrorView";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import ErrorView from "@/shared/ui/ErrorView";
+import LoadingView from "@/shared/ui/LoadingView";
+import { toast } from 'sonner';
 
 interface Props {
     restaurant: RestaurantPreview | null;
@@ -23,7 +25,7 @@ interface TagProps {
 const Tag = ({ text }: TagProps) => {
     return (
         <div className="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-[#ff6b00]">
-        {text}
+            {text}
         </div>
     );
 };
@@ -61,39 +63,39 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
 
     const averageScoreText =
         restaurant.averageScore !== null
-        ? restaurant.averageScore.toFixed(1)
-        : "-";
+            ? restaurant.averageScore.toFixed(1)
+            : "-";
 
     return (
         <section>
             {/* 대표 이미지 */}
             <div className="relative h-[280px] overflow-hidden bg-orange-50">
                 {hasImage ? (
-                <>
-                    <img
-                        src={restaurant.imageUrl!}
-                        alt={restaurant.placeName}
-                        className="h-full w-full object-cover"
-                    /> 
+                    <>
+                        <img
+                            src={restaurant.imageUrl!}
+                            alt={restaurant.placeName}
+                            className="h-full w-full object-cover"
+                        />
 
-                    {/* 이미지가 있을 때만 상단 버튼 가독성을 위한 오버레이 */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
-                </>
+                        {/* 이미지가 있을 때만 상단 버튼 가독성을 위한 오버레이 */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
+                    </>
                 ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                    {/* 음식점 기본 아이콘 */}
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white">
-                    <UtensilsCrossed size={36} className="text-[#ff6b00]" />
+                    <div className="flex h-full w-full flex-col items-center justify-center">
+                        {/* 음식점 기본 아이콘 */}
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white">
+                            <UtensilsCrossed size={36} className="text-[#ff6b00]" />
+                        </div>
+
+                        <p className="mt-4 text-base font-semibold text-gray-700">
+                            등록된 사진이 없습니다
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                            음식점 정보를 준비 중이에요
+                        </p>
                     </div>
-
-                    <p className="mt-4 text-base font-semibold text-gray-700">
-                    등록된 사진이 없습니다
-                    </p>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                    음식점 정보를 준비 중이에요
-                    </p>
-                </div>
                 )}
 
                 {/* 뒤로 가기 버튼 */}
@@ -111,24 +113,35 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 {/* 공유 버튼 */}
                 <button
                     onClick={async () => {
-                        if (!navigator.share) return;
+                        const shareData = {
+                            title: restaurant.placeName,
+                            url: window.location.href,
+                        };
 
-                        try {
-                            await navigator.share({
-                                title: restaurant.placeName,
-                                url: window.location.href,
-                            });
-                        } catch (error) {
-                            console.error(error);
+                        if (navigator.share) {
+                            try {
+                                await navigator.share(shareData);
+                            } catch (error) {
+                                // 사용자가 공유를 취소한 경우는 무시
+                                if (error instanceof Error && error.name === 'AbortError') {
+                                    return;
+                                }
+                                console.error('공유 실패:', error);
+                            }
+                        } else {
+                            try {
+                                await navigator.clipboard.writeText(window.location.href);
+                                toast.success('링크가 복사되었습니다!');
+                            } catch (error) {
+                                console.error('클립보드 복사 실패:', error);
+                                toast.error('복사에 실패했습니다');
+                            }
                         }
                     }}
                     aria-label="공유하기"
-                    className={`absolute right-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95`}
+                    className="absolute right-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95"
                 >
-                    <Share2
-                        size={20}
-                        className={"text-gray-800"}
-                    />
+                    <Share2 size={20} className="text-gray-800" />
                 </button>
             </div>
 
@@ -168,8 +181,8 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
 
                     {distanceText && (
                         <>
-                        <span>·</span>
-                        <span>{distanceText}</span>
+                            <span>·</span>
+                            <span>{distanceText}</span>
                         </>
                     )}
                 </div>
@@ -190,30 +203,30 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 <div className="mt-5 flex items-center gap-2 text-sm">
                     {restaurant.reviewCount > 0 ? (
                         <>
-                        <Star
-                            size={16}
-                            fill="#ff8a00"
-                            color="#ff8a00"
-                        />
+                            <Star
+                                size={16}
+                                fill="#ff8a00"
+                                color="#ff8a00"
+                            />
 
-                        <span className="font-semibold text-gray-900">
-                            {averageScoreText}
-                        </span>
+                            <span className="font-semibold text-gray-900">
+                                {averageScoreText}
+                            </span>
 
-                        <span className="text-gray-500">
-                            ({restaurant.reviewCount})
-                        </span>
+                            <span className="text-gray-500">
+                                ({restaurant.reviewCount})
+                            </span>
                         </>
                     ) : (
                         <>
-                        <Star
-                            size={16}
-                            color="#d1d5db"
-                        />
+                            <Star
+                                size={16}
+                                color="#d1d5db"
+                            />
 
-                        <span className="text-gray-500">
-                            아직 등록된 후기가 없어요
-                        </span>
+                            <span className="text-gray-500">
+                                아직 등록된 후기가 없어요
+                            </span>
                         </>
                     )}
                 </div>

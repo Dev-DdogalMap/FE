@@ -90,7 +90,7 @@ export default function MapPage() {
   return (
     <main className="relative h-[calc(100dvh-64px-64px)] w-full overflow-hidden">
       {/* 검색바 */}
-      <div className="relative z-20 px-4 py-3">
+      <div className="relative z-5 px-4 py-3">
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 shadow-sm">
           <input
             value={keyword}
@@ -108,7 +108,7 @@ export default function MapPage() {
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleSearch}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-gray-400 transition hover:bg-orange-50 hover:text-[#ff6b00] active:scale-95 active:bg-orange-100"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-gray-400 transition hover:bg-[#FFF3E8] hover:text-[#FF6B00] active:scale-95 active:bg-[#FFE7D6]"
             aria-label="검색"
           >
             <Search size={17} />
@@ -149,7 +149,7 @@ export default function MapPage() {
               }}
               className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
                 selectedFoodTypeId === null
-                  ? "bg-orange-50 text-orange-500"
+                  ? "bg-[#FFF3E8] text-[#FF6B00]"
                   : "hover:bg-gray-50"
               }`}
             >
@@ -166,7 +166,7 @@ export default function MapPage() {
                 }}
                 className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
                   selectedFoodTypeId === category.foodTypeId
-                    ? "bg-orange-50 text-orange-500"
+                    ? "bg-[#FFF3E8] text-[#FF6B00]"
                     : "hover:bg-gray-50"
                 }`}
               >

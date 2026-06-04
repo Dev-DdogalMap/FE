@@ -37,3 +37,31 @@ export interface MemberInfo {
   userId: number;
   userProfileImage: string | null;
 }
+
+//그룹 채팅방 생성 정보
+export interface CreateGroupChatRequest {
+  roomName: string;
+  region: string;
+  foodTypeId?: number;
+  maxParticipantCount: number;
+}
+
+export interface CreateGroupChatResponse {
+    chatRoomId: number;
+}
+
+//그룹 채팅방 전체 목록 조회
+export interface ChatRoomListResponse {
+    hasNext: boolean;
+    chatRoomList: ChatRoomListThumbnailResponse[];
+}
+
+export interface ChatRoomListThumbnailResponse {
+    roomId: number;
+    roomImageUrl: string;
+    roomName: string;
+    participantCount: number;
+    maxParticipantCount: number;
+    createdAt: string;
+    latestMessageTime: string;
+}
