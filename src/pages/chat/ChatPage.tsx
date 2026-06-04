@@ -335,13 +335,15 @@ export default function ChatPage() {
     navigate(ROUTES.directChat(conversation.directChatRoomId));
   };
 
+  //그룹 참여
   const handleJoinConfirm = async () => {
     if (!joiningRoom) return;
     setIsJoining(true);
     try {
-      await joinChatRoom(joiningRoom.roomId, { accessToken, refreshAccessToken });
+      const response = await joinChatRoom(joiningRoom.roomId, { accessToken, refreshAccessToken });
       setJoiningRoom(null);
-      navigate(ROUTES.groupChatRoom(joiningRoom.roomId));
+      // isMember true면 이미 참여중 → 바로 이동, false면 새로 참여 → 이동
+      navigate(ROUTES.groupChatRoom(response.chatRoomId));
     } catch {
       setJoiningRoom(null);
       setJoinFailed(true);
@@ -468,11 +470,11 @@ export default function ChatPage() {
                         <span>
                           {conversation.lastMessageAt
                             ? new Date(
-                                conversation.lastMessageAt,
-                              ).toLocaleTimeString("ko-KR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                              conversation.lastMessageAt,
+                            ).toLocaleTimeString("ko-KR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                             : ""}
                         </span>
                         <ChevronRight className="h-4 w-4" />
@@ -529,7 +531,7 @@ export default function ChatPage() {
                           )}
                         </div>
 
-                          {/* 정보 */}
+                        {/* 정보 */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <p className="truncate text-l font-bold text-gray-900">
