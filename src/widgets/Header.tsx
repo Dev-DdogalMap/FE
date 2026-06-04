@@ -7,7 +7,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn, isLoading, logout } = useAuth();
-  const isChatRoute = location.pathname.startsWith("/chat");
+  const isChatRoute = location.pathname.startsWith("/chat/avas");
 
   const handleLogout = async () => {
     try {

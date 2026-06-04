@@ -21,7 +21,6 @@ import TasteExpertList from "@/features/chat/ui/TasteExpertList";
 import { getGroupChatRoomList } from "@/features/groupChat/api/groupChatApi";
 import type { ChatRoomListThumbnailResponse } from "@/features/groupChat/model/groupChatTypes";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
-import { useAuth } from "@/shared/auth/AuthContext";
 import { ROUTES } from "@/shared/constants/routes";
 import { useAuth } from "@/shared/auth/AuthContext";
 
@@ -131,7 +130,6 @@ export default function ChatPage() {
   const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [groupPage, setGroupPage] = useState(0);
   const [hasNextGroup, setHasNextGroup] = useState(false);
-  const { accessToken, refreshAccessToken } = useAuth();
 
   const conversationRoomIdList = useMemo(
     () =>
