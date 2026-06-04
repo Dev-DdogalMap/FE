@@ -5,10 +5,12 @@ import Header from "../widgets/Header";
 export default function MobileLayout() {
   const location = useLocation();
 
+
   const hideBottomNav =
     location.pathname.startsWith("/restaurants") ||
     location.pathname.startsWith("/chat/direct") ||
     location.pathname.startsWith("/chat/groups/create");
+
   return (
     <div className="min-h-screen w-full bg-gray-100">
       <div className="relative mx-auto min-h-screen w-full max-w-[430px] bg-white">

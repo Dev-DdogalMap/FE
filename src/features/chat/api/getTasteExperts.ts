@@ -83,6 +83,28 @@ export async function getTasteExperts(
     size: String(filters.size),
     sort: filters.sort,
   });
+//   const keyword = filters.keyword.trim().toLowerCase();
+
+//   const filtered = mockTasteExperts.filter((expert) => {
+//     const matchesKeyword =
+//       keyword.length === 0 ||
+//       expert.nickname.toLowerCase().includes(keyword) ||
+//       expert.specialty.toLowerCase().includes(keyword);
+
+
+//     const matchesRegion =
+//       filters.region === "전체" || expert.region === filters.region;
+//     const matchesCategory =
+//       filters.category === "전체" || expert.category === filters.category;
+//     const matchesLevel = expert.tasteLevel >= filters.minLevel;
+
+//     return (
+//       matchesKeyword &&
+//       matchesRegion &&
+//       matchesCategory &&
+//       matchesLevel
+//     );
+//   });
 
   if (filters.keyword.trim()) {
     params.set("keyword", filters.keyword.trim());
