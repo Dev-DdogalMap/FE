@@ -1,10 +1,12 @@
 interface Props {
   activeTab: string;
+  reviewCount: number;
   onChange: (tab: string) => void;
 }
 
 const RestaurantTabs = ({
   activeTab,
+  reviewCount,
   onChange,
 }: Props) => {
   return (
@@ -34,7 +36,7 @@ const RestaurantTabs = ({
             : "text-gray-400"
             }`}
         >
-          후기 312
+          후기 ({reviewCount ?? 0})
         </button>
       </div>
     </div>

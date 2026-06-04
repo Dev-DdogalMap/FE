@@ -5,16 +5,18 @@ import {
     Share2,
     Star,
     UtensilsCrossed,
+    Phone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import ErrorView from "@/shared/ui/ErrorView";
 import LoadingView from "@/shared/ui/LoadingView";
 import { toast } from 'sonner';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 interface Props {
-    restaurant: RestaurantPreview | null;
+    restaurant: RestaurantInfoResponse | null;
     loading: boolean;
 }
 
@@ -32,6 +34,7 @@ const Tag = ({ text }: TagProps) => {
 
 const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
 
     if (loading) {
         return (
@@ -65,6 +68,18 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
         restaurant.averageScore !== null
             ? restaurant.averageScore.toFixed(1)
             : "-";
+    
+    const handleCopyPhone = async () => {
+        const phone = restaurant?.phone;
+    
+        if (!phone) {
+            toast.error("복사할 전화번호가 없습니다.");
+            return;
+        }
+    
+        await navigator.clipboard.writeText(phone);
+        toast.success("전화번호가 복사되었습니다.");
+    };
 
     return (
         <section>
@@ -174,14 +189,40 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     </div>
                 </div>
 
-                {/* 위치 */}
                 <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
+                    {/* 위치 */}
                     <MapPin size={17} />
 
                     {distanceText ? (
                         <span>{distanceText}</span>
                     ) : (
                         <span>위치 정보 없음</span>
+                    )}
+
+                    <span className="text-gray-300">·</span>
+
+                    {/* 전화번호 */}
+                    <Phone size={15} />
+
+                    {restaurant.phone ? (
+                        isMobile ? (
+                            <a
+                                href={`tel:${restaurant.phone}`}
+                                className="transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleCopyPhone}
+                                className="cursor-pointer transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </button>
+                        )
+                    ) : (
+                        <span className="text-gray-400">등록된 전화번호 없음</span>
                     )}
                 </div>
 

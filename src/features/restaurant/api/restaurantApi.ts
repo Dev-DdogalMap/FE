@@ -3,7 +3,7 @@ import { authFetch } from "@/shared/api/authFetch";
 
 import type {
   FoodTypeOption,
-  GetRestaurantInfoResponse,
+  RestaurantInfoResponse,
   GetRestaurantPreviewParams,
   GetRestaurantPreviewResponse,
 } from "../model/restaurantTypes";
@@ -37,18 +37,27 @@ export async function getRestaurantPreview({
 }
 
 /**
- * 음식점 위치/매장 정보 조회
+ * 음식점 정보 상세 조회 
  *
  * GET /api/restaurants/{restaurantId}/info
  */
-export async function getRestaurantInfo(restaurantId: number) {
-  const { data } = await axios.get<GetRestaurantInfoResponse>(
-    `/api/restaurants/${restaurantId}/info`,
-  );
+export async function getRestaurantInfo({
+    restaurantId,
+    lat,
+    lng,
+}: GetRestaurantPreviewParams) {
+    const { data } = await axios.get<RestaurantInfoResponse>(
+        `/api/restaurants/${restaurantId}/info`,
+        {
+            params: {
+                lat,
+                lng,
+            },
+        },
+    );
 
-  return data;
+    return data;
 }
-
 /**
  * 방문 인증 저장
  *

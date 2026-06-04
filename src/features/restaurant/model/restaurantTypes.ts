@@ -33,19 +33,6 @@ export interface GetRestaurantPreviewParams {
     lng?: number;
 }
 
-// 위도, 경도로 방문인증 기능 붙이기
-export interface RestaurantInfo {
-  restaurantId: number;
-  placeName: string;
-  roadAddressName: string;
-  phone?: string;
-  placeUrl?: string;
-  latitude: number;
-  longitude: number;
-}
-export type GetRestaurantInfoResponse = RestaurantInfo;
-
-
 export interface CreateVisitVerificationRequest {
   restaurantId: number;
   userLatitude: number;
@@ -60,7 +47,9 @@ export interface CreateVisitVerificationResponse {
 }
 
 /**
- * 음식점 정보 조회 응답
+ * 음식점 정보 상세 조회 응답
+ * 
+ * GET /api/restaurants/{restaurantId}/info
  */
 export interface RestaurantInfoResponse {
     restaurantId: number;
@@ -70,6 +59,15 @@ export interface RestaurantInfoResponse {
     placeUrl: string | null;
     latitude: number;
     longitude: number;
+
+    foodType: string;
+    imageUrl: string | null;
+    topTags: string[];
+    foodScore: number | null;
+
+    averageScore: number | null;
+    reviewCount: number;
+    distance: number | null;
 }
 
 /**
