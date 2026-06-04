@@ -16,10 +16,11 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-//import NotFoundPage from "@/pages/error/NotFoundPage";
+import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
+
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -66,7 +67,7 @@ export const router = createBrowserRouter([
         path: "/restaurants/:restaurantId/visit",
         element: <VisitVerificationPage />,
       },
-         {
+      {
         path: "/bookmark",
         element: <BookmarkPage />,
       },
@@ -95,6 +96,10 @@ export const router = createBrowserRouter([
         element:
                   <MyPage />,
       },
+      {
+        path: "*",
+        element: <NotFoundPage />
+      }
       // {
       //   element: <RequireAuth />,
       //   children: [
