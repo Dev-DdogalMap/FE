@@ -74,7 +74,7 @@ export default function KakaoBaseMap({
   }, [center.lat, center.lng, shouldMoveToCurrentLocationOnLoad]);
 
   useEffect(() => {
-    if (shouldMoveToCurrentLocationOnLoad) return;
+    if (!shouldMoveToCurrentLocationOnLoad) return;
 
     if (!showCurrentLocation) return;
 
