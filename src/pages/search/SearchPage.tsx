@@ -109,13 +109,18 @@ export default function SearchPage() {
         const currentId = ++requestIdRef.current;
         setLoading(true);
         setSearchError(null);
+        // 좌표 없으면 distance 정렬 의미 없음 → jjinScore 로 normalize 후 전송
+        const effectiveSort: SearchSort =
+            searchSort === "distance" && (!location?.lat || !location?.lng)
+                ? "jjinScore"
+                : searchSort;
         searchRestaurants({
             lat: location?.lat,
             lng: location?.lng,
             keyword: searchKeyword || undefined,
             region: searchRegion || undefined,
             foodTypeId: searchFoodTypeId,
-            sort: searchSort,
+            sort: effectiveSort,
             page: 1,
             size: 50,
         })
