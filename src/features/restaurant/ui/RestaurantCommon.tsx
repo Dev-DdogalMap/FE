@@ -56,7 +56,7 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const hasImage = !!restaurant.imageUrl;
 
     const distanceText =
-        restaurant.distance !== null ? `${Math.round(restaurant.distance)}m` : null;
+        restaurant.distance !== null ? `내 위치에서 ${Math.round(restaurant.distance)}m` : null;
 
     const foodScoreText =
         restaurant.foodScore !== null ? `${restaurant.foodScore}%` : "-";
@@ -65,6 +65,11 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
         restaurant.averageScore !== null
             ? restaurant.averageScore.toFixed(1)
             : "-";
+    
+    const walkingTime =
+        restaurant.distance != null
+            ? `약 도보 ${Math.ceil(restaurant.distance / 80)}분`
+            : null;
 
     return (
         <section>
@@ -177,13 +182,11 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 {/* 위치 */}
                 <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
                     <MapPin size={17} />
-                    <span className="line-clamp-2">{restaurant.addressName}</span>
 
-                    {distanceText && (
-                        <>
-                            <span>·</span>
-                            <span>{distanceText}</span>
-                        </>
+                    {distanceText ? (
+                        <span>{distanceText}</span>
+                    ) : (
+                        <span>위치 정보 없음</span>
                     )}
                 </div>
 

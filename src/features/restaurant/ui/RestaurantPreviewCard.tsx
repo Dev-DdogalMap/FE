@@ -93,22 +93,20 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                     </div>
                 )}
 
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
-                    <Navigation
-                        size={14}
-                        className="shrink-0"
-                        color={COLORS.PRIMARY}
-                    />
-
+                <div className="mt-3 space-y-1.5">
                     {restaurant.distance !== null && (
-                        <span className="shrink-0 font-semibold" style={{ color: COLORS.PRIMARY }}>
-                            {restaurant.distance}m
-                        </span>
+                        <div
+                            className="flex items-center gap-1.5 text-xs font-semibold"
+                            style={{ color: COLORS.PRIMARY }}
+                        >
+                            <Navigation size={14} className="shrink-0" />
+                            <span>내 위치에서 {Math.round(restaurant.distance)}m</span>
+                        </div>
                     )}
 
-                    <span className="truncate">
+                    <p className="text-xs leading-relaxed text-gray-500">
                         {restaurant.addressName}
-                    </span>
+                    </p>
                 </div>
             </div>
         </article>

@@ -34,7 +34,7 @@ export default function MapPage() {
 
   const selectedFoodTypeName =
     foodTypes.find((foodType) => foodType.foodTypeId === selectedFoodTypeId)?.type ??
-    "전체 카테고리";
+    "음식 종류";
 
   useEffect(() => {
     getFoodTypes()
@@ -100,7 +100,7 @@ export default function MapPage() {
                 handleSearch();
               }
             }}
-            placeholder="지역, 음식점 검색"
+            placeholder="지역, 음식, 맛집 이름 검색"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
           />
 
