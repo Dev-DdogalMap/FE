@@ -30,7 +30,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
     restaurantId: item.restaurantId,
     placeName: item.placeName,
     foodType: item.foodType,
-    addressName: item.addressName ?? "",
+    addressName: item.roadAddressName ?? item.addressName ?? "",
     imageUrl: null,
     distance: item.distance,
     averageScore: item.averageScore,
@@ -224,8 +224,16 @@ export default function SearchPage() {
                 {items.map((item) => (
                     <li
                         key={item.restaurantId}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => navigate(`/restaurants/${item.restaurantId}`)}
-                        className="cursor-pointer rounded-2xl border border-gray-200 p-3 transition hover:shadow-md"
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                navigate(`/restaurants/${item.restaurantId}`);
+                            }
+                        }}
+                        className="cursor-pointer rounded-2xl border border-gray-200 p-3 transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <RestaurantPreviewCard restaurant={toPreview(item)} />
                     </li>
