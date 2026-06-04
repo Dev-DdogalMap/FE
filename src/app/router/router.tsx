@@ -20,6 +20,7 @@ import SearchPage from "@/pages/search/SearchPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
+
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -67,7 +68,7 @@ export const router = createBrowserRouter([
         element: <ChatPage />,
       },
       {
-        path: "/chat/direct/:userId",
+        path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
@@ -85,7 +86,7 @@ export const router = createBrowserRouter([
       {
         path: "/mypage",
         element:
-          <MyPage />,
+                  <MyPage />,
       },
       {
         path: "/chat/group/room/:roomId",

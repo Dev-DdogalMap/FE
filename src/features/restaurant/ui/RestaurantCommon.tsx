@@ -5,16 +5,18 @@ import {
     Share2,
     Star,
     UtensilsCrossed,
+    Phone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import ErrorView from "@/shared/ui/ErrorView";
 import LoadingView from "@/shared/ui/LoadingView";
 import { toast } from 'sonner';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 interface Props {
-    restaurant: RestaurantPreview | null;
+    restaurant: RestaurantInfoResponse | null;
     loading: boolean;
 }
 
@@ -32,6 +34,7 @@ const Tag = ({ text }: TagProps) => {
 
 const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
 
     if (loading) {
         return (
@@ -56,7 +59,7 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const hasImage = !!restaurant.imageUrl;
 
     const distanceText =
-        restaurant.distance !== null ? `${Math.round(restaurant.distance)}m` : null;
+        restaurant.distance !== null ? `내 위치에서 ${Math.round(restaurant.distance)}m` : null;
 
     const foodScoreText =
         restaurant.foodScore !== null ? `${restaurant.foodScore}%` : "-";
@@ -65,6 +68,25 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
         restaurant.averageScore !== null
             ? restaurant.averageScore.toFixed(1)
             : "-";
+    
+    const handleCopyPhone = async () => {
+        if (!restaurant.phone) {
+            return;
+        }
+    
+        try {
+            if (!navigator.clipboard) {
+                throw new Error("Clipboard API is not supported");
+            }
+
+            await navigator.clipboard.writeText(restaurant.phone);
+
+            toast.success("전화번호가 복사되었습니다.");
+        } catch (error) {
+            console.error("전화번호 복사 실패:", error);
+            toast.error("전화번호를 복사하지 못했습니다.");
+        }
+    };
 
     return (
         <section>
@@ -174,16 +196,40 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     </div>
                 </div>
 
-                {/* 위치 */}
                 <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
+                    {/* 위치 */}
                     <MapPin size={17} />
-                    <span className="line-clamp-2">{restaurant.addressName}</span>
 
-                    {distanceText && (
-                        <>
-                            <span>·</span>
-                            <span>{distanceText}</span>
-                        </>
+                    {distanceText ? (
+                        <span>{distanceText}</span>
+                    ) : (
+                        <span>위치 정보 없음</span>
+                    )}
+
+                    <span className="text-gray-300">·</span>
+
+                    {/* 전화번호 */}
+                    <Phone size={15} />
+
+                    {restaurant.phone ? (
+                        isMobile ? (
+                            <a
+                                href={`tel:${restaurant.phone}`}
+                                className="transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleCopyPhone}
+                                className="cursor-pointer transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </button>
+                        )
+                    ) : (
+                        <span className="text-gray-400">등록된 전화번호 없음</span>
                     )}
                 </div>
 

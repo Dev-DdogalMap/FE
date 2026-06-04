@@ -45,8 +45,8 @@ export interface SearchRestaurantsParams {
     keyword?: string;
     region?: string;
     foodTypeId?: number;
-    lat: number;
-    lng: number;
+    lat?: number;
+    lng?: number;
     sort?: SearchSort;
     page?: number;
     size?: number;
