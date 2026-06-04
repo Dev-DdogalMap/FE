@@ -135,7 +135,6 @@ export default function ChatPage() {
   const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [groupPage, setGroupPage] = useState(0);
   const [hasNextGroup, setHasNextGroup] = useState(false);
-  const { accessToken, refreshAccessToken } = useAuth();
   const [joiningRoom, setJoiningRoom] = useState<ChatRoomListThumbnailResponse | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [joinFailed, setJoinFailed] = useState(false);
