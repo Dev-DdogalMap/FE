@@ -1,33 +1,25 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "@/shared/auth/AuthContext";
+
+import axios from "@/shared/api/axios";
 
 const RestaurantBottom = () => {
   const navigate = useNavigate();
   const { restaurantId } = useParams();
-  const { isLoggedIn, isLoading } = useAuth();
 
-  const handleVisitClick = () => {
+  const handleVisitClick = async () => {
     if (!restaurantId) {
       alert("음식점 정보를 찾을 수 없습니다.");
       return;
     }
 
-    const visitPath = `/restaurants/${restaurantId}/visit`;
+    try {
+      await axios.get("/api/users/me");
 
-    if (isLoading) {
-      return;
-    }
-
-    if (!isLoggedIn) {
+      navigate(`/restaurants/${restaurantId}/visit`);
+    } catch (error) {
       alert("방문 인증은 로그인이 필요합니다.");
-
-      sessionStorage.setItem("redirectAfterLogin", visitPath);
-
       navigate("/login");
-      return;
     }
-
-    navigate(visitPath);
   };
 
   return (
@@ -36,7 +28,7 @@ const RestaurantBottom = () => {
         <div className="flex gap-4 p-5">
           <button
             type="button"
-            className="h-12 flex-1 rounded-2xl border border-[#ff6b00] font-semibold text-[#ff6b00]"
+            className="flex-1 h-12 border border-[#ff6b00] rounded-2xl text-[#ff6b00] font-semibold"
           >
             찜하기
           </button>
@@ -44,8 +36,7 @@ const RestaurantBottom = () => {
           <button
             type="button"
             onClick={handleVisitClick}
-            disabled={isLoading}
-            className="h-12 flex-1 rounded-2xl bg-[#ff6b00] font-semibold text-white disabled:bg-gray-300"
+            className="flex-1 h-12 bg-[#ff6b00] rounded-2xl text-white font-semibold"
           >
             방문 인증
           </button>

@@ -1,17 +1,13 @@
 import axios from "@/shared/api/axios";
-import { authFetch } from "@/shared/api/authFetch";
 
 import type {
+  CreateVisitVerificationRequest,
+  CreateVisitVerificationResponse,
   FoodTypeOption,
   GetRestaurantInfoResponse,
   GetRestaurantPreviewParams,
   GetRestaurantPreviewResponse,
 } from "../model/restaurantTypes";
-
-type AuthRequestOptions = {
-  accessToken: string | null;
-  refreshAccessToken: () => Promise<string | null>;
-};
 
 /**
  * 음식점 미리보기 조회
@@ -49,38 +45,16 @@ export async function getRestaurantInfo(restaurantId: number) {
   return data;
 }
 
-/**
- * 방문 인증 저장
- *
- * POST /api/visit/visit-verification
- */
 export async function createVisitVerification(
-  body: {
-    restaurantId: number;
-    userLatitude: number;
-    userLongitude: number;
-    accuracyMeter: number;
-  },
-  auth: AuthRequestOptions,
+  request: CreateVisitVerificationRequest,
 ) {
-  const response = await authFetch({
-    path: "/api/visit/visit-verification",
-    accessToken: auth.accessToken,
-    refreshAccessToken: auth.refreshAccessToken,
-    options: {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    },
-  });
+  const { data } = await axios.post<CreateVisitVerificationResponse>(
+    "/api/visit/visit-verification",
+    request,
+  );
 
-  if (!response.ok) {
-    throw new Error("방문 인증 저장 실패");
-  }
-
-  return response.json();
+  return data;
+    return data;
 }
 
 /**
@@ -89,7 +63,9 @@ export async function createVisitVerification(
  * GET /api/food-types
  */
 export async function getFoodTypes() {
-  const { data } = await axios.get<FoodTypeOption[]>("/api/food-types");
+    const { data } = await axios.get<FoodTypeOption[]>(
+        "/api/food-types",
+    );
 
-  return data;
+    return data;
 }

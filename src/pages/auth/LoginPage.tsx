@@ -3,14 +3,9 @@ import { Link } from "react-router-dom";
 import { API_BASE_URL } from "@/shared/config/api";
 
 export default function LoginPage() {
-
   const handleKakaoLogin = () => {
-  if (!sessionStorage.getItem("redirectAfterLogin")) {
-    sessionStorage.setItem("redirectAfterLogin", "/");
-  }
-
-  window.location.href = `${API_BASE_URL}/api/auth/kakao/login`;
-};
+    window.location.href = `${API_BASE_URL}/api/auth/kakao/login`;
+  };
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">

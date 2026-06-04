@@ -1,13 +1,20 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { setStoredAccessToken } from "@/shared/auth/token";
 
 export default function OAuthSuccessPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { checkAuth } = useAuth();
 
   useEffect(() => {
     const verifyLogin = async () => {
+      const accessToken = searchParams.get("accessToken");
+      if (accessToken) {
+        setStoredAccessToken(accessToken);
+      }
+
       const isAuthenticated = await checkAuth();
 
       if (!isAuthenticated) {
@@ -16,15 +23,11 @@ export default function OAuthSuccessPage() {
         return;
       }
 
-      const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/";
-      
-      sessionStorage.removeItem("redirectAfterLogin");
-
-      navigate(redirectPath, { replace: true });
+      navigate("/chat", { replace: true });
     };
 
     verifyLogin();
-  }, [checkAuth, navigate]);
+  }, [checkAuth, navigate, searchParams]);
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">
