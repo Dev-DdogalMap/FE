@@ -10,16 +10,18 @@ interface Props {
 }
 
 const RestaurantInfoSection = ({ info }: Props) => {
-    
+
     const isMobile = useIsMobile();
 
     const handleCopyPhone = async () => {
-        if (!info.phone) {
+        const phone = info?.phone;
+
+        if (!phone) {
             toast.error("복사할 전화번호가 없습니다.");
             return;
         }
 
-        await navigator.clipboard.writeText(info.phone);
+        await navigator.clipboard.writeText(phone);
         toast.success("전화번호가 복사되었습니다.");
     };
 
