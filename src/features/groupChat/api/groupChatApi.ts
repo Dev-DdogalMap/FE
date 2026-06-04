@@ -5,6 +5,7 @@ import type {
   CreateGroupChatRequest,
   CreateGroupChatResponse,
   ChatRoomListResponse,
+  JoinChatRoomResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -93,4 +94,23 @@ export async function getGroupChatRoomList(
     refreshAccessToken,
   });
   return response.json() as Promise<ChatRoomListResponse>;
+}
+
+/**
+ * 채팅방 참여
+ * POST /api/chat-rooms/{roomId}/join
+ */
+export async function joinChatRoom(
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/join`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "POST",
+    },
+  });
+  return response.json() as Promise<JoinChatRoomResponse>;
 }

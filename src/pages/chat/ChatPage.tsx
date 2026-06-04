@@ -23,6 +23,9 @@ import type { ChatRoomListThumbnailResponse } from "@/features/groupChat/model/g
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { ROUTES } from "@/shared/constants/routes";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { joinChatRoom } from "@/features/groupChat/api/groupChatApi";
+import { JoinConfirmModal } from "@/features/groupChat/ui/JoinConfirmModal";
+import { JoinFailModal } from "@/features/groupChat/ui/JoinFailModal";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
@@ -124,12 +127,17 @@ export default function ChatPage() {
   const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(
     () => new Set(),
   );
+
+  // 그룹 채팅 상태
   const [groupChats, setGroupChats] = useState<
     ChatRoomListThumbnailResponse[]
   >([]);
   const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [groupPage, setGroupPage] = useState(0);
   const [hasNextGroup, setHasNextGroup] = useState(false);
+  const [joiningRoom, setJoiningRoom] = useState<ChatRoomListThumbnailResponse | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinFailed, setJoinFailed] = useState(false);
 
   const conversationRoomIdList = useMemo(
     () =>
@@ -269,14 +277,12 @@ export default function ChatPage() {
     };
   }, [accessToken, activeTab, conversationRoomIds, user?.userId]);
 
+  // 그룹 채팅 탭 진입 시 초기 조회
   useEffect(() => {
-    if (activeTab !== "groups") {
-      return;
-    }
-
+    if (activeTab !== "groups") return;
     setIsGroupLoading(true);
     setGroupPage(0);
-    void getGroupChatRoomList({ page: 0, size: 20 }, { accessToken, refreshAccessToken})
+    void getGroupChatRoomList({ page: 0, size: 20 }, { accessToken, refreshAccessToken })
       .then((response) => {
         setGroupChats(response.chatRoomList);
         setHasNextGroup(response.hasNext);
@@ -290,6 +296,7 @@ export default function ChatPage() {
       });
   }, [activeTab]);
 
+  // 무한스크롤 - 다음 페이지 로드
   const handleLoadMore = () => {
     const nextPage = groupPage + 1;
     setGroupPage(nextPage);
@@ -328,8 +335,37 @@ export default function ChatPage() {
     navigate(ROUTES.directChat(conversation.directChatRoomId));
   };
 
+  const handleJoinConfirm = async () => {
+    if (!joiningRoom) return;
+    setIsJoining(true);
+    try {
+      await joinChatRoom(joiningRoom.roomId, { accessToken, refreshAccessToken });
+      setJoiningRoom(null);
+      navigate(ROUTES.groupChatRoom(joiningRoom.roomId));
+    } catch {
+      setJoiningRoom(null);
+      setJoinFailed(true);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px-64px)] bg-[#fafafa] px-4 pb-24 pt-4">
+      {/* 참여 확인 모달 */}
+      {joiningRoom && (
+        <JoinConfirmModal
+          room={joiningRoom}
+          onConfirm={handleJoinConfirm}
+          onCancel={() => setJoiningRoom(null)}
+          isLoading={isJoining}
+        />
+      )}
+
+      {/* 참여 실패 모달 */}
+      {joinFailed && (
+        <JoinFailModal onClose={() => setJoinFailed(false)} />
+      )}
       <div className="space-y-4">
         <ChatFilters
           keyword={filters.keyword}
@@ -447,8 +483,11 @@ export default function ChatPage() {
               </div>
             )}
 
+            {/* 그룹 채팅 목록 */}
+            {/* 코드가 좀 길어졌는데 시간나면 리팩토링하겠습니다.. */}
             {activeTab === "groups" && (
               <div className="space-y-3 px-1">
+                {/* 그룹 채팅 만들기 버튼 */}
                 <button
                   type="button"
                   onClick={() => navigate(ROUTES.createGroupChat)}
@@ -472,11 +511,10 @@ export default function ChatPage() {
                       <button
                         key={room.roomId}
                         type="button"
-                        onClick={() =>
-                          navigate(ROUTES.groupChatRoom(room.roomId))
-                        }
+                        onClick={() => setJoiningRoom(room)}
                         className="flex w-full items-start gap-3 border-b border-gray-100 py-5 text-left"
                       >
+                        {/* 썸네일 */}
                         <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl">
                           {room.roomImageUrl ? (
                             <img
@@ -491,14 +529,14 @@ export default function ChatPage() {
                           )}
                         </div>
 
+                          {/* 정보 */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="truncate text-lg font-bold text-gray-900">
+                            <p className="truncate text-l font-bold text-gray-900">
                               {room.roomName}
                             </p>
                             <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-sm font-semibold text-[#ff6b2c]">
-                              {room.participantCount}/
-                              {room.maxParticipantCount}
+                              {room.participantCount}/{room.maxParticipantCount}
                             </span>
                           </div>
 
@@ -515,6 +553,7 @@ export default function ChatPage() {
                           </p>
                         </div>
 
+                        {/* 시간 */}
                         <div className="pt-1 text-sm text-gray-400">
                           {room.latestMessageTime
                             ? formatRelativeTime(room.latestMessageTime)
