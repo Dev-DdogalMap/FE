@@ -22,7 +22,6 @@ import ChatFilters from "@/features/chat/ui/ChatFilters";
 import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
 import { useAuth } from "@/shared/auth/AuthContext";
-import { getStoredAccessToken } from "@/shared/auth/token";
 import { ROUTES } from "@/shared/constants/routes";
 
 const defaultFilters: TasteExpertFilters = {
@@ -83,7 +82,11 @@ const hasUnreadConversation = (conversation: DirectChatRoomSummary) => {
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, accessToken, refreshAccessToken } = useAuth();
+  const chatAuth = useMemo(
+    () => ({ accessToken, refreshAccessToken }),
+    [accessToken, refreshAccessToken],
+  );
   const [activeTab, setActiveTab] =
     useState<ChatTabKey>("recommended");
   const [filters, setFilters] =
@@ -112,7 +115,7 @@ export default function ChatPage() {
       return;
     }
     setIsLoading(true);
-    void getTasteExperts(filters)
+    void getTasteExperts(filters, chatAuth)
       .then((response) => {
         setExperts(response.content);
       })
@@ -123,14 +126,14 @@ export default function ChatPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [activeTab, filters]);
+  }, [activeTab, filters, chatAuth]);
 
   useEffect(() => {
     if (activeTab !== "conversations") {
       return;
     }
     setIsConversationLoading(true);
-    void getDirectChats()
+    void getDirectChats(chatAuth)
       .then((response) => {
         setConversations(response);
         setUnreadRoomIds((prev) => {
@@ -150,10 +153,9 @@ export default function ChatPage() {
       .finally(() => {
         setIsConversationLoading(false);
       });
-  }, [activeTab]);
+  }, [activeTab, chatAuth]);
 
   useEffect(() => {
-    const accessToken = getStoredAccessToken();
     if (
       activeTab !== "conversations" ||
       !accessToken ||
@@ -224,7 +226,7 @@ export default function ChatPage() {
     return () => {
       sockets.forEach((socket) => socket.disconnect());
     };
-  }, [activeTab, conversationRoomIds, user?.userId]);
+  }, [accessToken, activeTab, conversationRoomIds, user?.userId]);
 
   const handleTabChange = (tab: ChatTabKey) => {
     if (tab === "groups") {
@@ -236,7 +238,7 @@ export default function ChatPage() {
 
   const handleCreateDirectChat = async (userId: number) => {
     try {
-      const room = await createDirectChat(userId);
+      const room = await createDirectChat(userId, chatAuth);
       navigate(ROUTES.directChat(room.directChatRoomId));
     } catch (error) {
       console.error(error);

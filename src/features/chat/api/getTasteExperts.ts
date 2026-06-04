@@ -5,8 +5,12 @@ import type {
   TasteExpertFilters,
   TasteExpertListResponse,
 } from "@/features/chat/model/types";
-import { API_BASE_URL } from "@/shared/config/api";
-import { getStoredAccessToken } from "@/shared/auth/token";
+import { authFetch } from "@/shared/api/authFetch";
+
+export type ChatAuth = {
+  accessToken: string | null;
+  refreshAccessToken: () => Promise<string | null>;
+};
 
 type TasteExpertApiItem = {
   userId: number;
@@ -29,15 +33,6 @@ type TasteExpertApiResponse = {
   size: number;
   totalElements: number;
   totalPages: number;
-};
-
-const buildHeaders = () => {
-  const token = getStoredAccessToken();
-  return token
-    ? {
-        Authorization: `Bearer ${token}`,
-      }
-    : undefined;
 };
 
 const categoryFromSpecialty = (specialty?: string | null) => {
@@ -77,6 +72,7 @@ const mapExpert = (item: TasteExpertApiItem): TasteExpert => {
 
 export async function getTasteExperts(
   filters: TasteExpertFilters,
+  auth: ChatAuth,
 ): Promise<TasteExpertListResponse> {
   const params = new URLSearchParams({
     page: String(filters.page),
@@ -116,14 +112,14 @@ export async function getTasteExperts(
     params.set("minLevel", String(filters.minLevel));
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/taste-experts?${params.toString()}`,
-    {
+  const response = await authFetch({
+    path: `/api/taste-experts?${params.toString()}`,
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
       method: "GET",
-      credentials: "include",
-      headers: buildHeaders(),
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error("맛잘알 목록을 불러오지 못했습니다.");
@@ -151,15 +147,18 @@ export async function getTasteExperts(
   };
 }
 
-export async function createDirectChat(targetUserId: number) {
-  const response = await fetch(`${API_BASE_URL}/api/direct-chats`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...buildHeaders(),
+export async function createDirectChat(targetUserId: number, auth: ChatAuth) {
+  const response = await authFetch({
+    path: "/api/direct-chats",
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ targetUserId }),
     },
-    body: JSON.stringify({ targetUserId }),
   });
 
   if (!response.ok) {
@@ -169,11 +168,14 @@ export async function createDirectChat(targetUserId: number) {
   return (await response.json()) as DirectChatRoomSummary;
 }
 
-export async function getDirectChats() {
-  const response = await fetch(`${API_BASE_URL}/api/direct-chats`, {
-    method: "GET",
-    credentials: "include",
-    headers: buildHeaders(),
+export async function getDirectChats(auth: ChatAuth) {
+  const response = await authFetch({
+    path: "/api/direct-chats",
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
+      method: "GET",
+    },
   });
 
   if (!response.ok) {
@@ -183,15 +185,18 @@ export async function getDirectChats() {
   return (await response.json()) as DirectChatRoomSummary[];
 }
 
-export async function getDirectChatRoom(directChatRoomId: number) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/direct-chats/${directChatRoomId}`,
-    {
+export async function getDirectChatRoom(
+  directChatRoomId: number,
+  auth: ChatAuth,
+) {
+  const response = await authFetch({
+    path: `/api/direct-chats/${directChatRoomId}`,
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
       method: "GET",
-      credentials: "include",
-      headers: buildHeaders(),
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error("채팅방 정보를 불러오지 못했습니다.");
@@ -200,15 +205,18 @@ export async function getDirectChatRoom(directChatRoomId: number) {
   return (await response.json()) as DirectChatRoomSummary;
 }
 
-export async function getDirectChatMessages(directChatRoomId: number) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/direct-chats/${directChatRoomId}/messages`,
-    {
+export async function getDirectChatMessages(
+  directChatRoomId: number,
+  auth: ChatAuth,
+) {
+  const response = await authFetch({
+    path: `/api/direct-chats/${directChatRoomId}/messages`,
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
       method: "GET",
-      credentials: "include",
-      headers: buildHeaders(),
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error("채팅 메시지를 불러오지 못했습니다.");
@@ -220,22 +228,23 @@ export async function getDirectChatMessages(directChatRoomId: number) {
 export async function saveDirectChatMessage(
   directChatRoomId: number,
   message: string,
+  auth: ChatAuth,
 ) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/direct-chats/${directChatRoomId}/messages`,
-    {
+  const response = await authFetch({
+    path: `/api/direct-chats/${directChatRoomId}/messages`,
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...buildHeaders(),
       },
       body: JSON.stringify({
         messageType: "TEXT",
         message,
       }),
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error("채팅 메시지 저장에 실패했습니다.");

@@ -15,7 +15,6 @@ import {
 import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import type { DirectChatMessage } from "@/features/chat/model/types";
 import { useAuth } from "@/shared/auth/AuthContext";
-import { getStoredAccessToken } from "@/shared/auth/token";
 
 const FALLBACK_LEVEL = "Lv.5 맛잘알";
 const FALLBACK_SPECIALTY = "양식 전문";
@@ -128,7 +127,11 @@ function RestaurantCardMessage({ message }: { message: DirectChatMessage }) {
 
 export default function DirectChatPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, accessToken, refreshAccessToken } = useAuth();
+  const chatAuth = useMemo(
+    () => ({ accessToken, refreshAccessToken }),
+    [accessToken, refreshAccessToken],
+  );
   const { directChatRoomId } = useParams();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<DirectChatMessage[]>([]);
@@ -152,8 +155,8 @@ export default function DirectChatPage() {
 
     setIsLoading(true);
     void Promise.all([
-      getDirectChatRoom(roomId),
-      getDirectChatMessages(roomId),
+      getDirectChatRoom(roomId, chatAuth),
+      getDirectChatMessages(roomId, chatAuth),
     ])
       .then(([room, initialMessages]) => {
         setTitle(room.targetNickname);
@@ -173,10 +176,9 @@ export default function DirectChatPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [roomId]);
+  }, [chatAuth, roomId]);
 
   useEffect(() => {
-    const accessToken = getStoredAccessToken();
     if (!roomId || Number.isNaN(roomId) || !accessToken) {
       return;
     }
@@ -210,7 +212,7 @@ export default function DirectChatPage() {
       socketRef.current = null;
       setIsSocketReady(false);
     };
-  }, [roomId]);
+  }, [accessToken, roomId]);
 
   const sortedMessages = useMemo(
     () =>
