@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ChevronRight,
-  MessageSquareMore,
-} from "lucide-react";
+import { ChevronRight, MessageSquareMore } from "lucide-react";
 
 import {
   createDirectChat,
@@ -21,6 +18,8 @@ import type {
 import ChatFilters from "@/features/chat/ui/ChatFilters";
 import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
+import { getGroupChatRoomList } from "@/features/groupChat/api/groupChatApi";
+import type { ChatRoomListThumbnailResponse } from "@/features/groupChat/model/groupChatTypes";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { ROUTES } from "@/shared/constants/routes";
@@ -81,6 +80,27 @@ const hasUnreadConversation = (conversation: DirectChatRoomSummary) => {
   return conversation.unreadCount > 0;
 };
 
+const formatRelativeTime = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  if (diffDays === 1) {
+    return "어제";
+  }
+
+  return `${diffDays}일 전`;
+};
+
 export default function ChatPage() {
   const navigate = useNavigate();
   const { user, accessToken, refreshAccessToken } = useAuth();
@@ -88,6 +108,7 @@ export default function ChatPage() {
     () => ({ accessToken, refreshAccessToken }),
     [accessToken, refreshAccessToken],
   );
+
   const [activeTab, setActiveTab] =
     useState<ChatTabKey>("recommended");
   const [filters, setFilters] =
@@ -103,6 +124,13 @@ export default function ChatPage() {
   const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(
     () => new Set(),
   );
+  const [groupChats, setGroupChats] = useState<
+    ChatRoomListThumbnailResponse[]
+  >([]);
+  const [isGroupLoading, setIsGroupLoading] = useState(false);
+  const [groupPage, setGroupPage] = useState(0);
+  const [hasNextGroup, setHasNextGroup] = useState(false);
+
   const conversationRoomIdList = useMemo(
     () =>
       conversations
@@ -127,6 +155,7 @@ export default function ChatPage() {
     if (activeTab !== "recommended") {
       return;
     }
+
     setIsLoading(true);
     void getTasteExperts(filters, chatAuth)
       .then((response) => {
@@ -145,6 +174,7 @@ export default function ChatPage() {
     if (activeTab !== "conversations") {
       return;
     }
+
     setIsConversationLoading(true);
     void getDirectChats(chatAuth)
       .then((response) => {
@@ -216,13 +246,11 @@ export default function ChatPage() {
         return;
       }
 
-      if (receivedMessage.senderId !== user?.userId) {
-        setUnreadRoomIds((prev) => {
-          const next = new Set(prev);
-          next.add(receivedMessage.directChatRoomId);
-          return next;
-        });
-      }
+      setUnreadRoomIds((prev) => {
+        const next = new Set(prev);
+        next.add(receivedMessage.directChatRoomId);
+        return next;
+      });
     };
 
     const sockets = conversationRoomIdList.map((directChatRoomId) =>
@@ -241,11 +269,39 @@ export default function ChatPage() {
     };
   }, [accessToken, activeTab, conversationRoomIds, user?.userId]);
 
-  const handleTabChange = (tab: ChatTabKey) => {
-    if (tab === "groups") {
-      navigate(ROUTES.groupChats);
+  useEffect(() => {
+    if (activeTab !== "groups") {
       return;
     }
+
+    setIsGroupLoading(true);
+    setGroupPage(0);
+    void getGroupChatRoomList({ page: 0, size: 20 })
+      .then((response) => {
+        setGroupChats(response.chatRoomList);
+        setHasNextGroup(response.hasNext);
+      })
+      .catch((error) => {
+        console.error(error);
+        setGroupChats([]);
+      })
+      .finally(() => {
+        setIsGroupLoading(false);
+      });
+  }, [activeTab]);
+
+  const handleLoadMore = () => {
+    const nextPage = groupPage + 1;
+    setGroupPage(nextPage);
+    void getGroupChatRoomList({ page: nextPage, size: 20 })
+      .then((response) => {
+        setGroupChats((prev) => [...prev, ...response.chatRoomList]);
+        setHasNextGroup(response.hasNext);
+      })
+      .catch(console.error);
+  };
+
+  const handleTabChange = (tab: ChatTabKey) => {
     setActiveTab(tab);
   };
 
@@ -282,32 +338,16 @@ export default function ChatPage() {
           categoryOptions={categoryOptions}
           minLevel={filters.minLevel}
           onKeywordChange={(value) =>
-            setFilters((prev) => ({
-              ...prev,
-              keyword: value,
-              page: 0,
-            }))
+            setFilters((prev) => ({ ...prev, keyword: value, page: 0 }))
           }
           onRegionChange={(value) =>
-            setFilters((prev) => ({
-              ...prev,
-              region: value,
-              page: 0,
-            }))
+            setFilters((prev) => ({ ...prev, region: value, page: 0 }))
           }
           onCategoryChange={(value) =>
-            setFilters((prev) => ({
-              ...prev,
-              category: value,
-              page: 0,
-            }))
+            setFilters((prev) => ({ ...prev, category: value, page: 0 }))
           }
           onMinLevelChange={(value) =>
-            setFilters((prev) => ({
-              ...prev,
-              minLevel: value,
-              page: 0,
-            }))
+            setFilters((prev) => ({ ...prev, minLevel: value, page: 0 }))
           }
         />
 
@@ -323,7 +363,8 @@ export default function ChatPage() {
                       추천 맛잘알
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      성수동 · 양식 · 레벨 {filters.minLevel} 이상 기준
+                      {filters.region} · {filters.category} · 레벨{" "}
+                      {filters.minLevel} 이상 기준
                     </p>
                   </div>
                   <p className="text-xs font-medium text-gray-400">
@@ -356,52 +397,142 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   conversations.map((conversation) => (
-                  <button
-                    key={conversation.directChatRoomId}
-                    type="button"
-                    onClick={() => handleOpenDirectChat(conversation)}
-                    className="flex w-full items-center gap-3 rounded-3xl border border-gray-200 bg-[#fffaf7] px-4 py-4 text-left"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#ff4b0b] shadow-sm">
-                      {conversation.targetProfileImageUrl ? (
-                        <img
-                          src={conversation.targetProfileImageUrl}
-                          alt={conversation.targetNickname}
-                          className="h-12 w-12 rounded-2xl object-cover"
-                        />
-                      ) : (
-                        <MessageSquareMore className="h-5 w-5" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {conversation.targetNickname}
-                      </p>
-                      <p className="mt-1 truncate text-sm text-gray-500">
-                        {conversation.lastMessage ?? "대화를 시작해보세요."}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      {unreadRoomIds.has(conversation.directChatRoomId) && (
-                        <span
-                          aria-label="새 메시지"
-                          className="h-2 w-2 rounded-full bg-red-500"
-                        />
-                      )}
-                      <span>
-                        {conversation.lastMessageAt
-                          ? new Date(
-                              conversation.lastMessageAt,
-                            ).toLocaleTimeString("ko-KR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : ""}
-                      </span>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  </button>
+                    <button
+                      key={conversation.directChatRoomId}
+                      type="button"
+                      onClick={() => handleOpenDirectChat(conversation)}
+                      className="flex w-full items-center gap-3 rounded-3xl border border-gray-200 bg-[#fffaf7] px-4 py-4 text-left"
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#ff4b0b] shadow-sm">
+                        {conversation.targetProfileImageUrl ? (
+                          <img
+                            src={conversation.targetProfileImageUrl}
+                            alt={conversation.targetNickname}
+                            className="h-12 w-12 rounded-2xl object-cover"
+                          />
+                        ) : (
+                          <MessageSquareMore className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-900">
+                          {conversation.targetNickname}
+                        </p>
+                        <p className="mt-1 truncate text-sm text-gray-500">
+                          {conversation.lastMessage ?? "대화를 시작해보세요."}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        {unreadRoomIds.has(conversation.directChatRoomId) && (
+                          <span
+                            aria-label="새 메시지"
+                            className="h-2 w-2 rounded-full bg-red-500"
+                          />
+                        )}
+                        <span>
+                          {conversation.lastMessageAt
+                            ? new Date(
+                                conversation.lastMessageAt,
+                              ).toLocaleTimeString("ko-KR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : ""}
+                        </span>
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    </button>
                   ))
+                )}
+              </div>
+            )}
+
+            {activeTab === "groups" && (
+              <div className="space-y-3 px-1">
+                <button
+                  type="button"
+                  onClick={() => navigate(ROUTES.createGroupChat)}
+                  className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-[#ff4b0b] py-4 text-sm font-semibold text-[#ff4b0b]"
+                >
+                  <span className="text-lg">+</span>
+                  그룹 채팅 만들기
+                </button>
+
+                {isGroupLoading ? (
+                  <div className="bg-white px-4 py-12 text-center text-sm text-gray-500">
+                    그룹 채팅방 목록을 불러오는 중입니다.
+                  </div>
+                ) : groupChats.length === 0 ? (
+                  <div className="bg-white px-4 py-12 text-center text-sm text-gray-500">
+                    아직 그룹 채팅방이 없습니다.
+                  </div>
+                ) : (
+                  <>
+                    {groupChats.map((room) => (
+                      <button
+                        key={room.roomId}
+                        type="button"
+                        onClick={() =>
+                          navigate(ROUTES.groupChatRoom(room.roomId))
+                        }
+                        className="flex w-full items-start gap-3 border-b border-gray-100 py-5 text-left"
+                      >
+                        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl">
+                          {room.roomImageUrl ? (
+                            <img
+                              src={room.roomImageUrl}
+                              alt={room.roomName}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gray-100">
+                              <MessageSquareMore className="h-5 w-5 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-lg font-bold text-gray-900">
+                              {room.roomName}
+                            </p>
+                            <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-sm font-semibold text-[#ff6b2c]">
+                              {room.participantCount}/
+                              {room.maxParticipantCount}
+                            </span>
+                          </div>
+
+                          <p className="mt-2 text-sm text-gray-500">
+                            개설일{" "}
+                            {new Date(room.createdAt).toLocaleDateString(
+                              "ko-KR",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              },
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="pt-1 text-sm text-gray-400">
+                          {room.latestMessageTime
+                            ? formatRelativeTime(room.latestMessageTime)
+                            : ""}
+                        </div>
+                      </button>
+                    ))}
+
+                    {hasNextGroup && (
+                      <button
+                        type="button"
+                        onClick={handleLoadMore}
+                        className="w-full py-3 text-sm text-gray-400"
+                      >
+                        더보기
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             )}

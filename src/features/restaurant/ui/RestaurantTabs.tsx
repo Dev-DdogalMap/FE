@@ -10,18 +10,6 @@ const RestaurantTabs = ({
   return (
     <div className="sticky top-0 z-20 bg-white" role="tablist">
       <div className="flex">
-        <button
-          role="tab"
-          aria-selected={activeTab === "score"}
-          aria-controls="score-panel"
-          onClick={() => onChange("score")}
-          className={`flex-1 py-4 text-sm font-semibold transition ${activeTab === "score"
-            ? "text-[#ff6b00] border-b-2 border-[#ff6b00]"
-            : "text-gray-400"
-            }`}
-        >
-          맛집지수
-        </button>
 
         <button
           role="tab"

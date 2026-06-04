@@ -74,6 +74,7 @@ export default function Map({
             onCreate={handleLoadRestaurants}
             onIdle={handleLoadRestaurants}
             bottomSheetHeight={bottomSheetHeight}
+            locationMessageTop={50}
         >
             <MarkerClusterer 
                 averageCenter 
