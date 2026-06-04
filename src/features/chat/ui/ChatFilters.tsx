@@ -4,6 +4,7 @@ interface ChatFiltersProps {
   keyword: string;
   region: string;
   category: string;
+  categoryOptions: string[];
   minLevel: number;
   onKeywordChange: (value: string) => void;
   onRegionChange: (value: string) => void;
@@ -18,6 +19,7 @@ export default function ChatFilters({
   keyword,
   region,
   category,
+  categoryOptions,
   minLevel,
   onKeywordChange,
   onRegionChange,
@@ -54,11 +56,12 @@ export default function ChatFilters({
             onChange={(event) => onCategoryChange(event.target.value)}
             className="appearance-none bg-transparent pr-1 text-sm outline-none"
           >
-            <option value="양식">양식</option>
-            <option value="한식">한식</option>
-            <option value="카페">카페</option>
-            <option value="술집">술집</option>
             <option value="전체">전체</option>
+            {categoryOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
           <ChevronDown className="h-4 w-4 text-gray-400" />
         </label>

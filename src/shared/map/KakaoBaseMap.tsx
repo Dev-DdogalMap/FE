@@ -205,13 +205,14 @@ export default function KakaoBaseMap({
                 lat: currentLocation.lat,
                 lng: currentLocation.lng,
               }}
-              radius={currentLocation.accuracy}
+              radius={50}
               strokeWeight={1}
               strokeColor={COLORS.PRIMARY}
               strokeOpacity={0.6}
               fillColor={COLORS.PRIMARY}
               fillOpacity={0.15}
             />
+          
           </>
         )}
       </Map>

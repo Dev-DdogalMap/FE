@@ -58,26 +58,24 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-100">
-      <div className="relative mx-auto min-h-screen w-full max-w-[430px] bg-white">
-        <div className="flex h-screen flex-col">
-          <ChatHeader
-            roomName={roomInfo?.roomName}
-            currentCount={roomInfo?.participantCount}
-            maxCount={roomInfo?.maxParticipantCount}
-            thumbnailUrl={roomInfo?.roomImage ?? ""}  //null 대신 기본값
-            onBack={() => navigate(-1)}
-            onMenuClick={handleMenuClick}
-          />
+    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
+      <div className="flex-shrink-0">
+        <ChatHeader
+          roomName={roomInfo?.roomName}
+          currentCount={roomInfo?.participantCount}
+          maxCount={roomInfo?.maxParticipantCount}
+          thumbnailUrl={roomInfo?.roomImage ?? ""}
+          onBack={() => navigate(-1)}
+          onMenuClick={handleMenuClick}
+        />
+      </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-[#F7F7F7]">
-            <MessageList messages={messages} currentUserId={user?.userId ?? -1} />
-          </div>
+      <div className="min-h-0 flex-1 overflow-y-auto bg-[#F7F7F7]">
+        <MessageList messages={messages} currentUserId={user?.userId ?? -1} />
+      </div>
 
-          <MessageInput
-            onSendMessage={sendMessage}
-          />
-        </div>
+      <div className="flex-shrink-0">
+        <MessageInput onSendMessage={sendMessage} />
       </div>
     </div>
   );

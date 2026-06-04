@@ -65,7 +65,7 @@ export default function MessageInput({
         type="button"
         disabled={disabled}
         onClick={handleSend}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white transition hover:bg-orange-600"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FF6B00] text-white transition hover:bg-orange-600"
       >
         <ArrowUp size={22} />
       </button>
