@@ -25,6 +25,7 @@ import ChatFilters from "@/features/chat/ui/ChatFilters";
 import ChatTabs from "@/features/chat/ui/ChatTabs";
 import TasteExpertList from "@/features/chat/ui/TasteExpertList";
 import { ROUTES } from "@/shared/constants/routes";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
@@ -68,6 +69,7 @@ export default function ChatPage() {
   const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [groupPage, setGroupPage] = useState(0);
   const [hasNextGroup, setHasNextGroup] = useState(false);
+  const { accessToken, refreshAccessToken } = useAuth();
 
   useEffect(() => {
     if (activeTab !== "recommended") return;
@@ -98,7 +100,7 @@ export default function ChatPage() {
     if (activeTab !== "groups") return;
     setIsGroupLoading(true);
     setGroupPage(0);
-    void getGroupChatRoomList({ page: 0, size: 20 })
+    void getGroupChatRoomList({ page: 0, size: 20 }, { accessToken, refreshAccessToken})
       .then((response) => {
         setGroupChats(response.chatRoomList);
         setHasNextGroup(response.hasNext);
@@ -111,7 +113,7 @@ export default function ChatPage() {
   const handleLoadMore = () => {
     const nextPage = groupPage + 1;
     setGroupPage(nextPage);
-    void getGroupChatRoomList({ page: nextPage, size: 20 })
+    void getGroupChatRoomList({ page: nextPage, size: 20 }, { accessToken, refreshAccessToken })
       .then((response) => {
         setGroupChats((prev) => [...prev, ...response.chatRoomList]);
         setHasNextGroup(response.hasNext);
