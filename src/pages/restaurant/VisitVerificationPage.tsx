@@ -8,7 +8,7 @@ import {
   createVisitVerification,
   getRestaurantInfo,
 } from "@/features/restaurant/api/restaurantApi";
-import type { GetRestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
 
 const VERIFY_RADIUS_METER = 50;
@@ -45,7 +45,7 @@ const VisitVerificationPage = () => {
   const { restaurantId } = useParams();
   const { accessToken, refreshAccessToken } = useAuth();
   const [restaurant, setRestaurant] =
-    useState<GetRestaurantInfoResponse | null>(null);
+    useState<RestaurantInfoResponse | null>(null);
 
   const hasAutoCheckedRef = useRef(false);
   const locationRequestIdRef = useRef(0);
@@ -75,7 +75,9 @@ const VisitVerificationPage = () => {
       try {
         setLoading(true);
 
-        const data = await getRestaurantInfo(restaurantIdNumber);
+        const data = await getRestaurantInfo({
+          restaurantId: Number(restaurantId),
+        });
         setRestaurant(data);
       } catch (error) {
         console.error("가게 위치 정보 조회 실패:", error);

@@ -77,8 +77,9 @@ const RestaurantPage = () => {
             {!loading && restaurant && (
             <>
                 <RestaurantTabs
-                activeTab={activeTab}
-                onChange={setActiveTab}
+                    activeTab={activeTab}
+                    reviewCount={restaurant.reviewCount}
+                    onChange={setActiveTab}
                 />
 
                 {activeTab === "info" && <RestaurantInfoTab restaurant={restaurant} />}

@@ -70,15 +70,22 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
             : "-";
     
     const handleCopyPhone = async () => {
-        const phone = restaurant?.phone;
-    
-        if (!phone) {
-            toast.error("복사할 전화번호가 없습니다.");
+        if (!restaurant.phone) {
             return;
         }
     
-        await navigator.clipboard.writeText(phone);
-        toast.success("전화번호가 복사되었습니다.");
+        try {
+            if (!navigator.clipboard) {
+                throw new Error("Clipboard API is not supported");
+            }
+
+            await navigator.clipboard.writeText(restaurant.phone);
+
+            toast.success("전화번호가 복사되었습니다.");
+        } catch (error) {
+            console.error("전화번호 복사 실패:", error);
+            toast.error("전화번호를 복사하지 못했습니다.");
+        }
     };
 
     return (
