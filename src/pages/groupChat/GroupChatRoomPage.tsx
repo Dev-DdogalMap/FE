@@ -36,6 +36,10 @@ export default function ChatRoomPage() {
     setMessages,
   } = useGroupChat(Number(roomId));
 
+  function handleMenuClick() {
+    navigate(`/chat/group/info/${roomId}`);
+  }
+
   //데이터 로딩 전 화면
   if (loading || !roomInfo) {
     return (
@@ -63,7 +67,7 @@ export default function ChatRoomPage() {
             maxCount={roomInfo?.maxParticipantCount}
             thumbnailUrl={roomInfo?.roomImage ?? ""}  //null 대신 기본값
             onBack={() => navigate(-1)}
-            onMenuClick={() => console.log("메뉴 클릭")}
+            onMenuClick={handleMenuClick}
           />
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-[#F7F7F7]">

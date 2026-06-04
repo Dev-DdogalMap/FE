@@ -6,5 +6,5 @@ export const ROUTES = {
     `/chat/direct/${directChatRoomId}`,
   groupChats: "/chat/groups",
   createGroupChat: "/chat/groups/create",
-  groupChatRoom: (groupId: number | string) => `/chat/groups/${groupId}`,
+  groupChatRoom: (groupId: number | string) => `/chat/group/room/${groupId}`,
 } as const;

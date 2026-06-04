@@ -54,8 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profileImageUrl: data.profileImageUrl,
       });
 
-      console.log("accessToken 재발급 성공");
-
       return data.accessToken;
     } catch (error) {
       console.error(error);
@@ -94,7 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [checkAuth]);
 
   useEffect(() => {
-    console.log("메모리 accessToken 변경됨 =", accessToken);
   }, [accessToken]);
 
   return (

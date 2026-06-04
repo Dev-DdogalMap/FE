@@ -1,3 +1,5 @@
+import { COLORS } from "@/shared/constants/colors";
+
 const createClusterStyle = (
   size: number,
   fontSize: number,
@@ -13,14 +15,14 @@ const createClusterStyle = (
   fontWeight: "800",
   fontSize: `${fontSize}px`,
   lineHeight: `${size - 6}px`,
-  boxShadow: "0 4px 12px rgba(255, 107, 0, 0.35)",
+  boxShadow: "0 4px 12px rgba(230, 81, 0, 0.35)",
 });
 
 export const CLUSTER_CALCULATOR = [10, 30, 50];
 
 export const CLUSTER_STYLES = [
-  createClusterStyle(34, 12, "#FF8A3D"),
-  createClusterStyle(40, 13, "#FF6B00"),
-  createClusterStyle(46, 14, "#F4511E"),
-  createClusterStyle(52, 15, "#E64A19"),
+  createClusterStyle(34, 12, COLORS.PRIMARY_TEXT),
+  createClusterStyle(40, 13, COLORS.PRIMARY),
+  createClusterStyle(46, 14, COLORS.PRIMARY_DARK),
+  createClusterStyle(52, 15, COLORS.PRIMARY_DARK),
 ];

@@ -6,17 +6,16 @@ import RestaurantTabs from "@/features/restaurant/ui/RestaurantTabs";
 
 import RestaurantInfoTab from "@/features/restaurant/ui/tabs/RestaurantInfoTab";
 import RestaurantReviewTab from "@/features/restaurant/ui/tabs/RestaurantReviewTab";
-import RestaurantScoreTab from "@/features/restaurant/ui/tabs/RestaurantScoreTab";
 
 import RestaurantBottom from "@/features/restaurant/ui/RestaurantBottom";
 
-import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { getRestaurantPreview } from "@/features/restaurant/api/restaurantApi";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import ErrorView from "@/shared/ui/ErrorView";
 
 const RestaurantPage = () => {
-    const [activeTab, setActiveTab] = useState("score");
+    const [activeTab, setActiveTab] = useState("info");
 
     const { restaurantId } = useParams();
     const [restaurant, setRestaurant] = useState<RestaurantPreview | null>(null);
@@ -82,7 +81,6 @@ const RestaurantPage = () => {
                 onChange={setActiveTab}
                 />
 
-                {activeTab === "score" && <RestaurantScoreTab />}
                 {activeTab === "info" && <RestaurantInfoTab />}
                 {activeTab === "review" && <RestaurantReviewTab />}
 

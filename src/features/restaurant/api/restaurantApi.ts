@@ -2,10 +2,10 @@ import axios from "@/shared/api/axios";
 import { authFetch } from "@/shared/api/authFetch";
 
 import type {
+  FoodTypeOption,
+  GetRestaurantInfoResponse,
   GetRestaurantPreviewParams,
   GetRestaurantPreviewResponse,
-  GetRestaurantInfoResponse,
-  FoodTypeOption,
 } from "../model/restaurantTypes";
 
 type AuthRequestOptions = {

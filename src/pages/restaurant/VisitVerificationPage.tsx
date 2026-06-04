@@ -12,7 +12,7 @@ import type { GetRestaurantInfoResponse } from "@/features/restaurant/model/rest
 import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
 
 const VERIFY_RADIUS_METER = 50;
-//const USE_MOCK_INSIDE_RADIUS = true;
+const USE_MOCK_INSIDE_RADIUS = true;
 
 type VerifyStatus = "idle" | "success" | "fail" | "permission-error";
 
@@ -107,15 +107,15 @@ const VisitVerificationPage = () => {
         const restaurantLatitude = restaurant.latitude;
         const restaurantLongitude = restaurant.longitude;
 
-        const userLatitude = position.coords.latitude;
-        const userLongitude = position.coords.longitude;
-        // const userLatitude = USE_MOCK_INSIDE_RADIUS
-        //   ? restaurantLatitude + 0.0001
-        //   : position.coords.latitude;
+        // const userLatitude = position.coords.latitude;
+        // const userLongitude = position.coords.longitude;
+        const userLatitude = USE_MOCK_INSIDE_RADIUS
+          ? restaurantLatitude + 0.0001
+          : position.coords.latitude;
 
-        // const userLongitude = USE_MOCK_INSIDE_RADIUS
-        //   ? restaurantLongitude + 0.0001
-        //   : position.coords.longitude;
+        const userLongitude = USE_MOCK_INSIDE_RADIUS
+          ? restaurantLongitude + 0.0001
+          : position.coords.longitude;
 
         const calculatedDistance = getDistanceMeter(
           restaurantLatitude,

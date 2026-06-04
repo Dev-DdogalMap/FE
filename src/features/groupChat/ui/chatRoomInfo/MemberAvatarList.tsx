@@ -1,0 +1,32 @@
+import type { MemberInfo } from "../../model/groupChatTypes";
+import { ChevronRight } from "lucide-react";
+
+interface Props {
+  members: MemberInfo[];
+}
+
+export default function MemberAvatarList({
+  members,
+}: Props) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-sm">
+          멤버 관리
+        </h3>
+
+        <ChevronRight />
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto">
+        {members.map((member) => (
+          <img
+            key={member.userId}
+            src={member.userProfileImage?? ""}
+            className="w-14 h-14 rounded-full object-cover"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
