@@ -45,7 +45,7 @@ export function useWatchLocation({
   const lastLocationRef = useRef<CurrentLocation | null>(null);
 
   useEffect(() => {
-    if (!enabled)   setLoading(false); return; 
+    if (!enabled)   {setLoading(false); return; }
 
     if (!navigator.geolocation) {
       setErrorMessage("현재 브라우저에서는 위치 기능을 지원하지 않습니다.");
