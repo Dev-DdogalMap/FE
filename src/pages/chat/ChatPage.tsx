@@ -236,7 +236,7 @@ export default function ChatPage() {
                 <button
                   type="button"
                   onClick={() => navigate(ROUTES.createGroupChat)}
-                  className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-[#ff4b0b] py-4 text-sm font-semibold text-[#ff4b0b]"
+                  className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-[#FF6B00] py-4 text-sm font-semibold text-[#FF6B00]"
                 >
                   <span className="text-lg">+</span>
                   그룹 채팅 만들기

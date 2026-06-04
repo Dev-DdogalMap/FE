@@ -8,13 +8,7 @@ export default function CreateGroupChatPage() {
   const { create } = useCreateGroupChat();
 
   const handleSubmit = async (data: any) => {
-    console.log("submit start");
-
     const response = await create(data);
-
-    console.log("response", response);
-    console.log("chatRoomId", response.chatRoomId);
-
     navigate(`/chat/group/room/${response.chatRoomId}`);
   };
 

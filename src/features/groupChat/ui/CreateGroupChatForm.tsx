@@ -222,7 +222,7 @@ export default function CreateGroupChatForm({
                 {/* 생성 버튼 */}
                 <button
                     onClick={handleCreate}
-                    className="w-full h-16 rounded-xl text-white text-l font-bold bg-[#FD4D01]"
+                    className="w-full h-16 rounded-xl text-white text-l font-bold bg-[#FF6B00]"
                 >
                     톡방 만들기
                 </button>

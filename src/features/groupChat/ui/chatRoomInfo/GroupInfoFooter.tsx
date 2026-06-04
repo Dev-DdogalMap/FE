@@ -19,7 +19,7 @@ export default function GroupInfoFooter({
 
         <button
           onClick={onEdit}
-          className="flex-1 h-14 rounded-2xl bg-orange-500 text-white font-semibold"
+          className="flex-1 h-14 rounded-2xl bg-[#FF6B00] text-white font-semibold"
         >
           그룹 수정
         </button>

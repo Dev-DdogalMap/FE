@@ -40,14 +40,6 @@ export const router = createBrowserRouter([
     element: <PrivacyPage />,
   },
   {
-    path: "/chat/group/room/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
-    element: <GroupChatRoomPage />,
-  },
-  {
-    path: "/chat/group/info/:roomId",  //채팅화면에서는 헤더, 푸터 안보임
-    element: <GroupInfoPage />,
-  },
-  {
     element: <MobileLayout />,
     children: [
       {
@@ -66,7 +58,7 @@ export const router = createBrowserRouter([
         path: "/restaurants/:restaurantId/visit",
         element: <VisitVerificationPage />,
       },
-         {
+      {
         path: "/bookmark",
         element: <BookmarkPage />,
       },
@@ -93,7 +85,15 @@ export const router = createBrowserRouter([
       {
         path: "/mypage",
         element:
-                  <MyPage />,
+          <MyPage />,
+      },
+      {
+        path: "/chat/group/room/:roomId",
+        element: <GroupChatRoomPage />,
+      },
+      {
+        path: "/chat/group/info/:roomId",
+        element: <GroupInfoPage />,
       },
       // {
       //   element: <RequireAuth />,

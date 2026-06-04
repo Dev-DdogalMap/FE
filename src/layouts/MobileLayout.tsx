@@ -8,8 +8,10 @@ export default function MobileLayout() {
 
   const hideBottomNav =
     location.pathname.startsWith("/restaurants") ||
-    location.pathname.startsWith("/chat/direct");
-    //location.pathname.startsWith("/chat/groups/create");
+    location.pathname.startsWith("/chat/direct") ||
+    location.pathname.startsWith("/chat/groups/create") ||
+    location.pathname.startsWith("/chat/group/room") ||
+    location.pathname.startsWith("/chat/group/info");
 
   return (
     <div className="min-h-screen w-full bg-gray-100">
