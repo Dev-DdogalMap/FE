@@ -27,9 +27,6 @@ const RestaurantPage = () => {
     const restaurantIdNumber = Number(restaurantId);
     const isInvalidRestaurantId = !restaurantId || Number.isNaN(restaurantIdNumber);
 
-    // useParams로 가져온 string 타입을 number 타입으로 변환
-    const numericId = Number(restaurantId);
-
     useEffect(() => {
         if (isInvalidRestaurantId) return;
 
@@ -85,7 +82,7 @@ const RestaurantPage = () => {
                 />
 
                 {activeTab === "info" && <RestaurantInfoTab />}
-                {activeTab === "review" && <RestaurantReviewTab restaurantId={numericId} />}
+                {activeTab === "review" && <RestaurantReviewTab restaurantId={restaurantIdNumber} />}
 
                 <RestaurantBottom />
             </>

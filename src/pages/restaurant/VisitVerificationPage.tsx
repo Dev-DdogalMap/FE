@@ -68,6 +68,8 @@ const VisitVerificationPage = () => {
   const isInvalidRestaurantId =
     !restaurantId || Number.isNaN(restaurantIdNumber);
 
+  const [verifiedAt, setVerifiedAt] = useState<string>("");
+
   useEffect(() => {
     if (isInvalidRestaurantId) return;
 
@@ -185,19 +187,20 @@ const VisitVerificationPage = () => {
     try {
       setSubmitting(true);
 
-      await createVisitVerification(
-        {
-          restaurantId: Number(restaurantId),
-          userLatitude: userLocation.latitude,
-          userLongitude: userLocation.longitude,
-          accuracyMeter: accuracyMeter ?? 0,
-        },
-        {
-          accessToken,
-          refreshAccessToken,
-        },
+      const res = await createVisitVerification(
+          {
+            restaurantId: Number(restaurantId),
+            userLatitude: userLocation.latitude,
+            userLongitude: userLocation.longitude,
+            accuracyMeter: accuracyMeter ?? 0,
+          },
+          {
+            accessToken,
+            refreshAccessToken,
+          },
       );
 
+      setVerifiedAt(res.verifiedAt);
       setIsCompleteModalOpen(true);
     } catch (error) {
       console.error("방문 인증 저장 실패:", error);
@@ -460,10 +463,17 @@ const VisitVerificationPage = () => {
             navigate(`/restaurants/${restaurantId}`);
           }}
           onReviewClick={() => {
-            // 후기 작성 페이지 연결되면 여기 경로만 맞추면 됨
-            // navigate(`/restaurants/${restaurantId}/reviews/new`);
+            setIsCompleteModalOpen(false);
 
-            alert("후기 작성 페이지는 준비 중입니다.");
+            navigate("/review", {
+              state: {
+                restaurantId: restaurantIdNumber,
+                placeName: restaurant.placeName,
+                roadAddressName: restaurant.roadAddressName,
+                verifiedAt: verifiedAt,
+                accessToken: accessToken
+              }
+            });
           }}
         />
       )}

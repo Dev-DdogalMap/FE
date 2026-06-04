@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from '@/shared/api/axios';
 import { getStoredAccessToken } from '@/shared/auth/token';
-import { Check, X, ArrowLeft } from 'lucide-react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Check, X} from 'lucide-react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 const TAG_OPTIONS = [
     "혼밥 가능", "데이트", "분위기 좋아요",
@@ -13,15 +13,88 @@ const TAG_OPTIONS = [
 const ReviewPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    // URL에서 ?restaurantId=숫자 값을 가져옴
-    const restaurantId = Number(searchParams.get('restaurantId'));
+    // 1. 라우터 state 타입 정의 및 추출
+    const state = location.state as {
+        restaurantId?: number;
+        placeName?: string;
+        foodType?: string;
+        roadAddressName?: string;
+        verifiedAt?: string;
+        accessToken?: string;
+    } | null;
+
+    // state가 있으면 쓰고, 없으면 URL 쿼리(리프레시 대비)에서 가져옴
+    const restaurantId = state?.restaurantId || Number(searchParams.get('restaurantId'));
+
+    // 2. 도로명 주소에서 괄호 안의 '동' 이름만 추출하는 함수 (예: "우면동")
+    const extractDong = (address: string) => {
+        if (!address) return "지역";
+        const match = address.match(/\(([^)]+)\)/);
+        return match ? match[1] : address.split(' ')[1] || "지역";
+    };
+
+    // 3. ISO 날짜 문자열을 "YYYY.MM.DD HH:mm" 형태로 변환하는 함수
+    const formatVisitTime = (dateStr?: string) => {
+        if (!dateStr) return "";
+        try {
+            const date = new Date(dateStr);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
+        } catch {
+            return dateStr;
+        }
+    };
+
+    // 4. 화면에 표시할 식당 정보 상태 (전달받은 state가 있다면 초기값으로 즉시 반영)
+    const [restaurantData, setRestaurantData] = useState({
+        name: state?.placeName || "가게 정보 불러오는 중...",
+        // 💡 고정된 "음식점" 문자열 대신 state?.foodType을 사용하고, 없을 때만 기본값 처리합니다.
+        meta: state?.roadAddressName
+            ? `${state.foodType || '음식점'} · ${extractDong(state.roadAddressName)}`
+            : "",
+        visitTime: state?.verifiedAt ? formatVisitTime(state.verifiedAt) : ""
+    });
 
     const [score, setScore] = useState<number>(0);
     const [content, setContent] = useState<string>("");
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [isRevisit, setIsRevisit] = useState<boolean | null>(null);
     const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
+
+    // 5. 부득이하게 state 없이 링크나 리프레시로 직접 진입했을 때만 API 재요청
+    useEffect(() => {
+        // 이전 페이지(state)에서 이름과 음식 카테고리를 모두 완벽하게 넘겨받았다면 API 호출 생략
+        if (state?.placeName && state?.foodType) return;
+        if (!restaurantId) return;
+
+        const fetchRestaurantDetails = async () => {
+            try {
+                // 💡 foodType이 존재하는 /preview 엔드포인트로 요청을 보냅니다.
+                const response = await axios.get(`/api/restaurants/${restaurantId}/preview`, {
+                    headers: { Authorization: `Bearer ${getStoredAccessToken()}` }
+                });
+
+                const data = response.data; // RestaurantPreview 타입 데이터 반환
+
+                setRestaurantData((prev) => ({
+                    ...prev,
+                    name: data.placeName,
+                    // 💡 실제 백엔드가 내려주는 data.foodType과 data.addressName을 조합합니다.
+                    meta: `${data.foodType || '음식점'} · ${extractDong(data.addressName || '')}`,
+                }));
+            } catch (error) {
+                console.error("가게 미리보기 정보를 불러오는데 실패했습니다.", error);
+            }
+        };
+
+        fetchRestaurantDetails();
+    }, [restaurantId, state]);
 
     // 별점 텍스트 반환 핸들러
     const getScoreText = (rating: number) => {
@@ -93,19 +166,23 @@ const ReviewPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // 💡 라우터 state로 넘어온 토큰을 최우선으로 사용하고, 없을 때 fallback으로 함수를 호출합니다.
+        const token = state?.accessToken || getStoredAccessToken();
+        // 💡 디버깅을 위해 토큰 값을 콘솔에 출력해봅니다.
+        console.log("ReviewPage에서 읽어온 토큰:", token);
+
         if (!restaurantId) { alert("식당 정보가 올바르지 않습니다."); return; }
         if (score === 0) { alert("별점을 선택해주세요."); return; }
         if (isRevisit == null) { alert("재방문 의사를 선택해주세요."); return; }
         if (!content.trim()) { alert("상세 후기를 입력해주세요."); return; }
         if (selectedTags.length < 1) { alert("태그를 최소 1개 이상 선택해주세요."); return; }
 
-        try {
-            const token = getStoredAccessToken();
-            if (!token) {
-                alert("로그인이 필요합니다.");
-                return;
-            }
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
 
+        try {
             const formData = new FormData();
 
             const reviewData = {
@@ -147,20 +224,28 @@ const ReviewPage = () => {
 
     return (
         <div className="p-6" style={styles.container}>
-            {/* 뒤로가기 버튼 헤더 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '10px', borderBottom: '1px solid #F0F0F0', marginBottom: '15px' }}>
-                <button type="button" onClick={() => navigate(-1)} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                    <ArrowLeft size={20} />
-                </button>
-                <h2 style={styles.headerTitle}>후기 작성하기</h2>
-            </div>
+            {/* 뒤로가기 헤더 생략 */}
 
             <form onSubmit={handleSubmit} style={styles.form}>
+                {/* 실제 데이터가 반영되는 식당 카드 정보 구조 */}
                 <div style={styles.restaurantCard}>
                     <div style={styles.restaurantIcon}>🏪</div>
                     <div style={styles.restaurantInfo}>
-                        <h3 style={styles.restaurantName}>성수동 스테이크 하우스</h3>
-                        <p style={styles.restaurantMeta}>스테이크 · 성수동</p>
+                        <h3 style={styles.restaurantName}>{restaurantData.name}</h3>
+                        <p style={styles.restaurantMeta}>{restaurantData.meta}</p>
+
+                        {/* 방문 인증 완료 및 시간 표시 영역 */}
+                        {restaurantData.visitTime && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                <Check size={14} color="#2E7D32" strokeWidth={3} />
+                                <span style={{ fontSize: '12px', color: '#2E7D32', fontWeight: 'bold' }}>
+                                    방문 인증 완료
+                                </span>
+                                <span style={{ fontSize: '12px', color: '#888', marginLeft: '4px' }}>
+                                    {restaurantData.visitTime}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
