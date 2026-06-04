@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '@/shared/api/axios';
+import { getStoredAccessToken } from '@/shared/auth/token';
 import { Check, X, ArrowLeft } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -99,6 +100,12 @@ const ReviewPage = () => {
         if (selectedTags.length < 1) { alert("태그를 최소 1개 이상 선택해주세요."); return; }
 
         try {
+            const token = getStoredAccessToken();
+            if (!token) {
+                alert("로그인이 필요합니다.");
+                return;
+            }
+
             const formData = new FormData();
 
             const reviewData = {
@@ -117,9 +124,14 @@ const ReviewPage = () => {
             });
 
             const response = await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/api/review`,
+                `/api/restaurants/${restaurantId}/review`,
                 formData,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
             );
 
             alert(response.data);
