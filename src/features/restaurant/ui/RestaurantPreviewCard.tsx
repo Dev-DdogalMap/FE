@@ -41,10 +41,12 @@ export default function RestaurantPreviewCard({ restaurant }: Props) {
                             </span>
 
                             <span className="rounded-full px-2 py-1 text-xs font-bold"
-                                style={{ 
-                                    backgroundColor: COLORS.PRIMARY_LIGHT, 
+                                style={{
+                                    backgroundColor: COLORS.PRIMARY_LIGHT,
                                     color: COLORS.PRIMARY}}>
-                                맛집지수 {restaurant.foodScore ?? "--"}%
+                                {restaurant.foodScore !== null && restaurant.foodScore !== 0
+                                    ? `맛집지수 ${restaurant.foodScore}%`
+                                    : "맛집지수 계산중"}
                             </span>
                         </div>
 
