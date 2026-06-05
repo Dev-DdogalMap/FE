@@ -49,8 +49,7 @@ export interface DirectChatMessage {
   directChatRoomId: number;
   senderId: number;
   senderNickname: string;
-  messageType: "TEXT" | "IMAGE" | "RESTAURANT_CARD";
-  status: "sending" | "sent" | "failed";
+  status: "SENT";
   message: string;
   createdAt: string;
 }

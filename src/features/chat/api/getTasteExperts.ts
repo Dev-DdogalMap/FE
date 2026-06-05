@@ -218,7 +218,6 @@ export async function saveDirectChatMessage(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messageType: "TEXT",
         message,
       }),
     },
