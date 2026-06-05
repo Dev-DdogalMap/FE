@@ -55,8 +55,8 @@ export interface RestaurantInfoResponse {
     restaurantId: number;
     placeName: string;
     roadAddressName: string;
-    phone: string | null;
-    placeUrl: string | null;
+    phone: string | null | undefined; // 💡 두 타입 간 호환을 위해 undefined 허용
+    placeUrl: string | null | undefined;
     latitude: number;
     longitude: number;
 
@@ -68,6 +68,12 @@ export interface RestaurantInfoResponse {
     averageScore: number | null;
     reviewCount: number;
     distance: number | null;
+}
+
+export interface GetRestaurantInfoParams {
+    restaurantId: number;
+    lat?: number;
+    lng?: number;
 }
 
 /**

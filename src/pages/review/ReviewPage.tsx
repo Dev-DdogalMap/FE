@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from '@/shared/api/axios';
-import { getStoredAccessToken } from '@/shared/auth/token';
 import { Check, X} from 'lucide-react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from "@/shared/auth/AuthContext";
 
 const TAG_OPTIONS = [
     "혼밥 가능", "데이트", "분위기 좋아요",
@@ -14,6 +14,7 @@ const ReviewPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const { accessToken } = useAuth();
 
     // 1. 라우터 state 타입 정의 및 추출
     const state = location.state as {
@@ -77,7 +78,7 @@ const ReviewPage = () => {
             try {
                 // 💡 foodType이 존재하는 /preview 엔드포인트로 요청을 보냅니다.
                 const response = await axios.get(`/api/restaurants/${restaurantId}/preview`, {
-                    headers: { Authorization: `Bearer ${getStoredAccessToken()}` }
+                    headers: { Authorization: `Bearer ${accessToken}` } // 💡 상단의 accessToken 변수 사용
                 });
 
                 const data = response.data; // RestaurantPreview 타입 데이터 반환
@@ -94,7 +95,7 @@ const ReviewPage = () => {
         };
 
         fetchRestaurantDetails();
-    }, [restaurantId, state]);
+    }, [restaurantId, state, accessToken]);
 
     // 별점 텍스트 반환 핸들러
     const getScoreText = (rating: number) => {
@@ -167,7 +168,7 @@ const ReviewPage = () => {
         e.preventDefault();
 
         // 💡 라우터 state로 넘어온 토큰을 최우선으로 사용하고, 없을 때 fallback으로 함수를 호출합니다.
-        const token = state?.accessToken || getStoredAccessToken();
+        const token = state?.accessToken || accessToken;
         // 💡 디버깅을 위해 토큰 값을 콘솔에 출력해봅니다.
         console.log("ReviewPage에서 읽어온 토큰:", token);
 
