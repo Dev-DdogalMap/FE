@@ -98,33 +98,6 @@ function ProfileAvatar({
   );
 }
 
-function RestaurantCardMessage({ message }: { message: DirectChatMessage }) {
-  return (
-    <div className="max-w-[75%] rounded-2xl border border-[#eeeeee] bg-white p-3 text-left">
-      <div className="flex gap-3">
-        <div className="h-20 w-24 shrink-0 rounded-xl bg-[#fff2ed]" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[#222222]">
-            {message.message || "추천 맛집"}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-[#ff4b0b]">
-            ★ 4.8 · 양식
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            성수동 · 350m
-          </p>
-          <button
-            type="button"
-            className="mt-2 text-xs font-semibold text-[#ff4b0b]"
-          >
-            자세히 보기
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function DirectChatPage() {
   const navigate = useNavigate();
   const { user, accessToken, refreshAccessToken } = useAuth();
@@ -141,7 +114,6 @@ export default function DirectChatPage() {
   >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const socketRef = useRef<ReturnType<typeof connectDirectChatSocket> | null>(
     null,
   );
@@ -228,8 +200,9 @@ export default function DirectChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [sortedMessages.length, isLoading]);
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const trimmedMessage = message.trim();
+
     if (!trimmedMessage) {
       return;
     }
@@ -240,14 +213,11 @@ export default function DirectChatPage() {
     }
 
     try {
-      setIsSending(true);
       socketRef.current.sendMessage(trimmedMessage);
       setMessage("");
     } catch (error) {
       console.error(error);
       alert("메시지 전송에 실패했습니다.");
-    } finally {
-      setIsSending(false);
     }
   };
 
@@ -316,19 +286,6 @@ export default function DirectChatPage() {
               const isMine = item.senderId === user?.userId;
               const messageTime = formatMessageTime(item.createdAt);
 
-              if (item.messageType === "RESTAURANT_CARD") {
-                return (
-                  <div
-                    key={item.messageId}
-                    className={`mb-4 flex ${
-                      isMine ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <RestaurantCardMessage message={item} />
-                  </div>
-                );
-              }
-
               return (
                 <div
                   key={item.messageId}
@@ -388,9 +345,13 @@ export default function DirectChatPage() {
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
                 event.preventDefault();
-                void handleSend();
+                handleSend();
               }
             }}
             placeholder="메시지를 입력하세요"
@@ -401,7 +362,7 @@ export default function DirectChatPage() {
         <button
           type="button"
           onClick={handleSend}
-          disabled={isSending}
+          disabled={!isSocketReady}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white disabled:opacity-50"
           aria-label="전송"
         >

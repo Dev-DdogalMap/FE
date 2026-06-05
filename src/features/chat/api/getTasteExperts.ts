@@ -83,9 +83,6 @@ export async function getTasteExperts(
   if (filters.keyword.trim()) {
     params.set("keyword", filters.keyword.trim());
   }
-  if (filters.region !== "전체") {
-    params.set("region", filters.region);
-  }
   if (filters.minLevel > 0) {
     params.set("minLevel", String(filters.minLevel));
   }
@@ -218,7 +215,6 @@ export async function saveDirectChatMessage(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messageType: "TEXT",
         message,
       }),
     },

@@ -29,8 +29,7 @@ import { JoinFailModal } from "@/features/groupChat/ui/JoinFailModal";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
-  region: "성수동",
-  category: "양식",
+  category: "전체",
   minLevel: 5,
   sort: "EXPERTISE",
   page: 0,
@@ -371,15 +370,11 @@ export default function ChatPage() {
       <div className="space-y-4">
         <ChatFilters
           keyword={filters.keyword}
-          region={filters.region}
           category={filters.category}
           categoryOptions={categoryOptions}
           minLevel={filters.minLevel}
           onKeywordChange={(value) =>
             setFilters((prev) => ({ ...prev, keyword: value, page: 0 }))
-          }
-          onRegionChange={(value) =>
-            setFilters((prev) => ({ ...prev, region: value, page: 0 }))
           }
           onCategoryChange={(value) =>
             setFilters((prev) => ({ ...prev, category: value, page: 0 }))
@@ -401,7 +396,7 @@ export default function ChatPage() {
                       추천 맛잘알
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      {filters.region} · {filters.category} · 레벨{" "}
+                      {filters.category} · 레벨{" "}
                       {filters.minLevel} 이상 기준
                     </p>
                   </div>
