@@ -103,21 +103,8 @@ export const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <NotFoundPage />,
-      },
-      // {
-      //   element: <RequireAuth />,
-      //   children: [
-      //     {
-      //       path: "/mypage",
-      //       element: <MyPage />,
-      //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
-      // },
+        element: <NotFoundPage />
+      }
     ],
   },
 ]);
