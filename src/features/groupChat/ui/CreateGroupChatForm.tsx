@@ -43,6 +43,7 @@ export default function CreateGroupChatForm({
         <div className="min-h-screen bg-white">
             <div className="max-w-md mx-auto px-6 pb-10">
                 {/* 백 버튼 */}
+                <div>뒤로가기 추가 필요</div>
                 <div>
 
                 </div>
