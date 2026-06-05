@@ -9,7 +9,6 @@ export type ChatTabKey = "recommended" | "conversations" | "groups";
 
 export interface TasteExpertFilters {
   keyword: string;
-  region: string;
   category: string;
   minLevel: number;
   sort: TasteExpertSort;
