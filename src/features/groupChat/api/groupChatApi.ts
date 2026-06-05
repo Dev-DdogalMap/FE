@@ -5,7 +5,8 @@ import type {
   CreateGroupChatRequest,
   CreateGroupChatResponse,
   ChatRoomListResponse,
-  JoinChatRoomResponse
+  JoinChatRoomResponse,
+  UrlDto
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -113,4 +114,20 @@ export async function joinChatRoom(
     },
   });
   return response.json() as Promise<JoinChatRoomResponse>;
+}
+
+/**
+ * presigned url 발급
+ * GET /api/chat-rooms/presigned-url
+ */
+export async function getPresignedUrl(
+  imageFileName: string,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/presigned-url?imageFileName=${encodeURIComponent(imageFileName)}`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<UrlDto>;
 }
