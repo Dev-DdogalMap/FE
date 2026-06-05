@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import axios from "@/shared/api/axios";
 import { searchRestaurants } from "@/features/search/api/searchApi";
 import type {
     RestaurantSearchItem,
     SearchSort,
 } from "@/features/search/model/searchTypes";
+import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
 import { useSearchParams } from "react-router-dom";
 import { Search, ChevronDown, Loader2, ChevronUp } from "lucide-react";
 import { COLORS } from "@/shared/constants/colors";
+import RegionSelect from "@/features/region/ui/RegionSelect";
 
 interface FoodTypeOption {
     foodTypeId: number;
@@ -59,6 +60,8 @@ export default function SearchPage() {
     const [foodTypes, setFoodTypes] = useState<FoodTypeOption[]>([]);
     const [foodTypesError, setFoodTypesError] = useState<string | null>(null);
     const [sort, setSort] = useState<SearchSort>("distance");
+    const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
+    const [selectedRegionName, setSelectedRegionName] = useState("전체");
 
     // 검색 파라미터
     const [searchParams] = useSearchParams();
@@ -140,8 +143,8 @@ export default function SearchPage() {
     };
 
     useEffect(() => {
-        axios.get<FoodTypeOption[]>("/api/food-types")
-            .then((res) => setFoodTypes(res.data))
+        getFoodTypes()
+            .then(setFoodTypes)
             .catch(() => setFoodTypesError("음식 종류 목록을 불러오지 못했습니다."));
     }, []);
 
@@ -199,12 +202,16 @@ export default function SearchPage() {
             </form>
 
             <div className="mb-4 flex gap-2">
-                <input
-                    type="text"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    placeholder="지역 입력 (예: 성수동)"
-                    className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm shadow-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#FF6B00]/20"
+                <RegionSelect
+                    selectedRegionId={selectedRegionId}
+                    selectedRegionName={selectedRegionName}
+                    onChange={(regionName, dong) => {
+                        setRegion(regionName);
+                        setSelectedRegionName(regionName || "전체");
+                        setSelectedRegionId(dong?.regionId);
+
+                        fetchSearch(keyword, regionName, selectedFoodTypeId, sort);
+                }}
                 />
 
                 <div className="relative">

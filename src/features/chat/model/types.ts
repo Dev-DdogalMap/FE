@@ -9,7 +9,6 @@ export type ChatTabKey = "recommended" | "conversations" | "groups";
 
 export interface TasteExpertFilters {
   keyword: string;
-  region: string;
   category: string;
   minLevel: number;
   sort: TasteExpertSort;
@@ -49,8 +48,7 @@ export interface DirectChatMessage {
   directChatRoomId: number;
   senderId: number;
   senderNickname: string;
-  messageType: "TEXT" | "IMAGE" | "RESTAURANT_CARD";
-  status: "sending" | "sent" | "failed";
+  status: "SENT";
   message: string;
   createdAt: string;
 }

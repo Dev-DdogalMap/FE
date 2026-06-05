@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  Check,
   ImagePlus,
+  MoreVertical,
+  Plus,
   SendHorizonal,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,21 +15,109 @@ import {
 import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import type { DirectChatMessage } from "@/features/chat/model/types";
 import { useAuth } from "@/shared/auth/AuthContext";
-import { getStoredAccessToken } from "@/shared/auth/token";
+
+const FALLBACK_LEVEL = "Lv.5 맛잘알";
+const FALLBACK_SPECIALTY = "양식 전문";
+const READ_DIRECT_CHAT_MARKERS_KEY = "ddogalmap.readDirectChatMarkers";
+
+const formatMessageTime = (value: string) =>
+  new Date(value).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const formatDateDivider = (value?: string) => {
+  const date = value ? new Date(value) : new Date();
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
+};
+
+const getInitial = (name: string) => name.trim().charAt(0) || "?";
+
+const setReadDirectChatMarker = (
+  directChatRoomId: number,
+  lastMessageAt?: string | null,
+) => {
+  if (!lastMessageAt) {
+    return;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(
+      READ_DIRECT_CHAT_MARKERS_KEY,
+    );
+    const markers = rawValue
+      ? (JSON.parse(rawValue) as Record<string, string>)
+      : {};
+
+    markers[String(directChatRoomId)] = lastMessageAt;
+    window.localStorage.setItem(
+      READ_DIRECT_CHAT_MARKERS_KEY,
+      JSON.stringify(markers),
+    );
+  } catch {
+    window.localStorage.setItem(
+      READ_DIRECT_CHAT_MARKERS_KEY,
+      JSON.stringify({ [String(directChatRoomId)]: lastMessageAt }),
+    );
+  }
+};
+
+function ProfileAvatar({
+  imageUrl,
+  name,
+  size,
+}: {
+  imageUrl?: string | null;
+  name: string;
+  size: "header" | "message";
+}) {
+  const sizeClass = size === "header" ? "h-11 w-11" : "h-9 w-9";
+
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name}
+        className={`${sizeClass} shrink-0 rounded-full object-cover`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-full bg-[#fff2ed] text-sm font-bold text-[#ff4b0b]`}
+      aria-label={name}
+    >
+      {getInitial(name)}
+    </div>
+  );
+}
 
 export default function DirectChatPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, accessToken, refreshAccessToken } = useAuth();
+  const chatAuth = useMemo(
+    () => ({ accessToken, refreshAccessToken }),
+    [accessToken, refreshAccessToken],
+  );
   const { directChatRoomId } = useParams();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<DirectChatMessage[]>([]);
   const [title, setTitle] = useState("대화");
+  const [targetProfileImageUrl, setTargetProfileImageUrl] = useState<
+    string | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const socketRef = useRef<ReturnType<typeof connectDirectChatSocket> | null>(
     null,
   );
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const roomId = Number(directChatRoomId);
 
   useEffect(() => {
@@ -36,12 +127,19 @@ export default function DirectChatPage() {
 
     setIsLoading(true);
     void Promise.all([
-      getDirectChatRoom(roomId),
-      getDirectChatMessages(roomId),
+      getDirectChatRoom(roomId, chatAuth),
+      getDirectChatMessages(roomId, chatAuth),
     ])
       .then(([room, initialMessages]) => {
         setTitle(room.targetNickname);
+        setTargetProfileImageUrl(room.targetProfileImageUrl ?? null);
         setMessages(initialMessages);
+        const latestMessage = [...initialMessages].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime(),
+        )[0];
+        setReadDirectChatMarker(roomId, latestMessage?.createdAt);
       })
       .catch((error) => {
         console.error(error);
@@ -50,10 +148,9 @@ export default function DirectChatPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [roomId]);
+  }, [chatAuth, roomId]);
 
   useEffect(() => {
-    const accessToken = getStoredAccessToken();
     if (!roomId || Number.isNaN(roomId) || !accessToken) {
       return;
     }
@@ -73,6 +170,7 @@ export default function DirectChatPage() {
           }
           return [...prev, receivedMessage];
         });
+        setReadDirectChatMarker(roomId, receivedMessage.createdAt);
       },
       onError: (errorMessage) => {
         console.error(errorMessage);
@@ -86,7 +184,7 @@ export default function DirectChatPage() {
       socketRef.current = null;
       setIsSocketReady(false);
     };
-  }, [roomId]);
+  }, [accessToken, roomId]);
 
   const sortedMessages = useMemo(
     () =>
@@ -98,8 +196,13 @@ export default function DirectChatPage() {
     [messages],
   );
 
-  const handleSend = async () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [sortedMessages.length, isLoading]);
+
+  const handleSend = () => {
     const trimmedMessage = message.trim();
+
     if (!trimmedMessage) {
       return;
     }
@@ -110,38 +213,62 @@ export default function DirectChatPage() {
     }
 
     try {
-      setIsSending(true);
       socketRef.current.sendMessage(trimmedMessage);
       setMessage("");
     } catch (error) {
       console.error(error);
       alert("메시지 전송에 실패했습니다.");
-    } finally {
-      setIsSending(false);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-64px-64px)] flex-col bg-[#fffaf7]">
-      <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-4">
+    <div className="mx-auto flex h-[calc(100dvh-64px)] max-w-[430px] flex-col overflow-hidden bg-white">
+      <div className="z-20 flex h-[72px] shrink-0 items-center gap-3 border-b border-[#eeeeee] bg-white px-4">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-700"
+          aria-label="뒤로가기"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div>
-          <p className="text-sm font-semibold text-gray-900">
-            {title}
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            {isSocketReady ? "실시간 연결됨" : "실시간 연결 중"}
-          </p>
+        <ProfileAvatar
+          imageUrl={targetProfileImageUrl}
+          name={title}
+          size="header"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <p className="truncate text-[15px] font-bold text-[#222222]">
+              {title}
+            </p>
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white">
+              <Check className="h-2.5 w-2.5" />
+            </span>
+          </div>
+          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-gray-500">
+            <span>{FALLBACK_LEVEL}</span>
+            <span>·</span>
+            <span>{FALLBACK_SPECIALTY}</span>
+            <span>·</span>
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                isSocketReady ? "bg-[#18c964]" : "bg-gray-300"
+              }`}
+            />
+            <span>{isSocketReady ? "온라인" : "연결 중"}</span>
+          </div>
         </div>
+        <button
+          type="button"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-600"
+          aria-label="더보기"
+        >
+          <MoreVertical className="h-5 w-5" />
+        </button>
       </div>
 
-      <div className="flex-1 space-y-3 px-4 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-5">
         {isLoading ? (
           <div className="py-12 text-center text-sm text-gray-500">
             대화를 불러오는 중입니다.
@@ -151,68 +278,96 @@ export default function DirectChatPage() {
             아직 메시지가 없습니다. 첫 메시지를 보내보세요.
           </div>
         ) : (
-          sortedMessages.map((item) => {
-          const isMine = item.senderId === user?.userId;
-          return (
-            <div
-              key={item.messageId}
-              className={`flex ${
-                isMine ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[78%] rounded-[24px] px-4 py-3 text-sm leading-6 ${
-                  isMine
-                    ? "bg-[#ff4b0b] text-white"
-                    : "border border-gray-200 bg-white text-gray-700"
-                }`}
-              >
-                {!isMine && (
-                  <p className="mb-1 text-[11px] font-semibold text-gray-400">
-                    {item.senderNickname}
-                  </p>
-                )}
-                <p>{item.message}</p>
-                <p
-                  className={`mt-1 text-[11px] ${
-                    isMine ? "text-orange-100" : "text-gray-400"
+          <>
+            <div className="mb-5 text-center text-xs font-medium text-gray-400">
+              {formatDateDivider(sortedMessages[0]?.createdAt)}
+            </div>
+            {sortedMessages.map((item) => {
+              const isMine = item.senderId === user?.userId;
+              const messageTime = formatMessageTime(item.createdAt);
+
+              return (
+                <div
+                  key={item.messageId}
+                  className={`mb-4 flex ${
+                    isMine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {new Date(item.createdAt).toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-          );
-        })
+                  {isMine ? (
+                    <div className="flex max-w-[70%] flex-col items-end">
+                      <div className="rounded-[18px] bg-[#ff4b0b] px-3.5 py-3 text-sm leading-5 text-white">
+                        {item.message}
+                      </div>
+                      <p className="mt-1 text-[11px] text-gray-400">
+                        {messageTime} ✓
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex max-w-[86%] items-start gap-2.5">
+                      <ProfileAvatar
+                        imageUrl={targetProfileImageUrl}
+                        name={item.senderNickname || title}
+                        size="message"
+                      />
+                      <div className="min-w-0">
+                        <p className="mb-1 text-xs font-semibold text-[#333333]">
+                          {item.senderNickname || title}
+                        </p>
+                        <div className="flex items-end gap-1.5">
+                          <div className="max-w-[260px] rounded-2xl border border-[#eeeeee] bg-white px-3.5 py-3 text-sm leading-5 text-[#222222]">
+                            {item.message}
+                          </div>
+                          <span className="shrink-0 text-[11px] text-gray-400">
+                            {messageTime}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </>
         )}
       </div>
 
-      <div className="border-t border-gray-200 bg-white px-4 py-4">
-        <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-[#fffaf7] px-3 py-2">
-          <button
-            type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#ff4b0b]"
-          >
-            <ImagePlus className="h-5 w-5" />
-          </button>
+      <div className="z-20 flex h-[72px] shrink-0 items-center gap-2 border-t border-[#eeeeee] bg-white px-4 py-2.5">
+        <button
+          type="button"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#eeeeee] bg-white text-gray-500"
+          aria-label="첨부"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
+        <div className="flex h-11 flex-1 items-center gap-2 rounded-full border border-[#eeeeee] bg-white px-4">
           <input
             value={message}
             onChange={(event) => setMessage(event.target.value)}
+            onKeyDown={(event) => {
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="메시지를 입력하세요"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#222222] outline-none placeholder:text-gray-400"
           />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={isSending}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ff4b0b] text-white"
-          >
-            <SendHorizonal className="h-4 w-4" />
-          </button>
+          <ImagePlus className="h-5 w-5 shrink-0 text-gray-400" />
         </div>
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={!isSocketReady}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white disabled:opacity-50"
+          aria-label="전송"
+        >
+          <SendHorizonal className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );

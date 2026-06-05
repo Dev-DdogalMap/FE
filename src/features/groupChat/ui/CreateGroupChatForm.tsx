@@ -43,6 +43,7 @@ export default function CreateGroupChatForm({
         <div className="min-h-screen bg-white">
             <div className="max-w-md mx-auto px-6 pb-10">
                 {/* 백 버튼 */}
+                <div>뒤로가기 추가 필요</div>
                 <div>
 
                 </div>
@@ -222,7 +223,7 @@ export default function CreateGroupChatForm({
                 {/* 생성 버튼 */}
                 <button
                     onClick={handleCreate}
-                    className="w-full h-16 rounded-xl text-white text-l font-bold bg-[#FD4D01]"
+                    className="w-full h-16 rounded-xl text-white text-l font-bold bg-[#FF6B00]"
                 >
                     톡방 만들기
                 </button>

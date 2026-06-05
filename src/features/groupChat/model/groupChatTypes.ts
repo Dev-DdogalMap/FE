@@ -44,6 +44,7 @@ export interface CreateGroupChatRequest {
   region: string;
   foodTypeId?: number;
   maxParticipantCount: number;
+  imageKey: string;
 }
 
 export interface CreateGroupChatResponse {
@@ -64,4 +65,16 @@ export interface ChatRoomListThumbnailResponse {
     maxParticipantCount: number;
     createdAt: string;
     latestMessageTime: string;
+}
+
+// 채팅방 참여 응답
+export interface JoinChatRoomResponse {
+    chatRoomId: number;
+    isMember: boolean;
+}
+
+// presigned url 발급
+export interface UrlDto {
+    presignedUrl: string;
+    imageKey: string;
 }

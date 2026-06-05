@@ -28,8 +28,8 @@ export default function MessageBubble({
           <div
             className="
               max-w-[240px]
-              rounded-2xl
-              bg-orange-500
+              rounded-xl
+              bg-[#FF6B00]
               px-4
               py-2
               text-white
@@ -71,7 +71,7 @@ export default function MessageBubble({
           <div
             className="
               max-w-[240px]
-              rounded-2xl
+              rounded-xl
               bg-white
               px-4
               py-2

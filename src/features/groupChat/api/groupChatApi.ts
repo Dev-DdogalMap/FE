@@ -1,36 +1,43 @@
-import axios from "@/shared/api/axios";
+import { authFetch } from "@/shared/api/authFetch"; // 경로 맞게 수정
+import type {
+  ChatMessageResponse,
+  ChatRoomInfoResponse,
+  CreateGroupChatRequest,
+  CreateGroupChatResponse,
+  ChatRoomListResponse,
+  JoinChatRoomResponse,
+  UrlDto
+} from "../model/groupChatTypes";
 
-import type { ChatMessageResponse, ChatRoomInfoResponse, CreateGroupChatRequest, CreateGroupChatResponse, ChatRoomListResponse } from "../model/groupChatTypes";
+interface AuthParams {
+  accessToken: string | null;
+  refreshAccessToken: () => Promise<string | null>;
+}
 
-// Params 객체 - 확장성
 interface GetGroupChatMessagesParams {
-    roomId: number;
-    size?: number;
+  roomId: number;
+  size?: number;
 }
 
 interface GetGroupChatRoomListParams {
-    page?: number;
-    size?: number;
+  page?: number;
+  size?: number;
 }
 
 /**
  * 그룹 채팅 메시지 조회
  * GET /api/chat-rooms/{roomId}/messages
  */
-export async function getGroupChatMessages({
-    roomId,
-    size,
-}: GetGroupChatMessagesParams) {
-    const { data } = await axios.get<ChatMessageResponse[]>(
-        `/api/chat-rooms/${roomId}/messages`,
-        {
-            params: {
-                size,
-            },
-        },
-    );
-
-    return data;
+export async function getGroupChatMessages(
+  { roomId, size }: GetGroupChatMessagesParams,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/messages${size ? `?size=${size}` : ""}`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<ChatMessageResponse[]>;
 }
 
 /**
@@ -38,12 +45,15 @@ export async function getGroupChatMessages({
  * GET /api/chat-rooms/{roomId}
  */
 export async function getGroupChatRoomInfo(
-    roomId:number) {
-    const { data } = await axios.get<ChatRoomInfoResponse>(
-        `/api/chat-rooms/${roomId}`
-    );
-
-    return data;
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<ChatRoomInfoResponse>;
 }
 
 /**
@@ -51,32 +61,73 @@ export async function getGroupChatRoomInfo(
  * POST /api/chat-rooms
  */
 export async function createGroupChat(
-    request: CreateGroupChatRequest,
+  request: CreateGroupChatRequest,
+  { accessToken, refreshAccessToken }: AuthParams,
 ) {
-    const { data } = await axios.post<CreateGroupChatResponse>(
-        "/api/chat-rooms",
-        request,
-    );
-
-    return data;
+  const response = await authFetch({
+    path: "/api/chat-rooms",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    },
+  });
+  return response.json() as Promise<CreateGroupChatResponse>;
 }
 
 /**
  * 그룹 채팅방 전체 목록 조회
  * GET /api/chat-rooms
  */
-export async function getGroupChatRoomList({
-    page,
-    size,
-}: GetGroupChatRoomListParams) {
-    const { data } = await axios.get<ChatRoomListResponse>(
-        "/api/chat-rooms",
-        {
-            params: {
-                page,
-                size,
-            },
-        },
-    );
-    return data;
+export async function getGroupChatRoomList(
+  { page, size }: GetGroupChatRoomListParams,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const params = new URLSearchParams();
+  if (page !== undefined) params.set("page", String(page));
+  if (size !== undefined) params.set("size", String(size));
+
+  const response = await authFetch({
+    path: `/api/chat-rooms?${params.toString()}`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<ChatRoomListResponse>;
+}
+
+/**
+ * 채팅방 참여
+ * POST /api/chat-rooms/{roomId}/join
+ */
+export async function joinChatRoom(
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/join`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "POST",
+    },
+  });
+  return response.json() as Promise<JoinChatRoomResponse>;
+}
+
+/**
+ * presigned url 발급
+ * GET /api/chat-rooms/presigned-url
+ */
+export async function getPresignedUrl(
+  imageFileName: string,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/presigned-url?imageFileName=${encodeURIComponent(imageFileName)}`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<UrlDto>;
 }

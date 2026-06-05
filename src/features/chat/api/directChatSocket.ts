@@ -130,7 +130,6 @@ export function connectDirectChatSocket({
         "content-type": "application/json",
       },
       JSON.stringify({
-        messageType: "TEXT",
         message,
       }),
     );

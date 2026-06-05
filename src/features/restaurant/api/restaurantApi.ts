@@ -2,10 +2,10 @@ import axios from "@/shared/api/axios";
 import { authFetch } from "@/shared/api/authFetch";
 
 import type {
-  FoodTypeOption,
-  GetRestaurantInfoResponse,
-  GetRestaurantPreviewParams,
-  GetRestaurantPreviewResponse,
+    FoodTypeOption,
+    RestaurantInfoResponse,
+    GetRestaurantPreviewParams,
+    GetRestaurantPreviewResponse, GetRestaurantInfoParams,
 } from "../model/restaurantTypes";
 
 type AuthRequestOptions = {
@@ -37,18 +37,27 @@ export async function getRestaurantPreview({
 }
 
 /**
- * 음식점 위치/매장 정보 조회
+ * 음식점 정보 상세 조회 
  *
  * GET /api/restaurants/{restaurantId}/info
  */
-export async function getRestaurantInfo(restaurantId: number) {
-  const { data } = await axios.get<GetRestaurantInfoResponse>(
-    `/api/restaurants/${restaurantId}/info`,
-  );
+export async function getRestaurantInfo({
+    restaurantId,
+    lat,
+    lng,
+}: GetRestaurantInfoParams) {
+    const { data } = await axios.get<RestaurantInfoResponse>(
+        `/api/restaurants/${restaurantId}/info`,
+        {
+            params: {
+                lat,
+                lng,
+            },
+        },
+    );
 
-  return data;
+    return data;
 }
-
 /**
  * 방문 인증 저장
  *
@@ -89,7 +98,17 @@ export async function createVisitVerification(
  * GET /api/food-types
  */
 export async function getFoodTypes() {
-  const { data } = await axios.get<FoodTypeOption[]>("/api/food-types");
+  const { data } = await axios.get<unknown>("/api/food-types");
 
-  return data;
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.filter(
+    (item): item is FoodTypeOption =>
+      typeof item === "object" &&
+      item !== null &&
+      "foodTypeId" in item &&
+      "type" in item,
+  );
 }

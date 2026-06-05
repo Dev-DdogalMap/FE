@@ -9,8 +9,8 @@ import RestaurantReviewTab from "@/features/restaurant/ui/tabs/RestaurantReviewT
 
 import RestaurantBottom from "@/features/restaurant/ui/RestaurantBottom";
 
-import { getRestaurantPreview } from "@/features/restaurant/api/restaurantApi";
-import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import { getRestaurantInfo } from "@/features/restaurant/api/restaurantApi";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import ErrorView from "@/shared/ui/ErrorView";
 
@@ -18,7 +18,7 @@ const RestaurantPage = () => {
     const [activeTab, setActiveTab] = useState("info");
 
     const { restaurantId } = useParams();
-    const [restaurant, setRestaurant] = useState<RestaurantPreview | null>(null);
+    const [restaurant, setRestaurant] = useState<RestaurantInfoResponse | null>(null);
     const { location } = useWatchLocation();
 
     const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ const RestaurantPage = () => {
                 setLoading(true);
                 setError(false);
 
-                const data = await getRestaurantPreview({
+                const data = await getRestaurantInfo({
                     restaurantId: restaurantIdNumber,
                     lat: location?.lat,
                     lng: location?.lng,
@@ -69,7 +69,7 @@ const RestaurantPage = () => {
 
     return (
         <div className="pb-28">
-            <RestaurantCommon 
+            <RestaurantCommon
                 restaurant={restaurant}
                 loading={loading}
             />
@@ -77,12 +77,13 @@ const RestaurantPage = () => {
             {!loading && restaurant && (
             <>
                 <RestaurantTabs
-                activeTab={activeTab}
-                onChange={setActiveTab}
+                    activeTab={activeTab}
+                    reviewCount={restaurant.reviewCount}
+                    onChange={setActiveTab}
                 />
 
-                {activeTab === "info" && <RestaurantInfoTab />}
-                {activeTab === "review" && <RestaurantReviewTab />}
+                {activeTab === "info" && <RestaurantInfoTab restaurant={restaurant} />}
+                {activeTab === "review" && <RestaurantReviewTab restaurantId={restaurantIdNumber} />}
 
                 <RestaurantBottom />
             </>

@@ -1,20 +1,21 @@
-//common
 import {
     ArrowLeft,
     MapPin,
     Share2,
     Star,
     UtensilsCrossed,
+    Phone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import ErrorView from "@/shared/ui/ErrorView";
 import LoadingView from "@/shared/ui/LoadingView";
 import { toast } from 'sonner';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 interface Props {
-    restaurant: RestaurantPreview | null;
+    restaurant: RestaurantInfoResponse | null;
     loading: boolean;
 }
 
@@ -32,6 +33,7 @@ const Tag = ({ text }: TagProps) => {
 
 const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
 
     if (loading) {
         return (
@@ -56,15 +58,35 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const hasImage = !!restaurant.imageUrl;
 
     const distanceText =
-        restaurant.distance !== null ? `내 위치에서 ${Math.round(restaurant.distance)}m` : null;
+        restaurant.distance != null ? `내 위치에서 ${Math.round(restaurant.distance)}m` : null;
 
-    const foodScoreText =
-        restaurant.foodScore !== null ? `${restaurant.foodScore}%` : "-";
+    const isFoodScoreCalculating =
+        restaurant.foodScore === null || restaurant.foodScore === 0;
+    const foodScoreText = isFoodScoreCalculating
+        ? "계산중"
+        : `${restaurant.foodScore}%`;
 
     const averageScoreText =
-        restaurant.averageScore !== null
-            ? restaurant.averageScore.toFixed(1)
-            : "-";
+        restaurant.averageScore?.toFixed(1) ?? "-";
+
+    const handleCopyPhone = async () => {
+        if (!restaurant.phone) {
+            return;
+        }
+
+        try {
+            if (!navigator.clipboard) {
+                throw new Error("Clipboard API is not supported");
+            }
+
+            await navigator.clipboard.writeText(restaurant.phone);
+
+            toast.success("전화번호가 복사되었습니다.");
+        } catch (error) {
+            console.error("전화번호 복사 실패:", error);
+            toast.error("전화번호를 복사하지 못했습니다.");
+        }
+    };
 
     return (
         <section>
@@ -77,13 +99,10 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                             alt={restaurant.placeName}
                             className="h-full w-full object-cover"
                         />
-
-                        {/* 이미지가 있을 때만 상단 버튼 가독성을 위한 오버레이 */}
                         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
                     </>
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center">
-                        {/* 음식점 기본 아이콘 */}
                         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white">
                             <UtensilsCrossed size={36} className="text-[#ff6b00]" />
                         </div>
@@ -102,7 +121,7 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 <button
                     onClick={() => navigate(-1)}
                     aria-label="뒤로 가기"
-                    className={`absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95`}
+                    className="absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95"
                 >
                     <ArrowLeft
                         size={22}
@@ -122,7 +141,6 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                             try {
                                 await navigator.share(shareData);
                             } catch (error) {
-                                // 사용자가 공유를 취소한 경우는 무시
                                 if (error instanceof Error && error.name === 'AbortError') {
                                     return;
                                 }
@@ -149,12 +167,10 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
             <div className="relative z-10 -mt-8 rounded-t-[32px] bg-white px-6 pt-8">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                        {/* 음식점 이름 */}
                         <h1 className="line-clamp-2 text-[28px] font-extrabold leading-tight text-gray-900">
                             {restaurant.placeName}
                         </h1>
 
-                        {/* 음식 카테고리 */}
                         <div className="mt-3">
                             <span className="text-base font-semibold text-gray-700">
                                 {restaurant.foodType}
@@ -162,19 +178,29 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                         </div>
                     </div>
 
-                    {/* 맛집 지수 */}
                     <div className="flex shrink-0 flex-col items-center">
-                        <div className="text-[32px] font-black leading-none text-[#ff6b00]">
-                            {foodScoreText}
-                        </div>
-
-                        <div className="mt-1 text-xs font-semibold text-gray-500">
-                            맛집지수
-                        </div>
+                        {isFoodScoreCalculating ? (
+                            <>
+                                <div className="text-xs font-semibold text-gray-500">
+                                    맛집지수
+                                </div>
+                                <div className="mt-1 text-[32px] font-black leading-none text-[#ff6b00]">
+                                    {foodScoreText}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-[32px] font-black leading-none text-[#ff6b00]">
+                                    {foodScoreText}
+                                </div>
+                                <div className="mt-1 text-xs font-semibold text-gray-500">
+                                    맛집지수
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                {/* 위치 */}
                 <div className="mt-5 flex items-center gap-2 text-sm font-medium text-gray-500">
                     <MapPin size={17} />
 
@@ -183,10 +209,35 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     ) : (
                         <span>위치 정보 없음</span>
                     )}
+
+                    <span className="text-gray-300">·</span>
+
+                    <Phone size={15} />
+
+                    {restaurant.phone ? (
+                        isMobile ? (
+                            <a
+                                href={`tel:${restaurant.phone}`}
+                                className="transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleCopyPhone}
+                                className="cursor-pointer transition-colors hover:text-[#FF6B00]"
+                            >
+                                {restaurant.phone}
+                            </button>
+                        )
+                    ) : (
+                        <span className="text-gray-400">등록된 전화번호 없음</span>
+                    )}
                 </div>
 
-                {/* 태그 */}
-                {restaurant.topTags.length > 0 && (
+                {/* 태그 (💡 undefined 방어 코드 적용) */}
+                {restaurant.topTags && restaurant.topTags.length > 0 && (
                     <div className="mt-8 flex flex-wrap gap-2">
                         {restaurant.topTags.map((tag) => (
                             <Tag
@@ -199,7 +250,7 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
 
                 {/* 평점 */}
                 <div className="mt-5 flex items-center gap-2 text-sm">
-                    {restaurant.reviewCount > 0 ? (
+                    {(restaurant.reviewCount ?? 0) > 0 ? (
                         <>
                             <Star
                                 size={16}

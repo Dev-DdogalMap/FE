@@ -8,7 +8,7 @@ import {
   createVisitVerification,
   getRestaurantInfo,
 } from "@/features/restaurant/api/restaurantApi";
-import type { GetRestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
+import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
 
 const VERIFY_RADIUS_METER = 50;
@@ -45,7 +45,7 @@ const VisitVerificationPage = () => {
   const { restaurantId } = useParams();
   const { accessToken, refreshAccessToken } = useAuth();
   const [restaurant, setRestaurant] =
-    useState<GetRestaurantInfoResponse | null>(null);
+    useState<RestaurantInfoResponse | null>(null);
 
   const hasAutoCheckedRef = useRef(false);
   const locationRequestIdRef = useRef(0);
@@ -68,6 +68,8 @@ const VisitVerificationPage = () => {
   const isInvalidRestaurantId =
     !restaurantId || Number.isNaN(restaurantIdNumber);
 
+  const [verifiedAt, setVerifiedAt] = useState<string>("");
+
   useEffect(() => {
     if (isInvalidRestaurantId) return;
 
@@ -75,7 +77,9 @@ const VisitVerificationPage = () => {
       try {
         setLoading(true);
 
-        const data = await getRestaurantInfo(restaurantIdNumber);
+        const data = await getRestaurantInfo({
+          restaurantId: Number(restaurantId),
+        });
         setRestaurant(data);
       } catch (error) {
         console.error("가게 위치 정보 조회 실패:", error);
@@ -185,19 +189,20 @@ const VisitVerificationPage = () => {
     try {
       setSubmitting(true);
 
-      await createVisitVerification(
-        {
-          restaurantId: Number(restaurantId),
-          userLatitude: userLocation.latitude,
-          userLongitude: userLocation.longitude,
-          accuracyMeter: accuracyMeter ?? 0,
-        },
-        {
-          accessToken,
-          refreshAccessToken,
-        },
+      const res = await createVisitVerification(
+          {
+            restaurantId: Number(restaurantId),
+            userLatitude: userLocation.latitude,
+            userLongitude: userLocation.longitude,
+            accuracyMeter: accuracyMeter ?? 0,
+          },
+          {
+            accessToken,
+            refreshAccessToken,
+          },
       );
 
+      setVerifiedAt(res.verifiedAt);
       setIsCompleteModalOpen(true);
     } catch (error) {
       console.error("방문 인증 저장 실패:", error);
@@ -460,10 +465,17 @@ const VisitVerificationPage = () => {
             navigate(`/restaurants/${restaurantId}`);
           }}
           onReviewClick={() => {
-            // 후기 작성 페이지 연결되면 여기 경로만 맞추면 됨
-            // navigate(`/restaurants/${restaurantId}/reviews/new`);
+            setIsCompleteModalOpen(false);
 
-            alert("후기 작성 페이지는 준비 중입니다.");
+            navigate("/review", {
+              state: {
+                restaurantId: restaurantIdNumber,
+                placeName: restaurant.placeName,
+                roadAddressName: restaurant.roadAddressName,
+                verifiedAt: verifiedAt,
+                accessToken: accessToken
+              }
+            });
           }}
         />
       )}
