@@ -60,8 +60,11 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const distanceText =
         restaurant.distance != null ? `내 위치에서 ${Math.round(restaurant.distance)}m` : null;
 
-    const foodScoreText =
-        restaurant.foodScore != null ? `${restaurant.foodScore}%` : "-";
+    const isFoodScoreCalculating =
+        restaurant.foodScore === null || restaurant.foodScore === 0;
+    const foodScoreText = isFoodScoreCalculating
+        ? "계산중"
+        : `${restaurant.foodScore}%`;
 
     const averageScoreText =
         restaurant.averageScore?.toFixed(1) ?? "-";
@@ -176,13 +179,25 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     </div>
 
                     <div className="flex shrink-0 flex-col items-center">
-                        <div className="text-[32px] font-black leading-none text-[#ff6b00]">
-                            {foodScoreText}
-                        </div>
-
-                        <div className="mt-1 text-xs font-semibold text-gray-500">
-                            맛집지수
-                        </div>
+                        {isFoodScoreCalculating ? (
+                            <>
+                                <div className="text-xs font-semibold text-gray-500">
+                                    맛집지수
+                                </div>
+                                <div className="mt-1 text-[32px] font-black leading-none text-[#ff6b00]">
+                                    {foodScoreText}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-[32px] font-black leading-none text-[#ff6b00]">
+                                    {foodScoreText}
+                                </div>
+                                <div className="mt-1 text-xs font-semibold text-gray-500">
+                                    맛집지수
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
