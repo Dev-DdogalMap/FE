@@ -119,6 +119,8 @@ export default function DirectChatPage() {
     null,
   );
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const sendLockRef = useRef(false);
+  const sendUnlockTimerRef = useRef<number | null>(null);
   const roomId = Number(directChatRoomId);
 
   useEffect(() => {
@@ -201,7 +203,25 @@ export default function DirectChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [sortedMessages.length, isLoading]);
 
-  const handleSend = async () => {
+  useEffect(() => {
+    return () => {
+      if (sendUnlockTimerRef.current) {
+        window.clearTimeout(sendUnlockTimerRef.current);
+      }
+    };
+  }, []);
+
+  const releaseSendLock = () => {
+    sendLockRef.current = false;
+    setIsSending(false);
+    sendUnlockTimerRef.current = null;
+  };
+
+  const handleSend = () => {
+    if (sendLockRef.current) {
+      return;
+    }
+
     const trimmedMessage = message.trim();
     if (!trimmedMessage) {
       return;
@@ -213,15 +233,18 @@ export default function DirectChatPage() {
     }
 
     try {
+      sendLockRef.current = true;
       setIsSending(true);
       socketRef.current.sendMessage(trimmedMessage);
       setMessage("");
     } catch (error) {
       console.error(error);
       alert("메시지 전송에 실패했습니다.");
-    } finally {
-      setIsSending(false);
+      releaseSendLock();
+      return;
     }
+
+    sendUnlockTimerRef.current = window.setTimeout(releaseSendLock, 500);
   };
 
   return (
@@ -348,11 +371,16 @@ export default function DirectChatPage() {
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
                 event.preventDefault();
-                void handleSend();
+                handleSend();
               }
             }}
+            disabled={isSending}
             placeholder="메시지를 입력하세요"
             className="min-w-0 flex-1 bg-transparent text-sm text-[#222222] outline-none placeholder:text-gray-400"
           />
@@ -361,7 +389,7 @@ export default function DirectChatPage() {
         <button
           type="button"
           onClick={handleSend}
-          disabled={isSending}
+          disabled={isSending || !isSocketReady}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white disabled:opacity-50"
           aria-label="전송"
         >
