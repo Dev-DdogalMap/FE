@@ -2,10 +2,10 @@ import axios from "@/shared/api/axios";
 import { authFetch } from "@/shared/api/authFetch";
 
 import type {
-  FoodTypeOption,
-  RestaurantInfoResponse,
-  GetRestaurantPreviewParams,
-  GetRestaurantPreviewResponse,
+    FoodTypeOption,
+    RestaurantInfoResponse,
+    GetRestaurantPreviewParams,
+    GetRestaurantPreviewResponse, GetRestaurantInfoParams,
 } from "../model/restaurantTypes";
 
 type AuthRequestOptions = {
@@ -45,7 +45,7 @@ export async function getRestaurantInfo({
     restaurantId,
     lat,
     lng,
-}: GetRestaurantPreviewParams) {
+}: GetRestaurantInfoParams) {
     const { data } = await axios.get<RestaurantInfoResponse>(
         `/api/restaurants/${restaurantId}/info`,
         {

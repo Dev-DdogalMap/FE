@@ -69,7 +69,7 @@ const RestaurantPage = () => {
 
     return (
         <div className="pb-28">
-            <RestaurantCommon 
+            <RestaurantCommon
                 restaurant={restaurant}
                 loading={loading}
             />
@@ -83,7 +83,7 @@ const RestaurantPage = () => {
                 />
 
                 {activeTab === "info" && <RestaurantInfoTab restaurant={restaurant} />}
-                {activeTab === "review" && <RestaurantReviewTab />}
+                {activeTab === "review" && <RestaurantReviewTab restaurantId={restaurantIdNumber} />}
 
                 <RestaurantBottom />
             </>
