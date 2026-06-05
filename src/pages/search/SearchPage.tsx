@@ -13,6 +13,7 @@ import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTy
 import { useSearchParams } from "react-router-dom";
 import { Search, ChevronDown, Loader2, ChevronUp } from "lucide-react";
 import { COLORS } from "@/shared/constants/colors";
+import RegionSelect from "@/features/region/ui/RegionSelect";
 
 interface FoodTypeOption {
     foodTypeId: number;
@@ -59,6 +60,8 @@ export default function SearchPage() {
     const [foodTypes, setFoodTypes] = useState<FoodTypeOption[]>([]);
     const [foodTypesError, setFoodTypesError] = useState<string | null>(null);
     const [sort, setSort] = useState<SearchSort>("distance");
+    const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
+    const [selectedRegionName, setSelectedRegionName] = useState("전체");
 
     // 검색 파라미터
     const [searchParams] = useSearchParams();
@@ -199,12 +202,16 @@ export default function SearchPage() {
             </form>
 
             <div className="mb-4 flex gap-2">
-                <input
-                    type="text"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    placeholder="지역 입력 (예: 성수동)"
-                    className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm shadow-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#FF6B00]/20"
+                <RegionSelect
+                    selectedRegionId={selectedRegionId}
+                    selectedRegionName={selectedRegionName}
+                    onChange={(regionName, dong) => {
+                        setRegion(regionName);
+                        setSelectedRegionName(regionName || "전체");
+                        setSelectedRegionId(dong?.regionId);
+
+                        fetchSearch(keyword, regionName, selectedFoodTypeId, sort);
+                }}
                 />
 
                 <div className="relative">
