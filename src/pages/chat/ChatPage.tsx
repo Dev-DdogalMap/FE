@@ -29,8 +29,8 @@ import { JoinFailModal } from "@/features/groupChat/ui/JoinFailModal";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
-  region: "성수동",
-  category: "양식",
+  region: "전체",
+  category: "전체",
   minLevel: 5,
   sort: "EXPERTISE",
   page: 0,
