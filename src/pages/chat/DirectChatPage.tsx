@@ -98,33 +98,6 @@ function ProfileAvatar({
   );
 }
 
-function RestaurantCardMessage({ message }: { message: DirectChatMessage }) {
-  return (
-    <div className="max-w-[75%] rounded-2xl border border-[#eeeeee] bg-white p-3 text-left">
-      <div className="flex gap-3">
-        <div className="h-20 w-24 shrink-0 rounded-xl bg-[#fff2ed]" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[#222222]">
-            {message.message || "추천 맛집"}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-[#ff4b0b]">
-            ★ 4.8 · 양식
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            성수동 · 350m
-          </p>
-          <button
-            type="button"
-            className="mt-2 text-xs font-semibold text-[#ff4b0b]"
-          >
-            자세히 보기
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function DirectChatPage() {
   const navigate = useNavigate();
   const { user, accessToken, refreshAccessToken } = useAuth();
@@ -315,19 +288,6 @@ export default function DirectChatPage() {
             {sortedMessages.map((item) => {
               const isMine = item.senderId === user?.userId;
               const messageTime = formatMessageTime(item.createdAt);
-
-              if (item.messageType === "RESTAURANT_CARD") {
-                return (
-                  <div
-                    key={item.messageId}
-                    className={`mb-4 flex ${
-                      isMine ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <RestaurantCardMessage message={item} />
-                  </div>
-                );
-              }
 
               return (
                 <div
