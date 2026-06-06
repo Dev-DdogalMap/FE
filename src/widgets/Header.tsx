@@ -1,7 +1,8 @@
-import { Bell, Menu } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/images/logo.png";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { Bell, Menu } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function Header() {
       navigate("/", { replace: true });
     } catch (error) {
       console.error(error);
-      alert("로그아웃에 실패했습니다.");
+      toast.error('로그아웃에 실패했습니다');
     }
   };
 

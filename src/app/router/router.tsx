@@ -7,20 +7,22 @@ import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import BookmarkPage from "@/pages/bookmark/BookmarkPage";
 //import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
+import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
+import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
+import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 import MapPage from "@/pages/map/MapPage";
+import MyNeighborhoodVerificationPage from "@/pages/myPage/MyNeighborhoodVerificationPage";
 import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
-import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
-import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
+
 import ChatPageRefactoring from "@/pages/chat/ChatPage";
 
-import ReviewPage from "@/pages/review/ReviewPage";
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
+import ReviewPage from "@/pages/review/ReviewPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -78,7 +80,11 @@ export const router = createBrowserRouter([
       {
         path: "/mypage",
         element:
-                  <MyPage />,
+          <MyPage />,
+      },
+      {
+        path: "/mypage/neighborhood-verification",
+        element: <MyNeighborhoodVerificationPage />,
       },
       {
         path: "/chat/group/room/:roomId",

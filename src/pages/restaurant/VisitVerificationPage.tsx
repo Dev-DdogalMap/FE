@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Circle, MapMarker } from "react-kakao-maps-sdk";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { useEffect, useRef, useState } from "react";
+import { Circle, MapMarker } from "react-kakao-maps-sdk";
+import { useNavigate, useParams } from "react-router-dom";
 
-import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import {
   createVisitVerification,
   getRestaurantInfo,
 } from "@/features/restaurant/api/restaurantApi";
 import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
 import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
+import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 
 const VERIFY_RADIUS_METER = 50;
 //const USE_MOCK_INSIDE_RADIUS = true;
