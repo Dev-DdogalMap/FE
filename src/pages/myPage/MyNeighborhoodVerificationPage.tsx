@@ -25,6 +25,9 @@ const MyNeighborhoodVerificationPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [isKakaoReady, setIsKakaoReady] = useState(false);
 
+    const KAKAO_SDK_POLL_INTERVAL = 100; // ms
+    const KAKAO_SDK_LOAD_TIMEOUT = 10000; // ms
+
     // errorMessage 발생 시 토스트로 표시
     useEffect(() => {
         if (errorMessage) {
@@ -42,17 +45,18 @@ const MyNeighborhoodVerificationPage = () => {
 
         // 100ms마다 체크
         const interval = setInterval(() => {
-            if ((window as any).kakao?.maps?.services) {
+            if (window.kakao?.maps?.services) {
                 setIsKakaoReady(true);
                 clearInterval(interval);
+                clearTimeout(timeout);
             }
-        }, 100);
+        }, KAKAO_SDK_POLL_INTERVAL);
 
         // 10초 후 타임아웃
         const timeout = setTimeout(() => {
             clearInterval(interval);
             toast.error("지도 서비스를 불러오지 못했습니다. 새로고침 해주세요.");
-        }, 10000);
+        }, KAKAO_SDK_LOAD_TIMEOUT);
 
         return () => {
             clearInterval(interval);
