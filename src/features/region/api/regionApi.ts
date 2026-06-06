@@ -5,3 +5,4 @@ export const getRegionTree = async () => {
     const { data } = await axios.get<SidoRegion[]>("/api/regions/tree");
     return data;
 };
+

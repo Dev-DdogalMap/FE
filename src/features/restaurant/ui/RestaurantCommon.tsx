@@ -1,18 +1,10 @@
-import {
-    ArrowLeft,
-    MapPin,
-    Share2,
-    Star,
-    UtensilsCrossed,
-    Phone
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
 import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaurantTypes";
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import ErrorView from "@/shared/ui/ErrorView";
 import LoadingView from "@/shared/ui/LoadingView";
+import { ArrowLeft, MapPin, Phone, Share2, Star, UtensilsCrossed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 interface Props {
     restaurant: RestaurantInfoResponse | null;
