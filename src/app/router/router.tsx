@@ -14,12 +14,13 @@ import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-//import NotFoundPage from "@/pages/error/NotFoundPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 import ChatPageRefactoring from "@/pages/chat/ChatPage";
 
+import ReviewPage from "@/pages/review/ReviewPage";
+import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -95,6 +96,14 @@ export const router = createBrowserRouter([
       //       element: <MyPage />,
       //     },
       // },
+      {
+        path: "/review",
+        element: <ReviewPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />
+      }
     ],
   },
 ]);
