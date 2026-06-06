@@ -11,7 +11,7 @@ import type { MyNeighborhoodResponse } from "../model/myPageTypes";
 const MyNeighborhoodSection = () => {
   const navigate = useNavigate();
 
-const { isLoggedIn, isLoading, accessToken, refreshAccessToken } = useAuth();
+const {isLoading, accessToken, refreshAccessToken } = useAuth();
 
   const [regionInfo, setRegionInfo] =
     useState<MyNeighborhoodResponse | null>(null);
@@ -48,14 +48,6 @@ const { isLoggedIn, isLoading, accessToken, refreshAccessToken } = useAuth();
       return;
     }
 
-    //미로그인시 리다이렉트
-    // if (!isLoggedIn) {
-    //   toast.error("로그인이 필요합니다.");
-    //   sessionStorage.setItem("redirectAfterLogin", visitPath);
-    //   navigate("/login");
-    //   return;
-    // }
-
     navigate(visitPath);
   };
 
@@ -83,7 +75,7 @@ const { isLoggedIn, isLoading, accessToken, refreshAccessToken } = useAuth();
 
           <button
              onClick={handleVerify}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+            className="rounded-lg cursor-pointer border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
           >
             {isVerified ? "재인증" : "인증하기"}
           </button>
