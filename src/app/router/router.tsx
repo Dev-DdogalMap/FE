@@ -5,10 +5,8 @@ import MobileLayout from "@/layouts/MobileLayout";
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import BookmarkPage from "@/pages/bookmark/BookmarkPage";
-import ChatPage from "@/pages/chat/ChatPage";
-//import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+//import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
-import GroupChatPage from "@/pages/chat/GroupChatPage";
 import MapPage from "@/pages/map/MapPage";
 import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
@@ -19,6 +17,7 @@ import SearchPage from "@/pages/search/SearchPage";
 import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
 import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
 import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
+import ChatPageRefactoring from "@/pages/chat/ChatPage";
 
 import ReviewPage from "@/pages/review/ReviewPage";
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
@@ -66,23 +65,15 @@ export const router = createBrowserRouter([
       },
       {
         path: "/chat",
-        element: <ChatPage />,
+        element: <ChatPageRefactoring />,
       },
       {
         path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
-        path: "/chat/groups",
-        element: <GroupChatPage />,
-      },
-      {
         path: "/chat/groups/create",
         element: <CreateGroupChatPage />,
-      },
-      {
-        path: "/chat/groups/:groupId",
-        element: <GroupChatPage />,
       },
       {
         path: "/mypage",
@@ -97,6 +88,14 @@ export const router = createBrowserRouter([
         path: "/chat/group/info/:roomId",
         element: <GroupInfoPage />,
       },
+      // {
+      //   element: <RequireAuth />,
+      //   children: [
+      //     {
+      //       path: "/mypage",
+      //       element: <MyPage />,
+      //     },
+      // },
       {
         path: "/review",
         element: <ReviewPage />,
