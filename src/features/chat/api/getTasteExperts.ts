@@ -143,6 +143,7 @@ export async function createDirectChat(targetUserId: number, auth: ChatAuth) {
   return (await response.json()) as DirectChatRoomSummary;
 }
 
+// 내 대화 목록 조회
 export async function getDirectChats(auth: ChatAuth) {
   const response = await authFetch({
     path: "/api/direct-chats",
