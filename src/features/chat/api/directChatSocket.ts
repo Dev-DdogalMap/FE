@@ -1,10 +1,14 @@
-import type { DirectChatMessage } from "@/features/chat/model/types";
+import type {
+  DirectChatMessage,
+  DirectChatRoomEvent,
+} from "@/features/chat/model/types";
 import { WS_BASE_URL } from "@/shared/config/api";
 
 type SocketOptions = {
   directChatRoomId: number;
   accessToken: string;
   onMessage: (message: DirectChatMessage) => void;
+  onRoomEvent?: (event: DirectChatRoomEvent) => void;
   onConnected?: () => void;
   onError?: (message: string) => void;
 };
@@ -49,6 +53,7 @@ export function connectDirectChatSocket({
   directChatRoomId,
   accessToken,
   onMessage,
+  onRoomEvent,
   onConnected,
   onError,
 }: SocketOptions) {
@@ -101,7 +106,14 @@ export function connectDirectChatSocket({
 
       if (frame.command === "MESSAGE") {
         try {
-          onMessage(JSON.parse(frame.body) as DirectChatMessage);
+          const data = JSON.parse(frame.body) as
+            | DirectChatMessage
+            | DirectChatRoomEvent;
+          if ("eventType" in data) {
+            onRoomEvent?.(data);
+          } else {
+            onMessage(data);
+          }
         } catch (error) {
           console.error(error);
         }

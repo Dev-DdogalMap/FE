@@ -201,6 +201,24 @@ export async function getDirectChatMessages(
   return (await response.json()) as DirectChatMessage[];
 }
 
+export async function leaveDirectChatRoom(
+  directChatRoomId: number,
+  auth: ChatAuth,
+) {
+  const response = await authFetch({
+    path: `/api/direct-chats/${directChatRoomId}/leave`,
+    accessToken: auth.accessToken,
+    refreshAccessToken: auth.refreshAccessToken,
+    options: {
+      method: "DELETE",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("채팅방 나가기에 실패했습니다.");
+  }
+}
+
 export async function saveDirectChatMessage(
   directChatRoomId: number,
   message: string,

@@ -54,6 +54,12 @@ export interface DirectChatMessage {
   createdAt: string;
 }
 
+export interface DirectChatRoomEvent {
+  eventType: "DIRECT_CHAT_ROOM_LEFT";
+  directChatRoomId: number;
+  userId: number;
+}
+
 export interface GroupChatSummary {
   groupId: number;
   name: string;

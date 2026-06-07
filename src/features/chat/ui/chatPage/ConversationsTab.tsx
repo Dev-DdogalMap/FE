@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, MessageSquareMore } from "lucide-react";
-import { getDirectChats } from "@/features/chat/api/getTasteExperts";
+import { getDirectChatRoom, getDirectChats } from "@/features/chat/api/getTasteExperts";
 import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import { connectGroupChatSocket } from "@/features/groupChat/api/connectGroupChatSocket";
 import type { ChatAuth, DirectChatMessage, DirectChatRoomSummary } from "@/features/chat/model/types";
@@ -10,6 +10,7 @@ import { ROUTES } from "@/shared/constants/routes";
 import type { ChatMessage } from "@/features/groupChat/model/groupChatTypes";
 
 const READ_DIRECT_CHAT_MARKERS_KEY = "ddogalmap.readDirectChatMarkers";
+const LEFT_PARTNER_LABEL = "대화 상대 없음";
 
 const getReadDirectChatMarkers = () => {
     try {
@@ -114,6 +115,22 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
                 return;
             }
 
+            void getDirectChatRoom(receivedMessage.directChatRoomId, chatAuth)
+                .then((room) => {
+                    setConversations((prev) => {
+                        const updated = prev.map((c) => {
+                            if (c.directChatRoomId !== receivedMessage.directChatRoomId || c.chatType !== "DIRECT") return c;
+                            return {
+                                ...c,
+                                targetNickname: room.targetNickname,
+                                targetProfileImageUrl: room.targetProfileImageUrl,
+                            };
+                        });
+                        return sortByLastMessage(updated);
+                    });
+                })
+                .catch((error) => console.error(error));
+
             setUnreadRoomIds((prev) => {
                 const next = new Set(prev);
                 next.add(`DIRECT-${receivedMessage.directChatRoomId}`);
@@ -126,12 +143,25 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
                 directChatRoomId,
                 accessToken: accessToken,
                 onMessage: handleDirectMessage,
+                onRoomEvent: (event) => {
+                    if (event.eventType !== "DIRECT_CHAT_ROOM_LEFT" || event.userId === currentUserId) return;
+                    setConversations((prev) =>
+                        prev.map((c) => {
+                            if (c.directChatRoomId !== event.directChatRoomId || c.chatType !== "DIRECT") return c;
+                            return {
+                                ...c,
+                                targetNickname: LEFT_PARTNER_LABEL,
+                                targetProfileImageUrl: null,
+                            };
+                        }),
+                    );
+                },
                 onError: (errorMessage) => console.error(errorMessage),
             }),
         );
 
         return () => sockets.forEach((socket) => socket.disconnect());
-    }, [chatAuth?.accessToken, directRoomIdsKey, currentUserId]);
+    }, [chatAuth, chatAuth?.accessToken, directRoomIdsKey, currentUserId]);
 
     // 그룹 채팅 소켓 연결
     const groupRoomIds = useMemo(

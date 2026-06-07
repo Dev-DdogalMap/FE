@@ -11,13 +11,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   getDirectChatMessages,
   getDirectChatRoom,
+  leaveDirectChatRoom,
 } from "@/features/chat/api/getTasteExperts";
 import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import type { DirectChatMessage } from "@/features/chat/model/types";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { ROUTES } from "@/shared/constants/routes";
 
 const FALLBACK_LEVEL = "Lv.5 맛잘알";
 const FALLBACK_SPECIALTY = "양식 전문";
+const LEFT_PARTNER_LABEL = "대화 상대 없음";
 const READ_DIRECT_CHAT_MARKERS_KEY = "ddogalmap.readDirectChatMarkers";
 
 const formatMessageTime = (value: string) =>
@@ -112,8 +115,11 @@ export default function DirectChatPage() {
   const [targetProfileImageUrl, setTargetProfileImageUrl] = useState<
     string | null
   >(null);
+  const [hasPartnerLeft, setHasPartnerLeft] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const socketRef = useRef<ReturnType<typeof connectDirectChatSocket> | null>(
     null,
   );
@@ -133,6 +139,7 @@ export default function DirectChatPage() {
       .then(([room, initialMessages]) => {
         setTitle(room.targetNickname);
         setTargetProfileImageUrl(room.targetProfileImageUrl ?? null);
+        setHasPartnerLeft(room.targetNickname === LEFT_PARTNER_LABEL);
         setMessages(initialMessages);
         const latestMessage = [...initialMessages].sort(
           (a, b) =>
@@ -171,6 +178,28 @@ export default function DirectChatPage() {
           return [...prev, receivedMessage];
         });
         setReadDirectChatMarker(roomId, receivedMessage.createdAt);
+
+        if (receivedMessage.senderId !== user?.userId) {
+          void getDirectChatRoom(roomId, chatAuth)
+            .then((room) => {
+              setTitle(room.targetNickname);
+              setTargetProfileImageUrl(room.targetProfileImageUrl ?? null);
+              setHasPartnerLeft(room.targetNickname === LEFT_PARTNER_LABEL);
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        }
+      },
+      onRoomEvent: (event) => {
+        if (
+          event.eventType === "DIRECT_CHAT_ROOM_LEFT" &&
+          event.userId !== user?.userId
+        ) {
+          setTitle(LEFT_PARTNER_LABEL);
+          setTargetProfileImageUrl(null);
+          setHasPartnerLeft(true);
+        }
       },
       onError: (errorMessage) => {
         console.error(errorMessage);
@@ -184,7 +213,7 @@ export default function DirectChatPage() {
       socketRef.current = null;
       setIsSocketReady(false);
     };
-  }, [accessToken, roomId]);
+  }, [accessToken, chatAuth, roomId, user?.userId]);
 
   const sortedMessages = useMemo(
     () =>
@@ -221,6 +250,35 @@ export default function DirectChatPage() {
     }
   };
 
+  const handleLeaveRoom = async () => {
+    if (!roomId || Number.isNaN(roomId) || isLeaving) {
+      return;
+    }
+
+    const shouldLeave = window.confirm(
+      "이 채팅방을 나가시겠습니까? 내 채팅 목록에서 사라지고, 상대방에게는 대화 상대 없음으로 표시됩니다.",
+    );
+
+    if (!shouldLeave) {
+      setIsMenuOpen(false);
+      return;
+    }
+
+    try {
+      setIsLeaving(true);
+      await leaveDirectChatRoom(roomId, chatAuth);
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      navigate(ROUTES.chat, { replace: true });
+    } catch (error) {
+      console.error(error);
+      alert("채팅방 나가기에 실패했습니다.");
+    } finally {
+      setIsLeaving(false);
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
     <div className="mx-auto flex h-[calc(100dvh-64px)] max-w-[430px] flex-col overflow-hidden bg-white">
       <div className="z-20 flex h-[72px] shrink-0 items-center gap-3 border-b border-[#eeeeee] bg-white px-4">
@@ -247,25 +305,47 @@ export default function DirectChatPage() {
             </span>
           </div>
           <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-gray-500">
-            <span>{FALLBACK_LEVEL}</span>
-            <span>·</span>
-            <span>{FALLBACK_SPECIALTY}</span>
-            <span>·</span>
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                isSocketReady ? "bg-[#18c964]" : "bg-gray-300"
-              }`}
-            />
-            <span>{isSocketReady ? "온라인" : "연결 중"}</span>
+            {hasPartnerLeft ? (
+              <span>상대방이 채팅방을 나갔습니다</span>
+            ) : (
+              <>
+                <span>{FALLBACK_LEVEL}</span>
+                <span>·</span>
+                <span>{FALLBACK_SPECIALTY}</span>
+                <span>·</span>
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isSocketReady ? "bg-[#18c964]" : "bg-gray-300"
+                  }`}
+                />
+                <span>{isSocketReady ? "온라인" : "연결 중"}</span>
+              </>
+            )}
           </div>
         </div>
-        <button
-          type="button"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-600"
-          aria-label="더보기"
-        >
-          <MoreVertical className="h-5 w-5" />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-600"
+            aria-label="채팅방 설정"
+            aria-expanded={isMenuOpen}
+          >
+            <MoreVertical className="h-5 w-5" />
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 top-11 z-30 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 text-sm shadow-lg">
+              <button
+                type="button"
+                onClick={handleLeaveRoom}
+                disabled={isLeaving}
+                className="w-full px-4 py-3 text-left font-medium text-red-500 disabled:opacity-50"
+              >
+                {isLeaving ? "나가는 중" : "방 나가기"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-5">
