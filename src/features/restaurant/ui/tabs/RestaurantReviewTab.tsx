@@ -23,21 +23,17 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
     const [onlyPhotos, setOnlyPhotos] = useState<boolean>(false);
     const [sortOrder, setSortOrder] = useState<string>("createdAt,desc");
 
-    // 무한 스크롤 관련 상태 추가
+    // 무한 스크롤 관련 상태
     const pageRef = useRef<number>(0);
     const [hasNext, setHasNext] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean>(false); // 초기 로드 및 필터 변경 시 로딩
-    const [isFetchingNext, setIsFetchingNext] = useState<boolean>(false); // 스크롤 추가 로딩
+    const [loading, setLoading] = useState<boolean>(false);
+    const [isFetchingNext, setIsFetchingNext] = useState<boolean>(false);
 
     // 바닥 감지용 레퍼런스
     const observerRef = useRef<HTMLDivElement | null>(null);
 
-    // 데이터 패칭 로직 분리 및 메모이제이션
+    // 데이터 패칭 로직
     const fetchReviews = useCallback(async (currentPage: number, isReset: boolean = false) => {
-
-        console.log("요청 페이지:", currentPage);
-
-        // 초기화 요청이라면 상태부터 깔끔하게 정리
         if (isReset) {
             setLoading(true);
             setHasNext(true);
@@ -53,19 +49,15 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
                     params: {
                         page: currentPage,
                         size: 10,
-                        sort: `${sortField},${direction}`, // 이 부분이 백엔드로 전달됩니다.
+                        sort: `${sortField},${direction}`,
                         hasImage: onlyPhotos
                     }
                 }
             );
 
             const fetchedContent = response.data.content || response.data;
-
-            // Page 객체 구조에 맞게 마지막 페이지인지 확인
-            // last가 false이면 다음 페이지가 있다는 뜻이므로 true를 반환
             const hasNextPage = !response.data.last;
 
-            // 결과 반영
             setReviews(isReset ? fetchedContent : (prev) => [...prev, ...fetchedContent]);
             setHasNext(hasNextPage);
         } catch (error) {
@@ -74,15 +66,11 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
             if (isReset) setLoading(false);
             else setIsFetchingNext(false);
         }
-    }, [restaurantId, onlyPhotos, sortOrder]);
+    }, [restaurantId, onlyPhotos, sortOrder, API_BASE_URL]);
 
-// 1. 상태 초기화 및 데이터 호출
+    // 상태 초기화 및 데이터 호출
     useEffect(() => {
-        // 1) 페이지 번호 초기화
         pageRef.current = 0;
-
-        // 2) 비동기 호출 (setState 호출을 함수 안으로 캡슐화)
-        // 렌더링 직후가 아닌 다음 틱에 실행되도록 하여 동기적 렌더링 충돌을 피함
         const timer = setTimeout(() => {
             fetchReviews(0, true);
         }, 0);
@@ -90,14 +78,12 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
         return () => clearTimeout(timer);
     }, [fetchReviews]);
 
-// 2. Intersection Observer를 이용한 무한 스크롤 감지 로직
+    // Intersection Observer 무한 스크롤 감지
     useEffect(() => {
-        // 데이터가 더 없거나 로딩 중이면 관찰할 필요 없음
         if (!hasNext || loading || isFetchingNext) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
-                // entries[0].isIntersecting: 화면에 보일 때
                 if (entries[0].isIntersecting) {
                     pageRef.current += 1;
                     fetchReviews(pageRef.current, false);
@@ -106,22 +92,20 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
             { threshold: 0.1 }
         );
 
-        // 옵저버가 관찰할 타겟 설정
         const currentTarget = observerRef.current;
         if (currentTarget) {
             observer.observe(currentTarget);
         }
 
-        // cleanup: 컴포넌트 언마운트나 의존성 변경 시 정리
         return () => {
             if (currentTarget) {
                 observer.unobserve(currentTarget);
             }
         };
-    }, [hasNext, loading, isFetchingNext, fetchReviews, reviews.length]);
+    }, [hasNext, loading, isFetchingNext, fetchReviews]);
 
     return (
-        <div className="p-4">
+        <div className="p-4 bg-gray-50 min-h-screen">
             {/* 1. 필터 및 정렬 바 구역 */}
             <div className="flex items-center justify-between border-b pb-3 mb-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
@@ -135,7 +119,7 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
                     <button
                         onClick={() => {
                             setOnlyPhotos(!onlyPhotos);
-                            pageRef.current = 0; // 💡 필터가 변경되면 페이지 번호를 다시 0으로 초기화!
+                            pageRef.current = 0;
                         }}
                         className={`px-3 py-1.5 border rounded-full font-medium transition-colors ${
                             onlyPhotos
@@ -151,11 +135,8 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
                     <select
                         value={sortOrder}
                         onChange={(e) => {
-                            const newSort = e.target.value;
-                            setSortOrder(newSort);
-                            pageRef.current = 0; // 정렬이 바뀌면 페이지를 0으로
-                            // 여기서 fetchReviews를 직접 호출할 필요는 없습니다.
-                            // useEffect가 sortOrder 변경을 감지하고 자동으로 실행하기 때문입니다.
+                            setSortOrder(e.target.value);
+                            pageRef.current = 0;
                         }}
                         className="appearance-none bg-white border rounded-lg px-3 py-1.5 pr-8 font-medium text-gray-700 focus:outline-none cursor-pointer"
                     >
@@ -176,33 +157,51 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
             ) : reviews.length === 0 ? (
                 <div className="text-center py-10 text-gray-400">등록된 리뷰가 없습니다.</div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {reviews.map((review) => (
-                        <div key={review.reviewId} className="border-b pb-6 last:border-none">
+                        <div key={review.reviewId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+
+                            {/* 상단 프로필 및 우측 더보기 버튼 구역 */}
                             <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                                         <div className="w-full h-full bg-gray-300" />
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-1.5 text-sm font-bold">
-                                            <span>{review.nickname || "익명 유저"}</span>
-                                            <span className="text-xs text-green-600 font-normal">
-                                                Lv.{review.userLevel ?? 1} · {review.isLocal ? '로컬' : '미식가'}
-                                            </span>
+                                        <div className="text-sm font-bold text-gray-800">
+                                            {review.nickname || "익명 유저"}
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-400">
-                                            <span className="text-orange-500">★ {review.score.toFixed(1)}</span>
-                                            <span>{review.createdAt.split('T')[0]}</span>
+                                        <div className="text-xs text-green-600 font-medium mt-0.5">
+                                            Lv.{review.userLevel ?? 1} · {review.isLocal ? '로컬' : '미식가'}
                                         </div>
                                     </div>
                                 </div>
+                                {/* 우측 더보기 버튼 (...) */}
+                                <button className="text-gray-400 hover:text-gray-600 p-1">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM14 10a2 2 0 11-4 0 2 2 0 014 0zM22 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </button>
                             </div>
 
+                            {/* 별점, 날짜, 방문인증 배지 구역 */}
+                            <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                                <span className="text-orange-500 font-bold flex items-center gap-0.5">
+                                    ★ {review.score.toFixed(1)}
+                                </span>
+                                <span className="text-gray-200">|</span>
+                                <span>{review.createdAt.split('T')[0]}</span>
+                                <span className="text-gray-200">|</span>
+                                <span className="bg-green-50 text-green-600 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-green-100">
+                                    방문 인증
+                                </span>
+                            </div>
+
+                            {/* 태그 구역 */}
                             {review.tags && review.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mb-2.5">
-                                    {review.tags.slice(0, 5).map((tag, idx) => ( // 5개까지만 보여주기
-                                        <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md">
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                    {review.tags.slice(0, 5).map((tag, idx) => (
+                                        <span key={idx} className="text-xs px-2 py-0.5 bg-gray-50 text-gray-500 rounded border border-gray-100">
                                             #{tag}
                                         </span>
                                     ))}
@@ -212,29 +211,48 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
                                 </div>
                             )}
 
-                            <p className="text-sm text-gray-700 mb-3 whitespace-pre-line">
+                            {/* 리뷰 본문 텍스트 */}
+                            <p className="text-sm text-gray-700 mb-4 whitespace-pre-line leading-relaxed">
                                 {review.content}
                             </p>
 
+                            {/* 가로 스크롤 리뷰 이미지 */}
                             {review.imageUrls && review.imageUrls.length > 0 && (
-                                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-4">
                                     {review.imageUrls.map((url, idx) => (
                                         <img
                                             key={idx}
                                             src={url.startsWith('http') ? url : `${API_BASE_URL}${url}`}
                                             alt={`리뷰 이미지 ${idx + 1}`}
-                                            className="w-24 h-24 object-cover rounded-lg flex-shrink-0 border bg-gray-50"
+                                            className="w-28 h-28 object-cover rounded-xl flex-shrink-0 border border-gray-100 bg-gray-50"
                                         />
                                     ))}
                                 </div>
                             )}
+
+                            {/* 하단 좋아요 / 댓글 버튼 구역 */}
+                            <div className="flex items-center gap-4 text-xs text-gray-400 pt-3 border-t border-gray-50">
+                                <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.757a1 1 0 01.707 1.707l-5.414 5.414a1 1 0 01-.707.293H10M3 10h3v10H3V10z" />
+                                    </svg>
+                                    <span>좋아요 0</span>
+                                </button>
+                                <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span>댓글 0</span>
+                                </button>
+                            </div>
+
                         </div>
                     ))}
 
-                    {/* 스크롤 하단 감지용 타겟 요소 (Sentinel) */}
+                    {/* 무한 스크롤 타겟 감지 포인트 */}
                     <div ref={observerRef} className="h-4" />
 
-                    {/* 다음 데이터를 불러오는 중일 때 하단에 표시할 로딩 문구 */}
+                    {/* 스크롤 하단 추가 로딩 */}
                     {isFetchingNext && (
                         <div className="text-center py-4 text-sm text-gray-400">
                             추가 리뷰를 불러오는 중입니다...
