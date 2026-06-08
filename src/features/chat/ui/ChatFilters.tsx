@@ -62,9 +62,16 @@ export default function ChatFilters({
             }
             className="appearance-none bg-transparent pr-1 text-sm outline-none"
           >
+            <option value={10}>10 이상</option>
+            <option value={9}>9 이상</option>
+            <option value={8}>8 이상</option>
+            <option value={7}>7 이상</option>
+            <option value={6}>6 이상</option>
             <option value={5}>5 이상</option>
             <option value={4}>4 이상</option>
             <option value={3}>3 이상</option>
+            <option value={2}>2 이상</option>
+            <option value={1}>1 이상</option>
           </select>
           <ChevronDown className="h-4 w-4 text-gray-400" />
         </label>
