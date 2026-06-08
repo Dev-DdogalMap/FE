@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { API_BASE_URL } from "@/shared/config/api";
-import { withdrawUser } from "@/features/user/api/UserApi";
+import { withdrawUser } from "@/features/user/api/userApi";
 
 type User = {
   userId: number;
