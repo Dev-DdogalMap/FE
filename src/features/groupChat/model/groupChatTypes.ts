@@ -91,3 +91,8 @@ export interface UpdateChatRoomRequest {
 export interface UpdateChatRoomResponse {
   roomId: number;
 }
+
+//그룹 채팅방 나가기
+export interface LeaveChatRoomResponse {
+  roomId: number;
+}
