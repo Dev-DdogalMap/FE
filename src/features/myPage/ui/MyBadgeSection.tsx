@@ -15,23 +15,38 @@ const MyBadgeSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMyActivity = async () => {
-      try {
-        const result = await getMyActivity({
-          accessToken,
-          refreshAccessToken,
-        });
+  let isMounted = true;
 
-        setData(result);
-      } catch (error) {
-        console.error("활동 현황 조회 실패", error);
-      } finally {
+  const fetchMyActivity = async () => {
+    try {
+      setLoading(true);
+
+      const result = await getMyActivity({
+        accessToken,
+        refreshAccessToken,
+      });
+
+      if (!isMounted) return;
+
+      setData(result);
+    } catch (error) {
+      if (!isMounted) return;
+
+      console.error("활동 현황 조회 실패", error);
+      setData(null);
+    } finally {
+      if (isMounted) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchMyActivity();
-  }, [accessToken, refreshAccessToken]);
+  fetchMyActivity();
+
+  return () => {
+    isMounted = false;
+  };
+}, [accessToken, refreshAccessToken]);
 
   if (loading) {
     return (

@@ -28,25 +28,41 @@ const MyActivityPage = () => {
   const [badgeModalOpen, setBadgeModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchMyActivityDetail = async () => {
-      try {
-        const result = await getMyActivityDetail({
-          accessToken,
-          refreshAccessToken,
-        });
+    useEffect(() => {
+        let isMounted = true;
 
-        setData(result);
-      } catch (error) {
-        console.error("활동 상세 조회 실패", error);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+        const fetchMyActivityDetail = async () => {
+            try {
+                setLoading(true);
+                setError(false);
+
+                const result = await getMyActivityDetail({
+                    accessToken,
+                    refreshAccessToken,
+                });
+
+                if (!isMounted) return;
+
+                setData(result);
+            } catch (error) {
+                if (!isMounted) return;
+
+                console.error("활동 상세 조회 실패", error);
+                setError(true);
+                setData(null);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
     };
 
     fetchMyActivityDetail();
-  }, [accessToken, refreshAccessToken]);
+
+    return () => {
+        isMounted = false;
+    };
+    }, [accessToken, refreshAccessToken]);
 
   const handleChangeRepresentativeBadge = async (badgeId: number) => {
     if (!data) return;
