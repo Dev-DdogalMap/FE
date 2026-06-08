@@ -78,3 +78,16 @@ export interface UrlDto {
     presignedUrl: string;
     imageKey: string;
 }
+
+//그룹 채팅방 정보 수정
+export interface UpdateChatRoomRequest {
+  roomName?: string;
+  region?: string;
+  foodTypeId?: number;
+  maxParticipantCount?: number;
+  imageKey?: string;
+}
+
+export interface UpdateChatRoomResponse {
+  roomId: number;
+}

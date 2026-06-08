@@ -6,7 +6,9 @@ import type {
   CreateGroupChatResponse,
   ChatRoomListResponse,
   JoinChatRoomResponse,
-  UrlDto
+  UrlDto,
+  UpdateChatRoomRequest,
+  UpdateChatRoomResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -130,4 +132,26 @@ export async function getPresignedUrl(
     refreshAccessToken,
   });
   return response.json() as Promise<UrlDto>;
+}
+
+/**
+ * 그룹 채팅방 수정
+ * PATCH /api/chat-rooms/{roomId}
+ */
+export async function updateGroupChatRoom(
+  roomId: number,
+  request: UpdateChatRoomRequest,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    },
+  });
+  return response.json() as Promise<UpdateChatRoomResponse>;
 }
