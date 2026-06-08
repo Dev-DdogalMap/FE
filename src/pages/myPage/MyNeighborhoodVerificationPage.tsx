@@ -1,4 +1,5 @@
-//v5 - 역지오코딩, 인증하기 버튼 클릭 시 모달 표시, 카카오 SDK 로드 대기
+
+//v4 - 역지오코딩, 인증하기 버튼 클릭 시 모달 표시
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,17 +17,15 @@ const MAX_ACCURACY = 50;
 
 const MyNeighborhoodVerificationPage = () => {
     const navigate = useNavigate();
-    const { isLoading, accessToken, refreshAccessToken } = useAuth();
+    const { isLoggedIn, isLoading, accessToken, refreshAccessToken } = useAuth();
 
     const { location, loading: locationLoading, errorMessage } = useWatchLocation();
 
     const [regionName, setRegionName] = useState<string | null>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [isKakaoReady, setIsKakaoReady] = useState(false);
 
-    const KAKAO_SDK_POLL_INTERVAL = 100; // ms
-    const KAKAO_SDK_LOAD_TIMEOUT = 10000; // ms
+
 
     // errorMessage 발생 시 토스트로 표시
     useEffect(() => {
@@ -35,56 +34,38 @@ const MyNeighborhoodVerificationPage = () => {
         }
     }, [errorMessage]);
 
-    // 카카오맵 SDK 로드 대기
+    // 위치가 잡히면 자동으로 행정동 이름 가져오기
     useEffect(() => {
-        // 이미 로드되어 있으면 바로
-        if ((window as any).kakao?.maps?.services) {
-            setIsKakaoReady(true);
-            return;
-        }
+        if (!location) return;
 
-        // 100ms마다 체크
         const interval = setInterval(() => {
-            if (window.kakao?.maps?.services) {
-                setIsKakaoReady(true);
-                clearInterval(interval);
-                clearTimeout(timeout);
-            }
-        }, KAKAO_SDK_POLL_INTERVAL);
+            const kakao = (window as any).kakao;
 
-        // 10초 후 타임아웃
-        const timeout = setTimeout(() => {
-            clearInterval(interval);
-            toast.error("지도 서비스를 불러오지 못했습니다. 새로고침 해주세요.");
-        }, KAKAO_SDK_LOAD_TIMEOUT);
+            if (!kakao?.maps?.services) return;
 
-        return () => {
-            clearInterval(interval);
-            clearTimeout(timeout);
-        };
-    }, []);
+            const geocoder = new kakao.maps.services.Geocoder();
 
-    // 위치가 잡히면 자동으로 행정동 이름 가져오기 (모달은 띄우지 않음)
-    useEffect(() => {
-        if (!location || !isKakaoReady) return;
+            geocoder.coord2RegionCode(
+                location.lng,
+                location.lat,
+                (result: any, status: any) => {
+                    if (status !== kakao.maps.services.Status.OK) return;
 
-        const kakao = (window as any).kakao;
-        const geocoder = new kakao.maps.services.Geocoder();
+                    const region = result.find(
+                        (r: any) => r.region_type === "H"
+                    );
 
-        geocoder.coord2RegionCode(
-            location.lng,
-            location.lat,
-            (result: any, status: any) => {
-                if (status !== kakao.maps.services.Status.OK) return;
-
-                const region = result.find((r: any) => r.region_type === "H");
-
-                if (region) {
-                    setRegionName(region.region_3depth_name);
+                    if (region) {
+                        setRegionName(region.region_3depth_name);
+                    }
                 }
-            }
-        );
-    }, [location, isKakaoReady]);
+            );
+
+            clearInterval(interval);
+        }, 200);
+
+        return () => clearInterval(interval);
+    }, [location]);
 
     // 인증하기 버튼 클릭 → 유효성 검사 후 모달 표시
     const handleOpenModal = () => {
@@ -92,6 +73,7 @@ const MyNeighborhoodVerificationPage = () => {
             toast.info("로그인 상태 확인 중입니다.");
             return;
         }
+
 
         if (!location) {
             toast.error("현재 위치를 확인할 수 없습니다.");
@@ -166,7 +148,7 @@ const MyNeighborhoodVerificationPage = () => {
 
             {/* 지도 영역 */}
             <div className="relative h-[360px] overflow-hidden rounded-3xl">
-                {location && isKakaoReady ? (
+                {location ? (
                     <KakaoBaseMap
                         center={{ lat: location.lat, lng: location.lng }}
                         level={4}
@@ -184,17 +166,15 @@ const MyNeighborhoodVerificationPage = () => {
                 ) : (
                     <div className="flex h-full items-center justify-center bg-gray-100">
                         <p className="text-sm text-gray-500">
-                            {!isKakaoReady
-                                ? "지도 서비스를 불러오는 중..."
-                                : locationLoading
-                                    ? "위치 정보를 불러오는 중..."
-                                    : "위치 정보를 사용할 수 없습니다."}
+                            {locationLoading
+                                ? "위치 정보를 불러오는 중..."
+                                : "위치 정보를 사용할 수 없습니다."}
                         </p>
                     </div>
                 )}
 
                 {/* 지도 위 로딩 오버레이 */}
-                {locationLoading && location && isKakaoReady && (
+                {locationLoading && location && (
                     <div className="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 shadow-md">
                         <div className="flex items-center gap-2">
                             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -206,7 +186,8 @@ const MyNeighborhoodVerificationPage = () => {
 
             {/* 인증하기 버튼 */}
             <button
-                type="button" disabled={isLoading || locationLoading || !location || !isKakaoReady || submitting}
+                type="button"
+                disabled={isLoading || !isLoggedIn || locationLoading || !location || submitting}
                 onClick={handleOpenModal}
                 className="h-12 cursor-pointer rounded-xl bg-orange-500 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
@@ -263,3 +244,4 @@ const MyNeighborhoodVerificationPage = () => {
 };
 
 export default MyNeighborhoodVerificationPage;
+
