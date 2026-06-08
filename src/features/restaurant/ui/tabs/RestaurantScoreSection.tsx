@@ -13,8 +13,9 @@ const formatPercent = (value: number | null) => {
 };
 
 /** 카운트 → "1.2k" 또는 "-" */
-const formatCount = (count: number | null) => {
-    if (count === null || count === 0) return "-";
+const formatCount = (count: number | null | undefined) => {
+    // count가 undefined로 들어와도 안전하게 "-"를 반환하도록 수정
+    if (count === null || count === undefined || count === 0) return "-";
     if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
     return count.toString();
 };
