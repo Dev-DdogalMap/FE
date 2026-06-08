@@ -30,8 +30,7 @@ interface Props {
 export default function GroupEditForm({
   roomId,
   defaultValues,
-  onSuccess,
-  onCancel,
+  onSuccess
 }: Props) {
   const { update } = useUpdateGroupChat();
 
