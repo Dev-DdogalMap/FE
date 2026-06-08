@@ -8,7 +8,8 @@ import type {
   JoinChatRoomResponse,
   UrlDto,
   UpdateChatRoomRequest,
-  UpdateChatRoomResponse
+  UpdateChatRoomResponse,
+  LeaveChatRoomResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -154,4 +155,30 @@ export async function updateGroupChatRoom(
     },
   });
   return response.json() as Promise<UpdateChatRoomResponse>;
+}
+
+/**
+ * 그룹 채팅방 나가기
+ * DELETE /api/chat-rooms/{roomId}
+ */
+export async function leaveChatRoom(
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "DELETE",
+    },
+  });
+
+  // 응답 상태 코드 확인 추가
+  if (!response.ok) {
+    throw new Error(`나가기 실패: ${response.status}`);
+  }
+
+  const text = await response.text();
+  return text ? (JSON.parse(text) as LeaveChatRoomResponse) : null;
 }

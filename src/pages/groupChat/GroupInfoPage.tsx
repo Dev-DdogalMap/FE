@@ -8,11 +8,15 @@ import GroupInfoFooter from "@/features/groupChat/ui/chatRoomInfo/GroupInfoFoote
 
 import { useGroupChatInfo } from "@/features/groupChat/hooks/useGroupChatInfo";
 import GroupEditForm from "./GroupEditFormPage";
+import { useLeaveChatRoom } from "@/features/groupChat/hooks/useLeaveChatRoom";
+import ConfirmModal from "@/features/groupChat/ui/ConfirmModal";
 
 export default function GroupInfoPage() {
     const navigate = useNavigate();
     const { roomId } = useParams();
     const [isEditing, setIsEditing] = useState(false);
+    const { leave } = useLeaveChatRoom();
+    const [modal, setModal] = useState<"confirm" | "error" | null>(null);
 
     const {
         roomInfo,
@@ -37,12 +41,39 @@ export default function GroupInfoPage() {
         );
     }
 
-    function handleLeave() {
-        console.log("그룹 나가기");
+    //나가기 버튼 동작
+    async function handleLeaveConfirm() {
+        try {
+            await leave(Number(roomId));
+            setModal(null);
+            navigate("/chat", { state: { tab: "conversations" } });
+        } catch (err) {
+            setModal("error"); // confirm 닫지 않고 바로 error로 전환
+        }
     }
 
     return (
         <div className="min-h-screen w-full bg-gray-100">
+            {/* 나가기 확인 모달 */}
+            {modal === "confirm" && (
+                <ConfirmModal
+                    message="그룹에서 나가시겠습니까?"
+                    confirmLabel="나가기"
+                    cancelLabel="취소"
+                    onConfirm={handleLeaveConfirm}
+                    onCancel={() => setModal(null)}
+                />
+            )}
+            {modal === "error" && (
+                <ConfirmModal
+                    message="나가기에 실패했습니다.&#10;다시 시도해주세요."
+                    confirmLabel="확인"
+                    onConfirm={() => setModal(null)}
+                    onCancel={() => setModal(null)}
+                    isError
+                />
+            )}
+
             <div className="relative mx-auto min-h-screen w-full max-w-[430px] bg-white">
                 <div className="flex h-screen flex-col">
                     <GroupInfoHeader
@@ -60,7 +91,6 @@ export default function GroupInfoPage() {
                                         region: roomInfo.region,
                                         maxParticipantCount: roomInfo.maxParticipantCount,
                                         category: roomInfo.category,
-                                        //foodTypeId: roomInfo.foodTypeId,
                                         roomImage: roomInfo.roomImage ?? "",
                                     }}
                                     onSuccess={() => {
@@ -112,7 +142,7 @@ export default function GroupInfoPage() {
                             </div>
                             <GroupInfoFooter
                                 onEdit={() => setIsEditing(true)}
-                                onLeave={handleLeave}
+                                onLeave={() => setModal("confirm")}
                             />
                         </>
                     )}
