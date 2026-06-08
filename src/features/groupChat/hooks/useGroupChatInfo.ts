@@ -34,6 +34,6 @@ export function useGroupChatInfo(roomId: number) {
     roomInfo,
     loading,
     error,
-    reload: loadRoomInfo,
+    refetch: loadRoomInfo
   };
 }
