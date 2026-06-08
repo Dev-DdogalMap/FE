@@ -41,6 +41,7 @@ export interface DirectChatRoomSummary {
   lastMessageAt?: string | null;
   unreadCount: number;
   createdAt: string;
+  chatType: "DIRECT" | "GROUP";
 }
 
 export interface DirectChatMessage {
@@ -51,6 +52,12 @@ export interface DirectChatMessage {
   status: "SENT";
   message: string;
   createdAt: string;
+}
+
+export interface DirectChatRoomEvent {
+  eventType: "DIRECT_CHAT_ROOM_LEFT";
+  directChatRoomId: number;
+  userId: number;
 }
 
 export interface GroupChatSummary {
@@ -72,3 +79,8 @@ export interface TasteExpertListResponse {
   totalElements: number;
   totalPages: number;
 }
+
+export type ChatAuth = {
+  accessToken: string | null;
+  refreshAccessToken: () => Promise<string | null>;
+};

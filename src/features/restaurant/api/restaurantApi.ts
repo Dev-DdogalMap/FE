@@ -1,5 +1,5 @@
-import axios from "@/shared/api/axios";
 import { authFetch } from "@/shared/api/authFetch";
+import axios from "@/shared/api/axios";
 
 import type {
     FoodTypeOption,

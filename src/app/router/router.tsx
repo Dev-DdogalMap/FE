@@ -5,23 +5,24 @@ import MobileLayout from "@/layouts/MobileLayout";
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
 import BookmarkPage from "@/pages/bookmark/BookmarkPage";
-import ChatPage from "@/pages/chat/ChatPage";
-//import CreateGroupChatPage from "@/pages/chat/CreateGroupChatPage";
+//import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
-import GroupChatPage from "@/pages/chat/GroupChatPage";
+import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
+import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
+import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 import MapPage from "@/pages/map/MapPage";
+import MyNeighborhoodVerificationPage from "@/pages/myPage/MyNeighborhoodVerificationPage";
 import MyPage from "@/pages/myPage/MyPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
 import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
-import GroupChatRoomPage from "@/pages/groupChat/GroupChatRoomPage";
-import CreateGroupChatPage from "@/pages/groupChat/CreateGroupChatPage";
-import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 
-import ReviewPage from "@/pages/review/ReviewPage";
+import ChatPageRefactoring from "@/pages/chat/ChatPage";
+
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
+import ReviewPage from "@/pages/review/ReviewPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -66,28 +67,24 @@ export const router = createBrowserRouter([
       },
       {
         path: "/chat",
-        element: <ChatPage />,
+        element: <ChatPageRefactoring />,
       },
       {
         path: "/chat/direct/:directChatRoomId",
         element: <DirectChatPage />,
       },
       {
-        path: "/chat/groups",
-        element: <GroupChatPage />,
-      },
-      {
         path: "/chat/groups/create",
         element: <CreateGroupChatPage />,
       },
       {
-        path: "/chat/groups/:groupId",
-        element: <GroupChatPage />,
-      },
-      {
         path: "/mypage",
         element:
-                  <MyPage />,
+          <MyPage />,
+      },
+      {
+        path: "/mypage/neighborhood-verification",
+        element: <MyNeighborhoodVerificationPage />,
       },
       {
         path: "/chat/group/room/:roomId",
@@ -97,14 +94,6 @@ export const router = createBrowserRouter([
         path: "/chat/group/info/:roomId",
         element: <GroupInfoPage />,
       },
-      {
-        path: "/review",
-        element: <ReviewPage />,
-      },
-      {
-        path: "*",
-        element: <NotFoundPage />,
-      },
       // {
       //   element: <RequireAuth />,
       //   children: [
@@ -112,12 +101,15 @@ export const router = createBrowserRouter([
       //       path: "/mypage",
       //       element: <MyPage />,
       //     },
-      //     {
-      //       path: "/chat",
-      //       element: <ChatPage />,
-      //     },
-      //   ],
       // },
+      {
+        path: "/review",
+        element: <ReviewPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />
+      }
     ],
   },
 ]);
