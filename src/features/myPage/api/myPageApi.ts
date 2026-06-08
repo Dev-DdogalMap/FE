@@ -1,6 +1,14 @@
 import { authFetch } from "@/shared/api/authFetch";
 
-import type { MyNeighborhoodResponse, MyNeighborhoodVerificationRequest, MyNeighborhoodVerificationResponse } from "../model/myPageTypes";
+import type { 
+  MyNeighborhoodResponse, 
+  MyNeighborhoodVerificationRequest, 
+  MyNeighborhoodVerificationResponse,
+  ActivitySummaryResponse,
+  ActivityDetailResponse,
+  UpdateRepresentativeBadgeRequest,
+  RepresentativeBadgeResponse
+} from "../model/myPageTypes";
 
 type AuthApiParams = {
   accessToken: string | null;
@@ -64,4 +72,63 @@ export async function verifyRegion(
   return parseResponse<MyNeighborhoodVerificationResponse>(
     response,
   );
+}
+
+export async function getMyActivity(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ActivitySummaryResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/activity",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<ActivitySummaryResponse>(response);
+}
+
+export async function getMyActivityDetail(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ActivityDetailResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/activity/detail",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<ActivityDetailResponse>(response);
+}
+
+export async function updateRepresentativeBadge(
+  request: UpdateRepresentativeBadgeRequest,
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<RepresentativeBadgeResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/representative-badge",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  });
+
+  return parseResponse<RepresentativeBadgeResponse>(response);
 }
