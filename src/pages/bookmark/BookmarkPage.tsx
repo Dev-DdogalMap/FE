@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/auth/AuthContext";
 import {
   createBookmarkCategory,
+  deleteBookmarkCategory,
   getBookmarkCategories,
-  getBookmarksByCategory,
-  deleteBookmarkCategory
+  getBookmarksByCategory
 } from "@/features/bookmark/api/bookmarkApi";
 import type {
   BookmarkCategory,
   BookmarkRestaurant,
 } from "@/features/bookmark/model/bookmarkTypes";
+import { useAuth } from "@/shared/auth/AuthContext";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
@@ -33,8 +33,8 @@ export default function BookmarkPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const selectedTitle =
-  categories.find((c) => c.bookmarkCategoryId === selectedCategoryId)
-    ?.bookmarkCategoryName ?? "카테고리";
+    categories.find((c) => c.bookmarkCategoryId === selectedCategoryId)
+      ?.bookmarkCategoryName ?? "카테고리";
 
   useEffect(() => {
     if (authLoading || !isLoggedIn) return;
@@ -144,8 +144,8 @@ export default function BookmarkPage() {
       const nextSelectedCategory = wasSelected
         ? nextCategories[0]
         : nextCategories.find(
-            (category) => category.bookmarkCategoryId === selectedCategoryId
-          );
+          (category) => category.bookmarkCategoryId === selectedCategoryId
+        );
 
       if (!nextSelectedCategory) {
         setSelectedCategoryId(null);
@@ -176,23 +176,23 @@ export default function BookmarkPage() {
   }
 
   async function handleSelectCategory(categoryId: number) {
-  try {
-    setSelectedCategoryId(categoryId);
-    setIsLoading(true);
+    try {
+      setSelectedCategoryId(categoryId);
+      setIsLoading(true);
 
-    const data = await getBookmarksByCategory({
-      bookmarkCategoryId: categoryId,
-      accessToken,
-      refreshAccessToken,
-    });
+      const data = await getBookmarksByCategory({
+        bookmarkCategoryId: categoryId,
+        accessToken,
+        refreshAccessToken,
+      });
 
-    setBookmarks(data);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setIsLoading(false);
+      setBookmarks(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   }
-}
 
   if (authLoading) {
     return <main style={styles.center}>로그인 확인 중...</main>;
@@ -296,55 +296,56 @@ export default function BookmarkPage() {
         </section>
       )}
 
-      <button type="button" style={styles.mapButton}>
+      {/* TODO: BookmarkMapPage연결 */}
+      <button type="button" onClick={() => navigate(`/bookmark-map/${selectedCategoryId}`)} style={styles.mapButton}>
         🗺️ {selectedTitle} 지도 보기 ›
       </button>
 
-      {isCreateCategoryOpen && 
-      createPortal(
-        <div
-          style={styles.createCategoryOverlay}
-          onClick={() => setIsCreateCategoryOpen(false)}
-        >
-          <section
-            style={styles.createCategoryModal}
-            onClick={(event) => event.stopPropagation()}
+      {isCreateCategoryOpen &&
+        createPortal(
+          <div
+            style={styles.createCategoryOverlay}
+            onClick={() => setIsCreateCategoryOpen(false)}
           >
-            <h2 style={styles.createCategoryTitle}>새 카테고리 만들기</h2>
-            <p style={styles.createCategoryDescription}>
-              저장하고 싶은 맛집을 분류할 카테고리명을 입력해주세요.
-            </p>
+            <section
+              style={styles.createCategoryModal}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2 style={styles.createCategoryTitle}>새 카테고리 만들기</h2>
+              <p style={styles.createCategoryDescription}>
+                저장하고 싶은 맛집을 분류할 카테고리명을 입력해주세요.
+              </p>
 
-            <input
-              value={newCategoryName}
-              onChange={(event) => setNewCategoryName(event.target.value)}
-              placeholder="예: 또갈 곳, 데이트 맛집"
-              maxLength={100}
-              style={styles.createCategoryInput}
-            />
+              <input
+                value={newCategoryName}
+                onChange={(event) => setNewCategoryName(event.target.value)}
+                placeholder="예: 또갈 곳, 데이트 맛집"
+                maxLength={100}
+                style={styles.createCategoryInput}
+              />
 
-            <div style={styles.createCategoryActions}>
-              <button
-                type="button"
-                style={styles.cancelButton}
-                onClick={() => setIsCreateCategoryOpen(false)}
-              >
-                취소
-              </button>
+              <div style={styles.createCategoryActions}>
+                <button
+                  type="button"
+                  style={styles.cancelButton}
+                  onClick={() => setIsCreateCategoryOpen(false)}
+                >
+                  취소
+                </button>
 
-              <button
-                type="button"
-                style={styles.confirmButton}
-                disabled={isCreatingCategory}
-                onClick={handleCreateCategory}
-              >
-                {isCreatingCategory ? "생성 중..." : "생성"}
-              </button>
-            </div>
-          </section>
-        </div>,
-        document.body
-      )}
+                <button
+                  type="button"
+                  style={styles.confirmButton}
+                  disabled={isCreatingCategory}
+                  onClick={handleCreateCategory}
+                >
+                  {isCreatingCategory ? "생성 중..." : "생성"}
+                </button>
+              </div>
+            </section>
+          </div>,
+          document.body
+        )}
     </main>
   );
 }
@@ -670,17 +671,17 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
   folderDeleteButton: {
-  position: "absolute",
-  top: 6,
-  right: 8,
-  width: 20,
-  height: 20,
-  borderRadius: "50%",
-  background: "#f5f5f5",
-  color: "#999",
-  fontSize: 15,
-  fontWeight: 900,
-  display: "grid",
-  placeItems: "center",
+    position: "absolute",
+    top: 6,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    background: "#f5f5f5",
+    color: "#999",
+    fontSize: 15,
+    fontWeight: 900,
+    display: "grid",
+    placeItems: "center",
   },
 };
