@@ -1,10 +1,9 @@
 import {
   createBookmarkCategory,
   deleteBookmarkCategory,
+  deleteBookmarkFromCategory,
   getBookmarkCategories,
-  getBookmarksByCategory,
-  deleteBookmarkCategory,
-  deleteBookmarkFromCategory
+  getBookmarksByCategory
 } from "@/features/bookmark/api/bookmarkApi";
 import type {
   BookmarkCategory,
