@@ -18,8 +18,8 @@ import type { DirectChatMessage } from "@/features/chat/model/types";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { ROUTES } from "@/shared/constants/routes";
 
-const FALLBACK_LEVEL = "Lv.5 맛잘알";
-const FALLBACK_SPECIALTY = "양식 전문";
+const FALLBACK_LEVEL_NAME = "레벨 미설정";
+const FALLBACK_SPECIALTY = "전문 분야 준비중";
 const LEFT_PARTNER_LABEL = "대화 상대 없음";
 const READ_DIRECT_CHAT_MARKERS_KEY = "ddogalmap.readDirectChatMarkers";
 
@@ -115,6 +115,10 @@ export default function DirectChatPage() {
   const [targetProfileImageUrl, setTargetProfileImageUrl] = useState<
     string | null
   >(null);
+  const [targetLevel, setTargetLevel] = useState<number | null>(null);
+  const [targetLevelName, setTargetLevelName] = useState<string | null>(null);
+  const [targetSpecialty, setTargetSpecialty] = useState<string | null>(null);
+  const [targetCertified, setTargetCertified] = useState(false);
   const [hasPartnerLeft, setHasPartnerLeft] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
@@ -139,6 +143,10 @@ export default function DirectChatPage() {
       .then(([room, initialMessages]) => {
         setTitle(room.targetNickname);
         setTargetProfileImageUrl(room.targetProfileImageUrl ?? null);
+        setTargetLevel(room.targetLevel ?? null);
+        setTargetLevelName(room.targetLevelName ?? null);
+        setTargetSpecialty(room.targetSpecialty ?? null);
+        setTargetCertified(Boolean(room.targetCertified));
         setHasPartnerLeft(room.targetNickname === LEFT_PARTNER_LABEL);
         setMessages(initialMessages);
         const latestMessage = [...initialMessages].sort(
@@ -184,6 +192,10 @@ export default function DirectChatPage() {
             .then((room) => {
               setTitle(room.targetNickname);
               setTargetProfileImageUrl(room.targetProfileImageUrl ?? null);
+              setTargetLevel(room.targetLevel ?? null);
+              setTargetLevelName(room.targetLevelName ?? null);
+              setTargetSpecialty(room.targetSpecialty ?? null);
+              setTargetCertified(Boolean(room.targetCertified));
               setHasPartnerLeft(room.targetNickname === LEFT_PARTNER_LABEL);
             })
             .catch((error) => {
@@ -198,6 +210,10 @@ export default function DirectChatPage() {
         ) {
           setTitle(LEFT_PARTNER_LABEL);
           setTargetProfileImageUrl(null);
+          setTargetLevel(null);
+          setTargetLevelName(null);
+          setTargetSpecialty(null);
+          setTargetCertified(false);
           setHasPartnerLeft(true);
         }
       },
@@ -300,25 +316,24 @@ export default function DirectChatPage() {
             <p className="truncate text-[15px] font-bold text-[#222222]">
               {title}
             </p>
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white">
-              <Check className="h-2.5 w-2.5" />
-            </span>
+            {targetCertified && (
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white">
+                <Check className="h-2.5 w-2.5" />
+              </span>
+            )}
           </div>
           <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-gray-500">
             {hasPartnerLeft ? (
               <span>상대방이 채팅방을 나갔습니다</span>
             ) : (
               <>
-                <span>{FALLBACK_LEVEL}</span>
+                <span>
+                  {targetLevel == null
+                    ? FALLBACK_LEVEL_NAME
+                    : `Lv.${targetLevel} ${targetLevelName ?? ""}`.trim()}
+                </span>
                 <span>·</span>
-                <span>{FALLBACK_SPECIALTY}</span>
-                <span>·</span>
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    isSocketReady ? "bg-[#18c964]" : "bg-gray-300"
-                  }`}
-                />
-                <span>{isSocketReady ? "온라인" : "연결 중"}</span>
+                <span>{targetSpecialty ?? FALLBACK_SPECIALTY}</span>
               </>
             )}
           </div>
