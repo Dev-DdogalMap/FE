@@ -16,3 +16,11 @@ export type MyNeighborhoodVerificationResponse = {
   verified: boolean;
   verifiedAt: string | null;
 };
+
+export type ChatPreferenceResponse = {
+  chatEnabled: boolean;
+};
+
+export type ChatPreferenceUpdateRequest = {
+  chatEnabled: boolean;
+};

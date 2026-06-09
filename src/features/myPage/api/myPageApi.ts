@@ -1,6 +1,12 @@
 import { authFetch } from "@/shared/api/authFetch";
 
-import type { MyNeighborhoodResponse, MyNeighborhoodVerificationRequest, MyNeighborhoodVerificationResponse } from "../model/myPageTypes";
+import type {
+  ChatPreferenceResponse,
+  ChatPreferenceUpdateRequest,
+  MyNeighborhoodResponse,
+  MyNeighborhoodVerificationRequest,
+  MyNeighborhoodVerificationResponse,
+} from "../model/myPageTypes";
 
 type AuthApiParams = {
   accessToken: string | null;
@@ -62,6 +68,51 @@ export async function verifyRegion(
   });
 
   return parseResponse<MyNeighborhoodVerificationResponse>(
+    response,
+  );
+}
+
+export async function getChatPreference(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ChatPreferenceResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/chat-preference",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<ChatPreferenceResponse>(
+    response,
+  );
+}
+
+export async function updateChatPreference(
+  request: ChatPreferenceUpdateRequest,
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ChatPreferenceResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/chat-preference",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  });
+
+  return parseResponse<ChatPreferenceResponse>(
     response,
   );
 }
