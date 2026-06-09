@@ -1,6 +1,7 @@
 import markerImage from "@/assets/images/marker.png";
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import { useEffect, useMemo, useRef } from "react";
+import { FaSyncAlt } from "react-icons/fa";
 import { MapMarker, MarkerClusterer } from "react-kakao-maps-sdk";
 import type { BookmarkMapRestaurant } from "../model/bookmarkTypes";
 
@@ -8,10 +9,8 @@ interface Props {
     restaurants: BookmarkMapRestaurant[];
 }
 
-// 클러스터 단계별 스타일 (사이즈 구간별로 다르게 적용)
 const clusterStyles = [
     {
-        // 2~9개: 가장 작고 연한 색
         width: "40px",
         height: "40px",
         background: "#FF8A3D",
@@ -25,7 +24,6 @@ const clusterStyles = [
         boxShadow: "0 2px 6px rgba(255, 107, 0, 0.3)",
     },
     {
-        // 10~99개
         width: "48px",
         height: "48px",
         background: "#FF5722",
@@ -39,7 +37,6 @@ const clusterStyles = [
         boxShadow: "0 2px 8px rgba(255, 107, 0, 0.4)",
     },
     {
-        // 100개 이상: 가장 진한 색 (메인 컬러)
         width: "56px",
         height: "56px",
         background: "#ff4400ef",
@@ -98,8 +95,14 @@ export default function BookmarkMap({ restaurants }: Props) {
         map.setBounds(bounds, 50, 50, 50, 50);
     }
 
+    const handleResetView = () => {
+        if (mapRef.current) {
+            fitBoundsToRestaurants(mapRef.current, restaurants);
+        }
+    };
+
     return (
-        <div className="h-[380px] shrink-0">
+        <div className="relative h-[380px] shrink-0">
             <KakaoBaseMap
                 center={initialCenter}
                 showCurrentLocation={false}
@@ -108,9 +111,9 @@ export default function BookmarkMap({ restaurants }: Props) {
             >
                 <MarkerClusterer
                     averageCenter
-                    minLevel={3}              // 줌 레벨 3 이상부터 클러스터링
-                    gridSize={60}             // 클러스터 격자 크기
-                    calculator={[10, 100]}    // 사이즈 구간 (styles와 매칭)
+                    minLevel={3}
+                    gridSize={60}
+                    calculator={[10, 100]}
                     styles={clusterStyles}
                     texts={(size) => size >= 100 ? "99+" : String(size)}
                 >
@@ -121,6 +124,25 @@ export default function BookmarkMap({ restaurants }: Props) {
                                 lat: restaurant.latitude,
                                 lng: restaurant.longitude,
                             }}
+                            title={restaurant.placeName} 
+                            onClick={() => {
+                                const map = mapRef.current;
+                                if (!map) return;
+
+                                const targetLatLng = new kakao.maps.LatLng(
+                                    restaurant.latitude,
+                                    restaurant.longitude,
+                                );
+
+                                map.setCenter(targetLatLng);
+
+                                map.setLevel(2, {
+                                    anchor: targetLatLng,
+                                    animate: {
+                                        duration: 300,
+                                    },
+                                });
+                            }}
                             image={{
                                 src: markerImage,
                                 size: { width: 32, height: 32 },
@@ -130,6 +152,15 @@ export default function BookmarkMap({ restaurants }: Props) {
                     ))}
                 </MarkerClusterer>
             </KakaoBaseMap>
+
+            <button
+                onClick={handleResetView}
+                className="absolute bottom-6 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-md cursor-pointer bg-white shadow-md transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#FF8A3D]"
+                aria-label="지도 위치 초기화"
+                title="처음 위치로"
+            >
+                <FaSyncAlt className="text-gray-600 text-[18px]" />
+            </button>
         </div>
     );
 }

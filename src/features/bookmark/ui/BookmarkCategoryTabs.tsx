@@ -38,8 +38,8 @@ export default function BookmarkCategoryTabs({ categories, selectedCategoryId, o
         <select className="text-gray-600 text-xs py-1.5 border-none outline-none cursor-pointer bg-transparent">
           <option>최신 순</option>
           <option>찐맛집지수 순</option>
-          <option>별점 순</option>
-          <option>리뷰개수 순</option>
+          <option>별점 높은 순</option>
+          <option>리뷰 많은 순</option>
         </select>
       </div>
     </div>
