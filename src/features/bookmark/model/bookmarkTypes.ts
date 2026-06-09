@@ -44,3 +44,32 @@ export type CreateBookmarkResponse = {
 export type CreateBookmarkCategoryRequest = {
   bookmarkCategoryName: string;
 };
+
+export interface BookmarkMapRestaurant {
+    bookmarkId: number;
+    restaurantId: number;
+    placeName: string;
+    foodType: string;
+    addressName: string;
+    latitude: number;
+    longitude: number;
+    
+    // TODO
+    thumbnailImageUrl?: string;
+    averageRating?: number;
+    reviewCount?: number;
+    ddogalScore?: number;
+}
+
+export interface BookmarkCategoryRestaurantsResponse {
+    bookmarkCategoryId: number;
+    bookmarkCategoryName: string;
+    bookmarkCount: number;
+    restaurants: BookmarkMapRestaurant[];
+}
+
+export type BookmarkSortType =
+    | "LATEST"
+    | "DDOGAL_SCORE"
+    | "RATING"
+    | "REVIEW_COUNT";
