@@ -7,6 +7,7 @@ import type {
     SearchSort,
 } from "@/features/search/model/searchTypes";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
+import { getMyRegion } from "@/features/myPage/api/myPageApi";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { useAuth } from "@/shared/auth/AuthContext";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
@@ -55,7 +56,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
 export default function SearchPage() {
     const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
-    const { accessToken } = useAuth();
+    const { accessToken, refreshAccessToken } = useAuth();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
     const [totalCount, setTotalCount] = useState(0);
@@ -180,16 +181,48 @@ export default function SearchPage() {
         MAX_PAGES,
     );
 
+    // 페이지네이션 sliding window — 현재 페이지 ±2 까지만 노출 (최대 5개 버튼)
+    // 끝(1 또는 totalPages)에 가까우면 자동으로 잘림: 1페이지는 [1 2 3], 마지막은 [n-2 n-1 n] 처럼
+    const PAGE_WINDOW = 2;
+    const pageStart = Math.max(1, page - PAGE_WINDOW);
+    const pageEnd = Math.min(totalPages, page + PAGE_WINDOW);
+    const visiblePages = Array.from(
+        { length: Math.max(0, pageEnd - pageStart + 1) },
+        (_, i) => pageStart + i,
+    );
+
     useEffect(() => {
         getFoodTypes()
             .then(setFoodTypes)
             .catch(() => setFoodTypesError("음식 종류 목록을 불러오지 못했습니다."));
     }, []);
 
+    // 로그인 사용자의 인증 동네를 가져와서 RegionSelect 표시값 초기화
+    // (실제 검색 region 파라미터는 빈 문자열로 유지 → BE 가 user.region 자동 적용)
     useEffect(() => {
+        if (!accessToken) return;
+        getMyRegion({ accessToken, refreshAccessToken })
+            .then((data) => {
+                if (data.verified && data.eupmyeondongName) {
+                    setSelectedRegionName(data.eupmyeondongName);
+                }
+            })
+            .catch(() => {
+                // 실패해도 "전체" 표시로 폴백 — 별도 처리 없음
+            });
+    }, [accessToken, refreshAccessToken]);
+
+    // 위치가 결정됐는지(성공 OR 거부) 판단
+    // - location 값이 채워짐 → 권한 허용 + 위치 받음
+    // - locationError 값이 채워짐 → 권한 거부 또는 에러
+    // 둘 중 하나라도 일어나기 전에는 검색 호출하지 않음 (페이지 진입 시 2번 호출 방지)
+    const locationResolved = location !== null || locationError !== null;
+
+    useEffect(() => {
+        if (!locationResolved) return;
         fetchSearchReset(keyword, region, selectedFoodTypeId, sort);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location?.lat, location?.lng]);
+    }, [location?.lat, location?.lng, locationError]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -244,11 +277,13 @@ export default function SearchPage() {
                     selectedRegionId={selectedRegionId}
                     selectedRegionName={selectedRegionName}
                     onChange={(regionName, dong) => {
-                        setRegion(regionName);
+                        // "전체"(빈 문자열) 명시적 선택 시 BE 에 "ALL" 전송 → user.region 자동 적용 방지 → 전국 검색
+                        const effectiveRegion = regionName || "ALL";
+                        setRegion(effectiveRegion);
                         setSelectedRegionName(regionName || "전체");
                         setSelectedRegionId(dong?.regionId);
 
-                        fetchSearchReset(keyword, regionName, selectedFoodTypeId, sort);
+                        fetchSearchReset(keyword, effectiveRegion, selectedFoodTypeId, sort);
                 }}
                 />
 
@@ -309,7 +344,9 @@ export default function SearchPage() {
 
             <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-500">
-                    검색 결과 {totalCount.toLocaleString()}개
+                    {totalCount > MAX_PAGES * PAGE_SIZE
+                        ? `검색 결과 ${totalCount.toLocaleString()}개 중 상위 ${(MAX_PAGES * PAGE_SIZE).toLocaleString()}개`
+                        : `검색 결과 ${totalCount.toLocaleString()}개`}
                 </p>
 
                 <div className="flex gap-2">
@@ -324,7 +361,7 @@ export default function SearchPage() {
                                     setSort(opt.value);
                                     fetchSearchReset(keyword, region, selectedFoodTypeId, opt.value);
                                 }}
-                                className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition active:scale-95"
+                                className="whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition active:scale-95"
                                 style={
                                     isSelected
                                         ? {
@@ -415,7 +452,7 @@ export default function SearchPage() {
                         <ChevronLeft size={16} />
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                    {visiblePages.map((p) => {
                         const isActive = p === page;
                         return (
                             <button
