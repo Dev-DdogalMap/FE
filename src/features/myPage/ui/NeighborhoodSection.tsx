@@ -93,7 +93,7 @@ const MyNeighborhoodSection = () => {
 
           <button
             onClick={handleVerify}
-            disabled={isLoading || isFetching} // ←로딩 중 비활성화
+            disabled={isLoading || isFetching} // 로딩 중 비활성화
             className="rounded-lg cursor-pointer border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading || isFetching
