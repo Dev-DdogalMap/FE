@@ -4,6 +4,7 @@ import type {
   BookmarkCategoryRestaurantsResponse,
   BookmarkCategoryStatus,
   BookmarkRestaurant,
+  BookmarkSortType,
   CreateBookmarkCategoryRequest,
   CreateBookmarkRequest,
   CreateBookmarkResponse
@@ -66,15 +67,18 @@ export async function getMyBookmarks({
   return parseResponse<BookmarkRestaurant[]>(response);
 }
 
+// 카테고리 별 북마크 정보
 export async function getBookmarksByCategory({
   bookmarkCategoryId,
+  sort = "LATEST",
   accessToken,
   refreshAccessToken,
 }: AuthApiParams & {
   bookmarkCategoryId: number;
+  sort?: BookmarkSortType;
 }): Promise<BookmarkRestaurant[]> {
   const response = await authFetch({
-    path: `/api/bookmark-categories/${bookmarkCategoryId}/bookmarks`,
+    path: `/api/bookmark-categories/${bookmarkCategoryId}/bookmarks?sort=${sort}`,
     accessToken,
     refreshAccessToken,
     options: {
@@ -218,28 +222,3 @@ export async function getBookmarkCategoryRestaurants({
 
 
 
-// //정렬 추가
-// export async function getBookmarkCategoryRestaurants({
-//     bookmarkCategoryId,
-//     sort = "LATEST", 
-//     accessToken,
-//     refreshAccessToken,
-// }: AuthApiParams & {
-//     bookmarkCategoryId: number;
-//     sort?: BookmarkSortType;
-// }): Promise<BookmarkCategoryRestaurantsResponse> {
-
-//     const response = await authFetch({
-//         path:
-//             `/api/bookmarks/${bookmarkCategoryId}/restaurants?sort=${sort}`,
-//         accessToken,
-//         refreshAccessToken,
-//         options: {
-//             method: "GET",
-//         },
-//     });
-
-//     return parseResponse<BookmarkCategoryRestaurantsResponse>(
-//         response,
-//     );
-// }    

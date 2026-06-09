@@ -70,6 +70,6 @@ export interface BookmarkCategoryRestaurantsResponse {
 
 export type BookmarkSortType =
     | "LATEST"
-    | "DDOGAL_SCORE"
+    | "FOOD_SCORE"
     | "RATING"
     | "REVIEW_COUNT";
