@@ -1,18 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useUpdateGroupChat } from "@/features/groupChat/hooks/useUpdateGroupChat";
-
-const FOOD_TYPE_OPTIONS = [
-  { id: 1, label: "한식" },
-  { id: 2, label: "중식" },
-  { id: 3, label: "일식" },
-  { id: 4, label: "양식" },
-  { id: 5, label: "분식" },
-  { id: 6, label: "기타" },
-];
-
-function categoryToFoodTypeId(category: string): number {
-  return FOOD_TYPE_OPTIONS.find((opt) => opt.label === category)?.id ?? 1;
-}
+import { useFoodTypes } from "@/features/groupChat/hooks/useFoodTypes";
 
 interface Props {
   roomId: number;
@@ -33,19 +21,25 @@ export default function GroupEditForm({
   onSuccess
 }: Props) {
   const { update } = useUpdateGroupChat();
+  const { foodTypes, loading: categoriesLoading } = useFoodTypes();
+  const [foodTypeId, setFoodTypeId] = useState<number | undefined>(undefined);
 
   const [roomName, setRoomName] = useState(defaultValues.roomName);
   const [region, setRegion] = useState(defaultValues.region);
   const [maxParticipantCount, setMaxParticipantCount] = useState(defaultValues.maxParticipantCount);
-  const [foodTypeId, setFoodTypeId] = useState<number>(
-    categoryToFoodTypeId(defaultValues.category)  // String → id 변환
-  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(defaultValues.roomImage);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // foodTypes 로드되면 현재 카테고리 id로 초기값 설정
+  useEffect(() => {
+    if (foodTypes.length === 0) return;
+    const matched = foodTypes.find((f) => f.type === defaultValues.category);
+    if (matched) setFoodTypeId(matched.foodTypeId);
+  }, [foodTypes]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -62,7 +56,7 @@ export default function GroupEditForm({
         roomName,
         region,
         maxParticipantCount,
-        foodTypeId,   // Long 타입 id만 전송
+        foodTypeId,   // foodTypes 전체 대신 id만
         imageFile,
       });
       onSuccess();
@@ -135,13 +129,20 @@ export default function GroupEditForm({
       <div>
         <label className="text-sm font-bold block mb-2">카테고리</label>
         <select
-          value={foodTypeId}
-          onChange={(e) => setFoodTypeId(Number(e.target.value))}
+          disabled={categoriesLoading}
+          value={foodTypeId ?? ""}
+          onChange={(e) =>
+            setFoodTypeId(
+              e.target.value
+                ? Number(e.target.value)
+                : undefined
+            )
+          }
           className="text-sm h-12 w-full border border-gray-200 rounded-xl px-4 focus:outline-none focus:border-orange-400 bg-white"
         >
-          {FOOD_TYPE_OPTIONS.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
+          {foodTypes.map((category) => (
+            <option key={category.foodTypeId} value={category.foodTypeId}>
+              {category.type}
             </option>
           ))}
         </select>

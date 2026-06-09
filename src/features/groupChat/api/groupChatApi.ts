@@ -10,7 +10,8 @@ import type {
   UpdateChatRoomRequest,
   UpdateChatRoomResponse,
   LeaveChatRoomResponse,
-  ChatRoomMembersResponse
+  ChatRoomMembersResponse,
+  FoodTypeResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -196,4 +197,19 @@ export async function getChatRoomMembers(
     refreshAccessToken,
   });
   return response.json() as Promise<ChatRoomMembersResponse>;
+}
+
+/**
+ * 음식 카테고리 조회
+ * GET /api/food-types
+ */
+export async function getFoodTypes(
+  { accessToken, refreshAccessToken }: AuthParams
+) {
+  const response = await authFetch({
+    path: `/api/food-types`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<FoodTypeResponse[]>;
 }

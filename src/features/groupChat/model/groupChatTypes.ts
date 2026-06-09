@@ -113,4 +113,11 @@ export interface MemberDetailInfo {
   userRole: ChatRoomMemberRole;
 }
 
+//채팅방 멤버 권한
 export type ChatRoomMemberRole = "OWNER" | "MEMBER";
+
+//음식 카테고리 조회
+export interface FoodTypeResponse {
+  foodTypeId: number;
+  type: string;
+}
