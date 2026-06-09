@@ -81,3 +81,11 @@ export type ChatPreferenceResponse = {
 export type ChatPreferenceUpdateRequest = {
   chatEnabled: boolean;
 };
+
+
+export type MyStatsResponse = {
+  visitCount: number;
+  reviewCount: number;
+  bookmarkCount: number;
+  chatRoomCount: number;
+};

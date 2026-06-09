@@ -75,7 +75,7 @@ const MyNeighborhoodSection = () => {
   };
 
   return (
-    <section className="mb-6">
+   <section className="mx-6 mt-6 rounded-2xl border border-gray-100 bg-white">
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
