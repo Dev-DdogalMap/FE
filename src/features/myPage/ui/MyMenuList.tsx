@@ -1,3 +1,4 @@
+import { ChevronRight, CircleHelp, Edit3, Settings, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/auth/AuthContext";
 
@@ -24,22 +25,52 @@ const MyMenuList = () => {
   };
 
   return (
-    <>
-      <div>MyMenuList</div>
+    <section className="mx-6 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <Edit3 size={20} className="text-gray-500" />
+          <span className="text-base font-bold text-gray-800">작성한 후기</span>
+        </div>
+        <ChevronRight size={22} className="text-gray-400" />
+      </button>
 
-      <p className="pl-6 text-gray-600">작성한 후기</p>
-      <p className="pl-6 text-gray-600">고객센터</p>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <CircleHelp size={20} className="text-gray-500" />
+          <span className="text-base font-bold text-gray-800">고객센터</span>
+        </div>
+        <ChevronRight size={22} className="text-gray-400" />
+      </button>
 
       <button
         type="button"
         onClick={handleWithdraw}
-        className="block pl-6 text-left text-gray-600"
+        className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
       >
-        회원탈퇴
+        <div className="flex items-center gap-3">
+          <UserX size={20} className="text-gray-500" />
+          <span className="text-base font-bold text-gray-800">회원탈퇴</span>
+        </div>
+        <ChevronRight size={22} className="text-gray-400" />
       </button>
 
-      <p className="pl-6 text-gray-600">Settings</p>
-    </>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between px-5 py-5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <Settings size={20} className="text-gray-500" />
+          <span className="text-base font-bold text-gray-800">Settings</span>
+        </div>
+        <ChevronRight size={22} className="text-gray-400" />
+      </button>
+    </section>
   );
 };
 
