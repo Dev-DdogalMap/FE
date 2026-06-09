@@ -8,10 +8,11 @@ import type {
 } from "@/features/search/model/searchTypes";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
+import { useAuth } from "@/shared/auth/AuthContext";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
 import type { RestaurantPreview } from "@/features/restaurant/model/restaurantTypes";
 import { useSearchParams } from "react-router-dom";
-import { Search, ChevronDown, Loader2, ChevronUp } from "lucide-react";
+import { Search, ChevronDown, Loader2, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { COLORS } from "@/shared/constants/colors";
 import RegionSelect from "@/features/region/ui/RegionSelect";
 
@@ -25,6 +26,9 @@ const SORT_OPTIONS: { value: SearchSort; label: string }[] = [
     { value: "jjinScore", label: "맛집지수순" },
     { value: "score", label: "별점순" },
 ];
+
+const PAGE_SIZE = 20;
+const MAX_PAGES = 10;
 
 /**
  * 검색 API 응답 아이템을 미리보기 카드 props 로 변환.
@@ -51,8 +55,11 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
 export default function SearchPage() {
     const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
+    const { accessToken } = useAuth();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
 
@@ -108,6 +115,7 @@ export default function SearchPage() {
         searchRegion: string,
         searchFoodTypeId: number | undefined,
         searchSort: SearchSort,
+        searchPage: number,
     ) => {
         const currentId = ++requestIdRef.current;
         setLoading(true);
@@ -117,30 +125,60 @@ export default function SearchPage() {
             searchSort === "distance" && (!location?.lat || !location?.lng)
                 ? "jjinScore"
                 : searchSort;
-        searchRestaurants({
-            lat: location?.lat,
-            lng: location?.lng,
-            keyword: searchKeyword || undefined,
-            region: searchRegion || undefined,
-            foodTypeId: searchFoodTypeId,
-            sort: effectiveSort,
-            page: 1,
-            size: 50,
-        })
+        searchRestaurants(
+            {
+                lat: location?.lat,
+                lng: location?.lng,
+                keyword: searchKeyword || undefined,
+                region: searchRegion || undefined,
+                foodTypeId: searchFoodTypeId,
+                sort: effectiveSort,
+                page: searchPage,
+                size: PAGE_SIZE,
+            },
+            { accessToken },
+        )
             .then((res) => {
                 if (currentId !== requestIdRef.current) return;
                 setItems(res.items);
+                setTotalCount(res.totalCount);
             })
             .catch(() => {
                 if (currentId !== requestIdRef.current) return;
                 setSearchError("검색 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
                 setItems([]);
+                setTotalCount(0);
             })
             .finally(() => {
                 if (currentId !== requestIdRef.current) return;
                 setLoading(false);
             });
     };
+
+    /**
+     * 필터/정렬/검색어 변경 시 페이지 1로 리셋한 뒤 검색 호출.
+     */
+    const fetchSearchReset = (
+        searchKeyword: string,
+        searchRegion: string,
+        searchFoodTypeId: number | undefined,
+        searchSort: SearchSort,
+    ) => {
+        setPage(1);
+        fetchSearch(searchKeyword, searchRegion, searchFoodTypeId, searchSort, 1);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+        fetchSearch(keyword, region, selectedFoodTypeId, sort, newPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    // 총 페이지 수 (최대 MAX_PAGES = 10)
+    const totalPages = Math.min(
+        Math.ceil(totalCount / PAGE_SIZE),
+        MAX_PAGES,
+    );
 
     useEffect(() => {
         getFoodTypes()
@@ -149,13 +187,13 @@ export default function SearchPage() {
     }, []);
 
     useEffect(() => {
-        fetchSearch(keyword, region, selectedFoodTypeId, sort);
+        fetchSearchReset(keyword, region, selectedFoodTypeId, sort);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location?.lat, location?.lng]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        fetchSearch(keyword, region, selectedFoodTypeId, sort);
+        fetchSearchReset(keyword, region, selectedFoodTypeId, sort);
     };
 
     return (
@@ -210,7 +248,7 @@ export default function SearchPage() {
                         setSelectedRegionName(regionName || "전체");
                         setSelectedRegionId(dong?.regionId);
 
-                        fetchSearch(keyword, regionName, selectedFoodTypeId, sort);
+                        fetchSearchReset(keyword, regionName, selectedFoodTypeId, sort);
                 }}
                 />
 
@@ -235,7 +273,7 @@ export default function SearchPage() {
                             onClick={() => {
                                 setSelectedFoodTypeId(undefined);
                                 setIsFoodTypeOpen(false);
-                                fetchSearch(keyword, region, undefined, sort);
+                                fetchSearchReset(keyword, region, undefined, sort);
                             }}
                             className={`w-full rounded-xl px-3 py-2.5 text-left text-sm ${
                                 selectedFoodTypeId === undefined
@@ -253,7 +291,7 @@ export default function SearchPage() {
                                 onClick={() => {
                                     setSelectedFoodTypeId(ft.foodTypeId);
                                     setIsFoodTypeOpen(false);
-                                    fetchSearch(keyword, region, ft.foodTypeId, sort);
+                                    fetchSearchReset(keyword, region, ft.foodTypeId, sort);
                                 }}
                                 className={`w-full rounded-xl px-3 py-2.5 text-left text-sm ${
                                     selectedFoodTypeId === ft.foodTypeId
@@ -271,7 +309,7 @@ export default function SearchPage() {
 
             <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-500">
-                    검색 결과 {items.length}개
+                    검색 결과 {totalCount.toLocaleString()}개
                 </p>
 
                 <div className="flex gap-2">
@@ -284,7 +322,7 @@ export default function SearchPage() {
                                 type="button"
                                 onClick={() => {
                                     setSort(opt.value);
-                                    fetchSearch(keyword, region, selectedFoodTypeId, opt.value);
+                                    fetchSearchReset(keyword, region, selectedFoodTypeId, opt.value);
                                 }}
                                 className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition active:scale-95"
                                 style={
@@ -361,6 +399,60 @@ export default function SearchPage() {
                     </li>
                 ))}
             </ul>
+
+            {totalPages > 1 && (
+                <nav
+                    aria-label="검색 결과 페이지네이션"
+                    className="mt-6 flex items-center justify-center gap-1"
+                >
+                    <button
+                        type="button"
+                        onClick={() => handlePageChange(page - 1)}
+                        disabled={page <= 1}
+                        aria-label="이전 페이지"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                        const isActive = p === page;
+                        return (
+                            <button
+                                key={p}
+                                type="button"
+                                onClick={() => handlePageChange(p)}
+                                aria-current={isActive ? "page" : undefined}
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition"
+                                style={
+                                    isActive
+                                        ? {
+                                            backgroundColor: COLORS.PRIMARY,
+                                            color: "#FFFFFF",
+                                        }
+                                        : {
+                                            backgroundColor: "#FFFFFF",
+                                            color: "#6B7280",
+                                            border: "1px solid #E5E7EB",
+                                        }
+                                }
+                            >
+                                {p}
+                            </button>
+                        );
+                    })}
+
+                    <button
+                        type="button"
+                        onClick={() => handlePageChange(page + 1)}
+                        disabled={page >= totalPages}
+                        aria-label="다음 페이지"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </nav>
+            )}
 
             {showTopButton && (
                 <button
