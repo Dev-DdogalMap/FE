@@ -62,6 +62,7 @@ const MyMenuList = () => {
 
       <button
         type="button"
+        onClick={() => navigate("/mypage/settings")}
         className="flex w-full items-center justify-between px-5 py-5 text-left"
       >
         <div className="flex items-center gap-3">
