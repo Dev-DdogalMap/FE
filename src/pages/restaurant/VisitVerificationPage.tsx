@@ -12,7 +12,7 @@ import VisitCompleteModal from "@/features/restaurant/ui/VisitCompleteModal";
 import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 
 const VERIFY_RADIUS_METER = 50;
-//const USE_MOCK_INSIDE_RADIUS = true;
+// const USE_MOCK_INSIDE_RADIUS = true;
 
 type VerifyStatus = "idle" | "success" | "fail" | "permission-error";
 
@@ -69,6 +69,7 @@ const VisitVerificationPage = () => {
     !restaurantId || Number.isNaN(restaurantIdNumber);
 
   const [verifiedAt, setVerifiedAt] = useState<string>("");
+  const [verificationId, setVerificationId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isInvalidRestaurantId) return;
@@ -116,7 +117,7 @@ const VisitVerificationPage = () => {
         // const userLatitude = USE_MOCK_INSIDE_RADIUS
         //   ? restaurantLatitude + 0.0001
         //   : position.coords.latitude;
-
+        //
         // const userLongitude = USE_MOCK_INSIDE_RADIUS
         //   ? restaurantLongitude + 0.0001
         //   : position.coords.longitude;
@@ -203,6 +204,8 @@ const VisitVerificationPage = () => {
       );
 
       setVerifiedAt(res.verifiedAt);
+      setVerificationId(res.visitVerificationId || res.id);
+
       setIsCompleteModalOpen(true);
     } catch (error) {
       console.error("방문 인증 저장 실패:", error);
@@ -467,7 +470,7 @@ const VisitVerificationPage = () => {
           onReviewClick={() => {
             setIsCompleteModalOpen(false);
 
-            navigate("/review", {
+            navigate(`/review/write/${verificationId}`, {
               state: {
                 restaurantId: restaurantIdNumber,
                 placeName: restaurant.placeName,

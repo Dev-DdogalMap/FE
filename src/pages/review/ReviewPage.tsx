@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from '@/shared/api/axios';
+import { authFetch } from '@/shared/api/authFetch';
 import { Check, X} from 'lucide-react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from "@/shared/auth/AuthContext";
 
 const TAG_OPTIONS = [
@@ -14,7 +14,8 @@ const ReviewPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { accessToken } = useAuth();
+    const { accessToken, refreshAccessToken } = useAuth();
+    const { visitVerificationId } = useParams<{ visitVerificationId: string }>();
 
     // 1. 라우터 state 타입 정의 및 추출
     const state = location.state as {
@@ -24,6 +25,11 @@ const ReviewPage = () => {
         roadAddressName?: string;
         verifiedAt?: string;
         accessToken?: string;
+        // 💡 미작성 후기 DTO 필드 추가
+        restaurantName?: string;
+        category?: string;
+        address?: string;
+        visitDate?: string;
     } | null;
 
     // state가 있으면 쓰고, 없으면 URL 쿼리(리프레시 대비)에서 가져옴
@@ -54,12 +60,12 @@ const ReviewPage = () => {
 
     // 4. 화면에 표시할 식당 정보 상태 (전달받은 state가 있다면 초기값으로 즉시 반영)
     const [restaurantData, setRestaurantData] = useState({
-        name: state?.placeName || "가게 정보 불러오는 중...",
-        // 💡 고정된 "음식점" 문자열 대신 state?.foodType을 사용하고, 없을 때만 기본값 처리합니다.
-        meta: state?.roadAddressName
-            ? `${state.foodType || '음식점'} · ${extractDong(state.roadAddressName)}`
+        // 💡 양쪽 필드 이름 대응
+        name: state?.placeName || state?.restaurantName || "가게 정보 불러오는 중...",
+        meta: (state?.roadAddressName || state?.address)
+            ? `${state.foodType || state.category || '음식점'} · ${extractDong(state.roadAddressName || state.address || '')}`
             : "",
-        visitTime: state?.verifiedAt ? formatVisitTime(state.verifiedAt) : ""
+        visitTime: state?.verifiedAt ? formatVisitTime(state.verifiedAt) : (state?.visitDate || "")
     });
 
     const [score, setScore] = useState<number>(0);
@@ -71,17 +77,25 @@ const ReviewPage = () => {
     // 5. 부득이하게 state 없이 링크나 리프레시로 직접 진입했을 때만 API 재요청
     useEffect(() => {
         // 이전 페이지(state)에서 이름과 음식 카테고리를 모두 완벽하게 넘겨받았다면 API 호출 생략
-        if (state?.placeName && state?.foodType) return;
+        if ((state?.placeName && state?.foodType) || (state?.restaurantName && state?.category)) return;
         if (!restaurantId) return;
 
         const fetchRestaurantDetails = async () => {
             try {
                 // 💡 foodType이 존재하는 /preview 엔드포인트로 요청을 보냅니다.
-                const response = await axios.get(`/api/restaurants/${restaurantId}/preview`, {
-                    headers: { Authorization: `Bearer ${accessToken}` } // 💡 상단의 accessToken 변수 사용
+                const response = await authFetch({
+                    path: `/api/restaurants/${restaurantId}/preview`,
+                    accessToken,
+                    refreshAccessToken,
+                    options: {
+                        method: 'GET'
+                    }
                 });
 
-                const data = response.data; // RestaurantPreview 타입 데이터 반환
+                if (!response.ok) {
+                    throw new Error("가게 정보를 불러오는 데 실패했습니다.");
+                }
+                const data = await response.json(); // RestaurantPreview 타입 데이터 반환
 
                 setRestaurantData((prev) => ({
                     ...prev,
@@ -169,19 +183,35 @@ const ReviewPage = () => {
 
         // 💡 라우터 state로 넘어온 토큰을 최우선으로 사용하고, 없을 때 fallback으로 함수를 호출합니다.
         const token = state?.accessToken || accessToken;
-        // 💡 디버깅을 위해 토큰 값을 콘솔에 출력해봅니다.
-        console.log("ReviewPage에서 읽어온 토큰:", token);
 
-        if (!restaurantId) { alert("식당 정보가 올바르지 않습니다."); return; }
-        if (score === 0) { alert("별점을 선택해주세요."); return; }
-        if (isRevisit == null) { alert("재방문 의사를 선택해주세요."); return; }
-        if (!content.trim()) { alert("상세 후기를 입력해주세요."); return; }
-        if (selectedTags.length < 1) { alert("태그를 최소 1개 이상 선택해주세요."); return; }
+        if (!restaurantId) {
+            alert("식당 정보가 올바르지 않습니다.");
+            return;
+        }
+        if (score === 0) {
+            alert("별점을 선택해주세요.");
+            return;
+        }
+        if (isRevisit == null) {
+            alert("재방문 의사를 선택해주세요.");
+            return;
+        }
+        if (!content.trim()) {
+            alert("상세 후기를 입력해주세요.");
+            return;
+        }
+        if (selectedTags.length < 1) {
+            alert("태그를 최소 1개 이상 선택해주세요.");
+            return;
+        }
 
         if (!token) {
             alert("로그인이 필요합니다.");
             return;
         }
+
+        console.log("전송할 토큰 값:", token);
+        console.log("방문 인증 ID (visitVerificationId):", visitVerificationId);
 
         try {
             const formData = new FormData();
@@ -194,32 +224,45 @@ const ReviewPage = () => {
                 isRevisit: isRevisit
             };
 
-            const reviewBlob = new Blob([JSON.stringify(reviewData)], { type: "application/json" });
+            const reviewBlob = new Blob([JSON.stringify(reviewData)], {type: "application/json"});
             formData.append("review", reviewBlob);
 
             images.forEach((img) => {
                 formData.append("images", img.file);
             });
 
-            const response = await axios.post(
-                `/api/restaurants/${restaurantId}/review`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${token}`
-                    }
+            const response = await authFetch({
+                path: `/api/visit-verifications/${visitVerificationId}/review`,
+                accessToken: token,
+                refreshAccessToken,
+                options: {
+                    method: 'POST',
+                    body: formData,
                 }
-            );
+            });
 
-            alert(response.data);
+            // 💡 응답이 성공(2xx)이 아닐 때 처리
+            if (!response.ok) {
+                // 백엔드가 보낸 구체적인 에러 메시지(예: 용량 초과 등)를 읽어옵니다.
+                const errorMsg = await response.text();
+                throw new Error(errorMsg || "리뷰 등록에 실패했습니다.");
+            }
+
+            // 성공 시 백엔드의 성공 메시지("리뷰가 성공적으로 등록되었습니다...") 출력
+            const resText = await response.text();
+            alert(resText);
             clearAllImages();
 
-            // 등록 완료 후 이전 페이지(식당 상세 화면)로 이동하며 목록 갱신 트리거
             navigate(-1);
+
         } catch (error) {
             console.error(error);
-            alert('리뷰 등록에 실패했습니다.');
+            // 💡 던져진 에러 객체의 실제 메시지를 alert으로 보여줍니다.
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert('알 수 없는 오류가 발생했습니다.');
+            }
         }
     };
 

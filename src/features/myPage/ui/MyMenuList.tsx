@@ -37,19 +37,19 @@ const MyMenuList = () => {
 
   return (
     <>
-      <section className="mx-6 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
-        >
-          <div className="flex items-center gap-3">
-            <Edit3 size={20} className="text-gray-500" />
-            <span className="text-base font-bold text-gray-800">
-              작성한 후기
-            </span>
-          </div>
-          <ChevronRight size={22} className="text-gray-400" />
-        </button>
+
+    <section className="mx-6 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <button
+        type="button"
+        onClick={() => navigate("/mypage/reviews")}
+        className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <Edit3 size={20} className="text-gray-500" />
+          <span className="text-base font-bold text-gray-800">작성한 후기</span>
+        </div>
+        <ChevronRight size={22} className="text-gray-400" />
+      </button>
 
         <button
           type="button"
