@@ -55,7 +55,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
 export default function SearchPage() {
     const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
-    const { accessToken, refreshAccessToken } = useAuth();
+    const { accessToken } = useAuth();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
     const [totalCount, setTotalCount] = useState(0);
@@ -136,7 +136,7 @@ export default function SearchPage() {
                 page: searchPage,
                 size: PAGE_SIZE,
             },
-            { accessToken, refreshAccessToken },
+            { accessToken },
         )
             .then((res) => {
                 if (currentId !== requestIdRef.current) return;
