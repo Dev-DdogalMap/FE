@@ -252,6 +252,11 @@ export default function DirectChatPage() {
       return;
     }
 
+    if (hasPartnerLeft) {
+      alert("대화 상대가 없어 메시지를 보낼 수 없습니다.");
+      return;
+    }
+
     if (!socketRef.current || !isSocketReady) {
       alert("실시간 채팅 연결이 아직 완료되지 않았습니다.");
       return;
@@ -449,15 +454,16 @@ export default function DirectChatPage() {
                 handleSend();
               }
             }}
-            placeholder="메시지를 입력하세요"
-            className="min-w-0 flex-1 bg-transparent text-sm text-[#222222] outline-none placeholder:text-gray-400"
+            disabled={hasPartnerLeft}
+            placeholder={hasPartnerLeft ? "대화 상대가 없습니다" : "메시지를 입력하세요"}
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#222222] outline-none placeholder:text-gray-400 disabled:text-gray-400"
           />
           <ImagePlus className="h-5 w-5 shrink-0 text-gray-400" />
         </div>
         <button
           type="button"
           onClick={handleSend}
-          disabled={!isSocketReady}
+          disabled={!isSocketReady || hasPartnerLeft}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white disabled:opacity-50"
           aria-label="전송"
         >
