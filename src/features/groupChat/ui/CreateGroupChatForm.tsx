@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-//import type { FoodCategory } from "../model/groupChatTypes";
+import { useFoodTypes } from "../hooks/useFoodTypes";
 
 interface Props {
     onSubmit: (data: {
@@ -11,17 +11,11 @@ interface Props {
     }) => void;
 }
 
-const categories = [
-    { id: 1, name: "한식" },
-    { id: 2, name: "중식" },
-    { id: 3, name: "일식" },
-    { id: 4, name: "양식" },
-];
-
 export default function CreateGroupChatForm({
     onSubmit,
 }: Props) {
     const fileRef = useRef<HTMLInputElement>(null);
+    const { foodTypes, loading: categoriesLoading } = useFoodTypes();
 
     const [roomName, setRoomName] = useState("");
     const [region, setRegion] = useState("");
@@ -133,6 +127,7 @@ export default function CreateGroupChatForm({
                     </label>
 
                     <select
+                        disabled={categoriesLoading}
                         value={foodTypeId ?? ""}
                         onChange={(e) =>
                             setFoodTypeId(
@@ -147,12 +142,12 @@ export default function CreateGroupChatForm({
                             음식 종류를 선택해주세요
                         </option>
 
-                        {categories.map((category) => (
+                        {foodTypes.map((category) => (
                             <option
-                                key={category.id}
-                                value={category.id}
+                                key={category.foodTypeId}
+                                value={category.foodTypeId}
                             >
-                                {category.name}
+                                {category.type}
                             </option>
                         ))}
                     </select>

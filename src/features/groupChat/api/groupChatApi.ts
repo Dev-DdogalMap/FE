@@ -9,7 +9,11 @@ import type {
   UrlDto,
   UpdateChatRoomRequest,
   UpdateChatRoomResponse,
-  LeaveChatRoomResponse
+  LeaveChatRoomResponse,
+  ChatRoomMembersResponse,
+  FoodTypeResponse,
+  ChatRoomKickResponse,
+  ChatRoomGrantResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -181,4 +185,89 @@ export async function leaveChatRoom(
 
   const text = await response.text();
   return text ? (JSON.parse(text) as LeaveChatRoomResponse) : null;
+}
+
+//멤버 목록 조회
+//GET /api/chat-rooms/{roomId}/members
+export async function getChatRoomMembers(
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/members`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<ChatRoomMembersResponse>;
+}
+
+/**
+ * 음식 카테고리 조회
+ * GET /api/food-types
+ */
+export async function getFoodTypes(
+  { accessToken, refreshAccessToken }: AuthParams
+) {
+  const response = await authFetch({
+    path: `/api/food-types`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<FoodTypeResponse[]>;
+}
+
+/**
+ * 강퇴
+ * DELETE /api/chat-rooms/{roomId}/kick
+ */
+export async function kickChatRoomMembers(
+  roomId: number,
+  kickedUserIds: number[],
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/kick`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickedUserIds }),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`강퇴 실패: ${response.status}`);
+  }
+
+  const text = await response.text();
+  return text ? (JSON.parse(text) as ChatRoomKickResponse) : null;
+}
+
+
+/**
+ * 방장 권한 부여
+ * PATCH /api/chat-rooms/{roomId}/grant
+ */
+export async function grantChatRoomOwner(
+  roomId: number,
+  grantedUserIds: number[],
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/grant`,
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ grantedUserIds }),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`권한 부여 실패: ${response.status}`);
+  }
+
+  return response.json() as Promise<ChatRoomGrantResponse>;
 }
