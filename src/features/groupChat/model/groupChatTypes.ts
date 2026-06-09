@@ -121,3 +121,12 @@ export interface FoodTypeResponse {
   foodTypeId: number;
   type: string;
 }
+
+//강퇴, 권한
+export interface ChatRoomKickResponse {
+  roomId: number;
+}
+
+export interface ChatRoomGrantResponse {
+  roomId: number;
+}
