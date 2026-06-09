@@ -1,15 +1,16 @@
 import { authFetch } from "@/shared/api/authFetch";
 
-import type { 
-  MyNeighborhoodResponse, 
-  MyNeighborhoodVerificationRequest, 
-  MyNeighborhoodVerificationResponse,
-  ActivitySummaryResponse,
+import type {
   ActivityDetailResponse,
-  UpdateRepresentativeBadgeRequest,
-  RepresentativeBadgeResponse,
+  ActivitySummaryResponse,
   ChatPreferenceResponse,
-  ChatPreferenceUpdateRequest
+  ChatPreferenceUpdateRequest,
+  MyNeighborhoodResponse,
+  MyNeighborhoodVerificationRequest,
+  MyNeighborhoodVerificationResponse,
+  MyStatsResponse,
+  RepresentativeBadgeResponse,
+  UpdateRepresentativeBadgeRequest
 } from "../model/myPageTypes";
 
 type AuthApiParams = {
@@ -174,4 +175,25 @@ export async function updateChatPreference(
   });
 
   return parseResponse<ChatPreferenceResponse>(response);
+}
+
+
+
+
+export async function getMyStats(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<MyStatsResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/stats",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<MyStatsResponse>(response);
 }
