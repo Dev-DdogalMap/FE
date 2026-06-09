@@ -38,7 +38,7 @@ const MyStatsSection = () => {
     };
 
     fetchStats();
-  }, [isLoading, accessToken]);
+  }, [isLoading, accessToken, refreshAccessToken]);
 
   return (
     <section className="mx-6 mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
