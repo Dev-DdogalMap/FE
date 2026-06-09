@@ -96,3 +96,21 @@ export interface UpdateChatRoomResponse {
 export interface LeaveChatRoomResponse {
   roomId: number;
 }
+
+//그룹 채팅방 멤버 목록 조회
+export interface ChatRoomMembersResponse {
+  currentUserRole: ChatRoomMemberRole;
+  participantCount: number;
+  maxParticipantCount: number;
+  members: MemberDetailInfo[];
+}
+
+export interface MemberDetailInfo {
+  userId: number;
+  userProfileImage: string;
+  userName: string;
+  userLevel: number;
+  userRole: ChatRoomMemberRole;
+}
+
+export type ChatRoomMemberRole = "OWNER" | "MEMBER";

@@ -20,6 +20,7 @@ import VisitVerificationPage from "@/pages/restaurant/VisitVerificationPage";
 import SearchPage from "@/pages/search/SearchPage";
 
 import ChatPageRefactoring from "@/pages/chat/ChatPage";
+import GroupChatMemberPage from "@/pages/groupChat/GroupChatMemberPage";
 
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
 import ReviewPage from "@/pages/review/ReviewPage";
@@ -94,6 +95,10 @@ export const router = createBrowserRouter([
         path: "/chat/group/info/:roomId",
         element: <GroupInfoPage />,
       },
+      {
+        path: "/chat-rooms/:roomId/members",
+        element: <GroupChatMemberPage />
+      },
       // {
       //   element: <RequireAuth />,
       //   children: [
@@ -109,7 +114,7 @@ export const router = createBrowserRouter([
       {
         path: "*",
         element: <NotFoundPage />
-      }
+      },
     ],
   },
 ]);

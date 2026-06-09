@@ -9,7 +9,8 @@ import type {
   UrlDto,
   UpdateChatRoomRequest,
   UpdateChatRoomResponse,
-  LeaveChatRoomResponse
+  LeaveChatRoomResponse,
+  ChatRoomMembersResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -181,4 +182,18 @@ export async function leaveChatRoom(
 
   const text = await response.text();
   return text ? (JSON.parse(text) as LeaveChatRoomResponse) : null;
+}
+
+//멤버 목록 조회
+//GET /api/chat-rooms/{roomId}/members
+export async function getChatRoomMembers(
+  roomId: number,
+  { accessToken, refreshAccessToken }: AuthParams,
+) {
+  const response = await authFetch({
+    path: `/api/chat-rooms/${roomId}/members`,
+    accessToken,
+    refreshAccessToken,
+  });
+  return response.json() as Promise<ChatRoomMembersResponse>;
 }

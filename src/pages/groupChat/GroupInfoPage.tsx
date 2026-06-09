@@ -137,7 +137,7 @@ export default function GroupInfoPage() {
                                     </div>
                                 </div>
                                 <div className="mt-8">
-                                    <MemberAvatarList members={roomInfo.members} />
+                                    <MemberAvatarList members={roomInfo.members} roomId={Number(roomId)}/>
                                 </div>
                             </div>
                             <GroupInfoFooter
