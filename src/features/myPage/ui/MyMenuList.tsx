@@ -77,6 +77,7 @@ const MyMenuList = () => {
 
         <button
           type="button"
+          onClick={() => navigate("/mypage/settings")}
           className="flex w-full items-center justify-between px-5 py-5 text-left"
         >
           <div className="flex items-center gap-3">
@@ -130,18 +131,6 @@ const MyMenuList = () => {
           document.body
         )}
     </>
-      <button
-        type="button"
-        onClick={() => navigate("/mypage/settings")}
-        className="flex w-full items-center justify-between px-5 py-5 text-left"
-      >
-        <div className="flex items-center gap-3">
-          <Settings size={20} className="text-gray-500" />
-          <span className="text-base font-bold text-gray-800">Settings</span>
-        </div>
-        <ChevronRight size={22} className="text-gray-400" />
-      </button>
-    </section>
   );
 };
 
