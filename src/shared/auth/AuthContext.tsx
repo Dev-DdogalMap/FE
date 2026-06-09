@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { API_BASE_URL } from "@/shared/config/api";
+import { withdrawUser } from "@/features/user/api/userApi";
 
 type User = {
   userId: number;
@@ -22,7 +23,9 @@ type AuthContextValue = {
   checkAuth: () => Promise<boolean>;
   refreshAccessToken: () => Promise<string | null>;
   logout: () => Promise<void>;
+  withdraw: () => Promise<void>;
 };
+
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -87,6 +90,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const withdraw = useCallback(async () => {
+  try {
+    await withdrawUser({
+      accessToken,
+      refreshAccessToken,
+    });
+  } finally {
+    setUser(null);
+    setAccessToken(null);
+  }
+}, [accessToken, refreshAccessToken]);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -104,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         checkAuth,
         refreshAccessToken,
         logout,
+        withdraw,
       }}
     >
       {children}

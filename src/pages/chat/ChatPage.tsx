@@ -1,6 +1,6 @@
 // ChatPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { createDirectChat } from "@/features/chat/api/getTasteExperts";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
@@ -30,9 +30,19 @@ export default function ChatPageRefactoring() {
     [accessToken, refreshAccessToken],
   );
 
-  const [activeTab, setActiveTab] = useState<ChatTabKey>("recommended");
+  const location = useLocation();
+  const initialTab = (location.state as { tab?: ChatTabKey })?.tab ?? "recommended";  //초기탭 상태
+  const [activeTab, setActiveTab] = useState<ChatTabKey>(initialTab);
   const [filters, setFilters] = useState<TasteExpertFilters>(defaultFilters);
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+
+  //탭 상태 초기화
+  useEffect(() => {
+    // state 소비 후 초기화 — 뒤로가기 시 재사용 방지
+    if (location.state?.tab) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []);
 
   useEffect(() => {
     void getFoodTypes()

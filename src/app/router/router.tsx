@@ -23,6 +23,7 @@ import ChatPageRefactoring from "@/pages/chat/ChatPage";
 
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
 import ReviewPage from "@/pages/review/ReviewPage";
+import MyActivityPage from "@/pages/myPage/MyActivityPage";
 import MyReviewManagement from "@/pages/myPage/reviews/MyReviewManagement.tsx";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
@@ -88,6 +89,10 @@ export const router = createBrowserRouter([
         element: <MyNeighborhoodVerificationPage />,
       },
       {
+        path: "/mypage/activity",
+        element: <MyActivityPage />,
+      },
+      {
         path: "/chat/group/room/:roomId",
         element: <GroupChatRoomPage />,
       },
@@ -117,7 +122,7 @@ export const router = createBrowserRouter([
       {
         path: "*",
         element: <NotFoundPage />
-      }
+      },
     ],
   },
 ]);

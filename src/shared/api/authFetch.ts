@@ -28,8 +28,6 @@ export async function authFetch({
     return response;
   }
 
-  console.log("accessToken 만료 감지 → refreshToken으로 재발급 시도");
-
   const newAccessToken = await refreshAccessToken();
 
   if (!newAccessToken) {
