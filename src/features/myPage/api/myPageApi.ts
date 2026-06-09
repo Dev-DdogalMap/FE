@@ -1,13 +1,16 @@
 import { authFetch } from "@/shared/api/authFetch";
 
-import type { 
-  MyNeighborhoodResponse, 
-  MyNeighborhoodVerificationRequest, 
-  MyNeighborhoodVerificationResponse,
-  ActivitySummaryResponse,
+import type {
   ActivityDetailResponse,
-  UpdateRepresentativeBadgeRequest,
-  RepresentativeBadgeResponse
+  ActivitySummaryResponse,
+  ChatPreferenceResponse,
+  ChatPreferenceUpdateRequest,
+  MyNeighborhoodResponse,
+  MyNeighborhoodVerificationRequest,
+  MyNeighborhoodVerificationResponse,
+  MyStatsResponse,
+  RepresentativeBadgeResponse,
+  UpdateRepresentativeBadgeRequest
 } from "../model/myPageTypes";
 
 type AuthApiParams = {
@@ -131,4 +134,66 @@ export async function updateRepresentativeBadge(
   });
 
   return parseResponse<RepresentativeBadgeResponse>(response);
+}
+
+export async function getChatPreference(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ChatPreferenceResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/chat-preference",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<ChatPreferenceResponse>(response);
+}
+
+export async function updateChatPreference(
+  request: ChatPreferenceUpdateRequest,
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<ChatPreferenceResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/chat-preference",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  });
+
+  return parseResponse<ChatPreferenceResponse>(response);
+}
+
+
+
+
+export async function getMyStats(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<MyStatsResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/stats",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<MyStatsResponse>(response);
 }

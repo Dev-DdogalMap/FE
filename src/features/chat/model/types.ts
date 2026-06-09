@@ -37,6 +37,10 @@ export interface DirectChatRoomSummary {
   targetUserId: number;
   targetNickname: string;
   targetProfileImageUrl?: string | null;
+  targetLevel?: number | null;
+  targetLevelName?: string | null;
+  targetSpecialty?: string | null;
+  targetCertified?: boolean | null;
   lastMessage?: string | null;
   lastMessageAt?: string | null;
   unreadCount: number;

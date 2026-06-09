@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/auth/AuthContext";
 import {
   createBookmarkCategory,
+  deleteBookmarkCategory,
+  deleteBookmarkFromCategory,
   getBookmarkCategories,
-  getBookmarksByCategory,
-  deleteBookmarkCategory
+  getBookmarksByCategory
 } from "@/features/bookmark/api/bookmarkApi";
 import type {
   BookmarkCategory,
   BookmarkRestaurant,
 } from "@/features/bookmark/model/bookmarkTypes";
+import { useAuth } from "@/shared/auth/AuthContext";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
@@ -33,8 +34,8 @@ export default function BookmarkPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const selectedTitle =
-  categories.find((c) => c.bookmarkCategoryId === selectedCategoryId)
-    ?.bookmarkCategoryName ?? "카테고리";
+    categories.find((c) => c.bookmarkCategoryId === selectedCategoryId)
+      ?.bookmarkCategoryName ?? "카테고리";
 
   useEffect(() => {
     if (authLoading || !isLoggedIn) return;
@@ -144,8 +145,8 @@ export default function BookmarkPage() {
       const nextSelectedCategory = wasSelected
         ? nextCategories[0]
         : nextCategories.find(
-            (category) => category.bookmarkCategoryId === selectedCategoryId
-          );
+          (category) => category.bookmarkCategoryId === selectedCategoryId
+        );
 
       if (!nextSelectedCategory) {
         setSelectedCategoryId(null);
@@ -176,6 +177,7 @@ export default function BookmarkPage() {
   }
 
   async function handleSelectCategory(categoryId: number) {
+
   try {
     setSelectedCategoryId(categoryId);
     setIsLoading(true);
@@ -189,10 +191,50 @@ export default function BookmarkPage() {
     setBookmarks(data);
   } catch (error) {
     console.error(error);
-  } finally {
+    } 
+    finally {
     setIsLoading(false);
+    }
   }
-}
+
+  async function handleDeleteRestaurant(restaurantId: number) {
+  if (!selectedCategoryId) {
+    alert("카테고리를 선택해주세요.");
+    return;
+  }
+
+  const confirmed = window.confirm("이 맛집을 현재 카테고리에서 삭제할까요?");
+  if (!confirmed) return;
+
+  try {
+    await deleteBookmarkFromCategory({
+      bookmarkCategoryId: selectedCategoryId,
+      restaurantId,
+      accessToken,
+      refreshAccessToken,
+    });
+
+    setBookmarks((prev) =>
+      prev.filter((bookmark) => bookmark.restaurantId !== restaurantId)
+    );
+
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.bookmarkCategoryId === selectedCategoryId
+          ? {
+              ...category,
+              bookmarkCount: Math.max(0, category.bookmarkCount - 1),
+            }
+          : category
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    alert("맛집 삭제에 실패했어요.");
+    }
+  }
+
+
 
   if (authLoading) {
     return <main style={styles.center}>로그인 확인 중...</main>;
@@ -210,8 +252,6 @@ export default function BookmarkPage() {
         </button>
         <h1 style={styles.title}>나의 맛집</h1>
         <div style={styles.headerRight}>
-          <button type="button" style={styles.iconButton}>🔔</button>
-          <button type="button" style={styles.iconButton}>⚙️</button>
         </div>
       </header>
 
@@ -257,12 +297,22 @@ export default function BookmarkPage() {
       ) : (
         <section style={styles.restaurantList}>
           {bookmarks.map((bookmark) => (
-            <button
+            <div
               key={bookmark.bookmarkId}
-              type="button"
               style={styles.restaurantCard}
               onClick={() => navigate(`/restaurants/${bookmark.restaurantId}`)}
             >
+              <button
+                type="button"
+                style={styles.restaurantDeleteButton}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDeleteRestaurant(bookmark.restaurantId);
+                }}
+                aria-label="맛집 삭제"
+              >
+                ×
+              </button>
               <img
                 src={bookmark.imageUrl ?? DEFAULT_IMAGE}
                 alt={bookmark.restaurantName}
@@ -280,71 +330,71 @@ export default function BookmarkPage() {
                 <div style={styles.tagRow}>
                   <span style={styles.greenTag}>혼밥 가능</span>
                   <span style={styles.greenTag}>웨이팅 적음</span>
-                  <span style={styles.greenTag}>분위기 좋음</span>
+                
                 </div>
 
                 <p style={styles.locationLine}>⌖ {bookmark.address}</p>
               </div>
 
               <div style={styles.scoreBox}>
-                <strong>98%</strong>
-                <span>찐맛집 지수</span>
-                <span style={styles.bookmarkIcon}>♡</span>
+                <strong style={styles.scorePercent}>98%</strong>
+                <span style={styles.scoreLabel}>찐맛집 지수</span>
               </div>
-            </button>
+              </div>
           ))}
         </section>
       )}
 
-      <button type="button" style={styles.mapButton}>
+      {/* TODO: BookmarkMapPage연결 */}
+      <button type="button" onClick={() => navigate(`/bookmark-map/${selectedCategoryId}`)} style={styles.mapButton}>
         🗺️ {selectedTitle} 지도 보기 ›
       </button>
 
-      {isCreateCategoryOpen && 
-      createPortal(
-        <div
-          style={styles.createCategoryOverlay}
-          onClick={() => setIsCreateCategoryOpen(false)}
-        >
-          <section
-            style={styles.createCategoryModal}
-            onClick={(event) => event.stopPropagation()}
+      {isCreateCategoryOpen &&
+        createPortal(
+          <div
+            style={styles.createCategoryOverlay}
+            onClick={() => setIsCreateCategoryOpen(false)}
           >
-            <h2 style={styles.createCategoryTitle}>새 카테고리 만들기</h2>
-            <p style={styles.createCategoryDescription}>
-              저장하고 싶은 맛집을 분류할 카테고리명을 입력해주세요.
-            </p>
+            <section
+              style={styles.createCategoryModal}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2 style={styles.createCategoryTitle}>새 카테고리 만들기</h2>
+              <p style={styles.createCategoryDescription}>
+                저장하고 싶은 맛집을 분류할 카테고리명을 입력해주세요.
+              </p>
 
-            <input
-              value={newCategoryName}
-              onChange={(event) => setNewCategoryName(event.target.value)}
-              placeholder="예: 또갈 곳, 데이트 맛집"
-              maxLength={100}
-              style={styles.createCategoryInput}
-            />
+              <input
+                value={newCategoryName}
+                onChange={(event) => setNewCategoryName(event.target.value)}
+                placeholder="예: 또갈 곳, 데이트 맛집"
+                maxLength={100}
+                style={styles.createCategoryInput}
+              />
 
-            <div style={styles.createCategoryActions}>
-              <button
-                type="button"
-                style={styles.cancelButton}
-                onClick={() => setIsCreateCategoryOpen(false)}
-              >
-                취소
-              </button>
+              <div style={styles.createCategoryActions}>
+                <button
+                  type="button"
+                  style={styles.cancelButton}
+                  onClick={() => setIsCreateCategoryOpen(false)}
+                >
+                  취소
+                </button>
 
-              <button
-                type="button"
-                style={styles.confirmButton}
-                disabled={isCreatingCategory}
-                onClick={handleCreateCategory}
-              >
-                {isCreatingCategory ? "생성 중..." : "생성"}
-              </button>
-            </div>
-          </section>
-        </div>,
-        document.body
-      )}
+                <button
+                  type="button"
+                  style={styles.confirmButton}
+                  disabled={isCreatingCategory}
+                  onClick={handleCreateCategory}
+                >
+                  {isCreatingCategory ? "생성 중..." : "생성"}
+                </button>
+              </div>
+            </section>
+          </div>,
+          document.body
+        )}
     </main>
   );
 }
@@ -505,30 +555,34 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
   },
   restaurantCard: {
-    width: "100%",
-    minHeight: 156,
-    border: "1px solid #eee",
-    borderRadius: 18,
-    background: "#fff",
-    padding: 0,
-    display: "grid",
-    gridTemplateColumns: "132px 1fr 72px",
-    overflow: "hidden",
-    cursor: "pointer",
-    textAlign: "left",
+  width: "100%",
+  minHeight: 0,
+  border: "1px solid #eee",
+  borderRadius: 16,
+  background: "#fff",
+  padding: 0,
+  display: "grid",
+  gridTemplateColumns: "100px 1fr 62px",
+  overflow: "hidden",
+  cursor: "pointer",
+  textAlign: "left",
+  position: "relative",
   },
+
   restaurantImage: {
-    width: 132,
+    width: 100,
     height: "100%",
     objectFit: "cover",
   },
+
   restaurantInfo: {
-    padding: "18px 10px 14px 18px",
+    padding: "12px 8px 10px 14px",
     minWidth: 0,
   },
+
   restaurantName: {
-    margin: "0 0 10px",
-    fontSize: 18,
+    margin: "0 0 6px",
+    fontSize: 16,
     fontWeight: 900,
     color: "#111",
     whiteSpace: "nowrap",
@@ -569,17 +623,27 @@ const styles: Record<string, React.CSSProperties> = {
     textOverflow: "ellipsis",
   },
   scoreBox: {
-    padding: "28px 12px 14px 0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    color: "#ff5a00",
+  padding: "12px 8px 10px 0",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  color: "#ff5a00",
   },
-  scoreBoxStrong: {},
-  bookmarkIcon: {
-    marginTop: "auto",
-    fontSize: 28,
-    color: "#ff5a00",
+
+  scorePercent: {
+    fontSize: 15,
+    fontWeight: 900,
+    lineHeight: 1.1,
+  },
+
+  scoreLabel: {
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: 800,
+    lineHeight: 1.25,
+    wordBreak: "keep-all",
   },
   mapButton: {
     width: "100%",
@@ -599,6 +663,23 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 40,
     textAlign: "center",
     color: "#888",
+  },
+
+  restaurantDeleteButton: {
+  position: "absolute",
+  top: 6,
+  right: 6,
+  width: 20,
+  height: 20,
+  border: "none",
+  borderRadius: "50%",
+  background: "#eeeeee",
+  color: "#999",
+  fontSize: 14,
+  fontWeight: 900,
+  lineHeight: "20px",
+  cursor: "pointer",
+  zIndex: 5,
   },
 
   createCategoryOverlay: {
@@ -670,17 +751,17 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
   folderDeleteButton: {
-  position: "absolute",
-  top: 6,
-  right: 8,
-  width: 20,
-  height: 20,
-  borderRadius: "50%",
-  background: "#f5f5f5",
-  color: "#999",
-  fontSize: 15,
-  fontWeight: 900,
-  display: "grid",
-  placeItems: "center",
+    position: "absolute",
+    top: 6,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    background: "#f5f5f5",
+    color: "#999",
+    fontSize: 15,
+    fontWeight: 900,
+    display: "grid",
+    placeItems: "center",
   },
 };

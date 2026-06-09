@@ -73,3 +73,19 @@ export type RepresentativeBadgeResponse = {
   name: string;
   iconImage: string;
 };
+
+export type ChatPreferenceResponse = {
+  chatEnabled: boolean;
+};
+
+export type ChatPreferenceUpdateRequest = {
+  chatEnabled: boolean;
+};
+
+
+export type MyStatsResponse = {
+  visitCount: number;
+  reviewCount: number;
+  bookmarkCount: number;
+  chatRoomCount: number;
+};

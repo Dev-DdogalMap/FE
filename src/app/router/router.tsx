@@ -4,6 +4,7 @@ import MobileLayout from "@/layouts/MobileLayout";
 
 import LoginPage from "@/pages/auth/LoginPage";
 import OAuthSuccessPage from "@/pages/auth/OAuthSuccessPage";
+import BookmarkMapPage from "@/pages/bookmark/BookmarkMapPage";
 import BookmarkPage from "@/pages/bookmark/BookmarkPage";
 //import ChatPage from "@/pages/chat/ChatPage";
 import DirectChatPage from "@/pages/chat/DirectChatPage";
@@ -13,6 +14,7 @@ import GroupInfoPage from "@/pages/groupChat/GroupInfoPage";
 import MapPage from "@/pages/map/MapPage";
 import MyNeighborhoodVerificationPage from "@/pages/myPage/MyNeighborhoodVerificationPage";
 import MyPage from "@/pages/myPage/MyPage";
+import MySettingsPage from "@/pages/myPage/MySettingsPage";
 import PrivacyPage from "@/pages/policy/PrivacyPage";
 import TermsPage from "@/pages/policy/TermsPage";
 import RestaurantPage from "@/pages/restaurant/RestaurantPage";
@@ -68,6 +70,10 @@ export const router = createBrowserRouter([
         element: <BookmarkPage />,
       },
       {
+        path: "/bookmark-map/:bookmarkCategoryId",
+        element: <BookmarkMapPage />,
+      },
+      {
         path: "/chat",
         element: <ChatPageRefactoring />,
       },
@@ -91,6 +97,10 @@ export const router = createBrowserRouter([
       {
         path: "/mypage/activity",
         element: <MyActivityPage />,
+      },
+      {
+        path: "/mypage/settings",
+        element: <MySettingsPage />,
       },
       {
         path: "/chat/group/room/:roomId",
