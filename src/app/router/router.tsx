@@ -24,7 +24,7 @@ import ChatPageRefactoring from "@/pages/chat/ChatPage";
 import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
 import ReviewPage from "@/pages/review/ReviewPage";
 import MyActivityPage from "@/pages/myPage/MyActivityPage";
-import MyReviewManagement from "@/pages/myPage/reviews/MyReviewManagement.tsx";
+import MyReviewManagement from "@/features/myPage/ui/MyReviewManagement.tsx";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -113,10 +113,15 @@ export const router = createBrowserRouter([
         element: <ReviewPage />,
       },
 
-        // 마이페이지 내 리뷰 목록 페이지 테스트
+        // 마이페이지 내 리뷰 목록 페이지
       {
         path: "/mypage/reviews",
         element: <MyReviewManagement />,
+      },
+
+      {
+        path: "/review/write/:visitVerificationId",
+        element: <ReviewPage />,
       },
 
       {

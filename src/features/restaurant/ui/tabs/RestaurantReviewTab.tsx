@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
+import {useAuth} from "@/shared/auth/AuthContext.tsx";
 
 interface ReviewResponse {
     reviewId: number;
@@ -11,6 +12,7 @@ interface ReviewResponse {
     content: string;
     imageUrls: string[];
     tags: string[];
+    likeCount: number;
 }
 
 interface RestaurantReviewTabProps {
@@ -22,6 +24,8 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
     const [reviews, setReviews] = useState<ReviewResponse[]>([]);
     const [onlyPhotos, setOnlyPhotos] = useState<boolean>(false);
     const [sortOrder, setSortOrder] = useState<string>("createdAt,desc");
+
+    const { accessToken } = useAuth();
 
     // 무한 스크롤 관련 상태
     const pageRef = useRef<number>(0);
@@ -103,6 +107,31 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
             }
         };
     }, [hasNext, loading, isFetchingNext, fetchReviews]);
+
+    const handleLike = async (reviewId: number) => {
+        if (!accessToken) {
+            alert("로그인이 필요한 기능입니다.");
+            return;
+        }
+
+        try {
+            await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            setReviews(prev =>
+                prev.map(review =>
+                    review.reviewId === reviewId
+                        ? { ...review, likeCount: review.likeCount + 1 }
+                        : review
+                )
+            );
+        } catch (error) {
+            console.error("좋아요 등록에 실패했습니다.", error);
+        }
+    };
 
     return (
         <div className="p-4 bg-gray-50 min-h-screen">
@@ -232,17 +261,14 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
 
                             {/* 하단 좋아요 / 댓글 버튼 구역 */}
                             <div className="flex items-center gap-4 text-xs text-gray-400 pt-3 border-t border-gray-50">
-                                <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
+                                <button
+                                    onClick={() => handleLike(review.reviewId)} // 💡 클릭 이벤트 바인딩
+                                    className="flex items-center gap-1 hover:text-gray-600 transition-colors"
+                                >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.757a1 1 0 01.707 1.707l-5.414 5.414a1 1 0 01-.707.293H10M3 10h3v10H3V10z" />
                                     </svg>
-                                    <span>좋아요 0</span>
-                                </button>
-                                <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    <span>댓글 0</span>
+                                    <span>좋아요 {review.likeCount ?? 0}</span> {/* 💡 하드코딩 제거 */}
                                 </button>
                             </div>
 

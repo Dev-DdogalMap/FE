@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/shared/auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/shared/auth/AuthContext.tsx";
 import axios from "axios";
 
 // --- Interfaces ---
@@ -29,6 +30,7 @@ interface UnwrittenReviewResponse {
 const MyReviewManagement = () => {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const { accessToken, isLoading: isAuthLoading } = useAuth();
+    const navigate = useNavigate();
 
     // 1. 작성한 후기 상태 관리
     const [writtenReviews, setWrittenReviews] = useState<ReviewResponse[]>([]);
@@ -138,6 +140,37 @@ const MyReviewManagement = () => {
         );
     }
 
+    const handleLike = async (reviewId: number) => {
+        if (!accessToken) return;
+
+        try {
+            // 백엔드를 위 마이그레이션 가이드대로 수정했다면 빈 객체({})를 전송합니다.
+            await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            // 성공 시 해당 리뷰의 좋아요 수만 1 증가 처리
+            setWrittenReviews(prev =>
+                prev.map(review =>
+                    review.reviewId === reviewId
+                        ? { ...review, likeCount: review.likeCount + 1 }
+                        : review
+                )
+            );
+        } catch (error) {
+            console.error("좋아요 등록에 실패했습니다.", error);
+        }
+    };
+
+    const handleWriteClick = (item: UnwrittenReviewResponse) => {
+        // 새로고침 대응을 위해 URL 뒤에 ?restaurantId= 값을 함께 붙여서 이동
+        navigate(`/review/write/${item.visitVerificationId}?restaurantId=${item.restaurantId}`, {
+            state: item
+        });
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen pb-12 antialiased">
             <div className="max-w-md mx-auto px-4">
@@ -221,11 +254,11 @@ const MyReviewManagement = () => {
                                 )}
 
                                 <div className="flex items-center gap-4 text-[11px] text-gray-400 pt-3 border-t border-gray-100">
-                                    <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
+                                    <button
+                                        onClick={() => handleLike(review.reviewId)} // 💡 클릭 이벤트 바인딩
+                                        className="flex items-center gap-1 hover:text-gray-600 transition-colors"
+                                    >
                                         <span>좋아요 {review.likeCount}</span>
-                                    </button>
-                                    <button className="flex items-center gap-1 hover:text-gray-600 transition-colors">
-                                        <span>댓글 {review.commentCount}</span>
                                     </button>
                                 </div>
                             </div>
@@ -268,7 +301,10 @@ const MyReviewManagement = () => {
                                     <span className="bg-green-50 text-green-600 px-2 py-1 rounded text-[10px] font-bold border border-green-100 flex-shrink-0">방문 인증</span>
                                 </div>
                                 <div className="text-xs text-gray-400 mb-4">방문일: {item.visitDate}</div>
-                                <button className="w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold active:bg-orange-600 shadow-sm transition-colors">
+                                <button
+                                    onClick={() => handleWriteClick(item)}
+                                    className="w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold active:bg-orange-600 shadow-sm transition-colors"
+                                >
                                     후기 작성하기
                                 </button>
                             </div>

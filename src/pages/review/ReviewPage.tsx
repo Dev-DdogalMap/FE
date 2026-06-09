@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '@/shared/api/axios';
 import { Check, X} from 'lucide-react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from "@/shared/auth/AuthContext";
 
 const TAG_OPTIONS = [
@@ -15,6 +15,7 @@ const ReviewPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { accessToken } = useAuth();
+    const { visitVerificationId } = useParams<{ visitVerificationId: string }>();
 
     // 1. 라우터 state 타입 정의 및 추출
     const state = location.state as {
@@ -24,6 +25,11 @@ const ReviewPage = () => {
         roadAddressName?: string;
         verifiedAt?: string;
         accessToken?: string;
+        // 💡 미작성 후기 DTO 필드 추가
+        restaurantName?: string;
+        category?: string;
+        address?: string;
+        visitDate?: string;
     } | null;
 
     // state가 있으면 쓰고, 없으면 URL 쿼리(리프레시 대비)에서 가져옴
@@ -54,12 +60,12 @@ const ReviewPage = () => {
 
     // 4. 화면에 표시할 식당 정보 상태 (전달받은 state가 있다면 초기값으로 즉시 반영)
     const [restaurantData, setRestaurantData] = useState({
-        name: state?.placeName || "가게 정보 불러오는 중...",
-        // 💡 고정된 "음식점" 문자열 대신 state?.foodType을 사용하고, 없을 때만 기본값 처리합니다.
-        meta: state?.roadAddressName
-            ? `${state.foodType || '음식점'} · ${extractDong(state.roadAddressName)}`
+        // 💡 양쪽 필드 이름 대응
+        name: state?.placeName || state?.restaurantName || "가게 정보 불러오는 중...",
+        meta: (state?.roadAddressName || state?.address)
+            ? `${state.foodType || state.category || '음식점'} · ${extractDong(state.roadAddressName || state.address || '')}`
             : "",
-        visitTime: state?.verifiedAt ? formatVisitTime(state.verifiedAt) : ""
+        visitTime: state?.verifiedAt ? formatVisitTime(state.verifiedAt) : (state?.visitDate || "")
     });
 
     const [score, setScore] = useState<number>(0);
@@ -71,7 +77,7 @@ const ReviewPage = () => {
     // 5. 부득이하게 state 없이 링크나 리프레시로 직접 진입했을 때만 API 재요청
     useEffect(() => {
         // 이전 페이지(state)에서 이름과 음식 카테고리를 모두 완벽하게 넘겨받았다면 API 호출 생략
-        if (state?.placeName && state?.foodType) return;
+        if ((state?.placeName && state?.foodType) || (state?.restaurantName && state?.category)) return;
         if (!restaurantId) return;
 
         const fetchRestaurantDetails = async () => {
@@ -169,8 +175,6 @@ const ReviewPage = () => {
 
         // 💡 라우터 state로 넘어온 토큰을 최우선으로 사용하고, 없을 때 fallback으로 함수를 호출합니다.
         const token = state?.accessToken || accessToken;
-        // 💡 디버깅을 위해 토큰 값을 콘솔에 출력해봅니다.
-        console.log("ReviewPage에서 읽어온 토큰:", token);
 
         if (!restaurantId) { alert("식당 정보가 올바르지 않습니다."); return; }
         if (score === 0) { alert("별점을 선택해주세요."); return; }
@@ -202,7 +206,7 @@ const ReviewPage = () => {
             });
 
             const response = await axios.post(
-                `/api/restaurants/${restaurantId}/review`,
+                `/api/visit-verifications/${visitVerificationId}/review`,
                 formData,
                 {
                     headers: {

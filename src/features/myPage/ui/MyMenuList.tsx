@@ -28,6 +28,7 @@ const MyMenuList = () => {
     <section className="mx-6 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       <button
         type="button"
+        onClick={() => navigate("/mypage/reviews")}
         className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
       >
         <div className="flex items-center gap-3">
