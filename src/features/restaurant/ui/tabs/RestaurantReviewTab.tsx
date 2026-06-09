@@ -13,6 +13,7 @@ interface ReviewResponse {
     imageUrls: string[];
     tags: string[];
     likeCount: number;
+    restaurantName: string;
 }
 
 interface RestaurantReviewTabProps {

@@ -69,6 +69,7 @@ const VisitVerificationPage = () => {
     !restaurantId || Number.isNaN(restaurantIdNumber);
 
   const [verifiedAt, setVerifiedAt] = useState<string>("");
+  const [verificationId, setVerificationId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isInvalidRestaurantId) return;
@@ -203,6 +204,8 @@ const VisitVerificationPage = () => {
       );
 
       setVerifiedAt(res.verifiedAt);
+      setVerificationId(res.visitVerificationId || res.id);
+
       setIsCompleteModalOpen(true);
     } catch (error) {
       console.error("방문 인증 저장 실패:", error);
@@ -467,7 +470,7 @@ const VisitVerificationPage = () => {
           onReviewClick={() => {
             setIsCompleteModalOpen(false);
 
-            navigate("/review", {
+            navigate(`/review/write/${verificationId}`, {
               state: {
                 restaurantId: restaurantIdNumber,
                 placeName: restaurant.placeName,

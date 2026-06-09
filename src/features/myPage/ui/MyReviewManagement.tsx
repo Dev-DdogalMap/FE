@@ -16,6 +16,7 @@ interface ReviewResponse {
     tags: string[];
     likeCount: number;
     commentCount: number;
+    restaurantName: string;
 }
 
 interface UnwrittenReviewResponse {
@@ -210,6 +211,12 @@ const MyReviewManagement = () => {
                     <div className="space-y-4">
                         {writtenReviews.map((review) => (
                             <div key={review.reviewId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+
+                                {/* 💡 가게 이름 표시 구역 추가 */}
+                                <div className="mb-2 text-base font-bold text-gray-900 border-b border-gray-50 pb-2">
+                                    {review.restaurantName || "알 수 없는 가게"}
+                                </div>
+
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 border border-gray-100" />
