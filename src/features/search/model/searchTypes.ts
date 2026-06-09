@@ -14,7 +14,6 @@ export interface RestaurantSearchItem {
     averageScore: number | null;
     reviewCount: number;
     jjinScore: number | null;
-    bookmarkCount: number;
     tags: string[];
 }
 
