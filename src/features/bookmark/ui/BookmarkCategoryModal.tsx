@@ -9,6 +9,7 @@ import {
   getBookmarkCategoryStatuses
 } from "@/features/bookmark/api/bookmarkApi";
 import type { BookmarkCategoryStatus } from "@/features/bookmark/model/bookmarkTypes";
+import { toast } from "sonner";
 
 type BookmarkCategoryModalProps = {
   isOpen: boolean;
@@ -80,7 +81,7 @@ export default function BookmarkCategoryModal({
         onChange?.(data.filter((category) => category.saved).length);
     } catch (error) {
         console.error(error);
-        alert("저장 카테고리을 불러오지 못했어요.");
+        toast.error("저장 카테고리을 불러오지 못했어요.");
     } finally {
         setIsLoading(false);
         }
@@ -114,7 +115,7 @@ export default function BookmarkCategoryModal({
         await loadCategories();
     } catch (error) {
         console.error(error);
-        alert("저장 상태 변경에 실패했어요.");
+        toast.error("저장 상태 변경에 실패했어요.");
     } finally {
         setProcessingCategoryId(null);
         }
@@ -126,7 +127,7 @@ export default function BookmarkCategoryModal({
         const trimmedName = newCategoryName.trim();
 
         if (!trimmedName) {
-            alert("새 카테고리 이름을 입력해주세요.");
+            toast("새 카테고리 이름을 입력해주세요.");
             return;
         }
 
@@ -157,7 +158,7 @@ export default function BookmarkCategoryModal({
             await loadCategories();
         } catch (error) {
             console.error(error);
-            alert("새 카테고리 생성에 실패했어요.");
+            toast.error("새 카테고리 생성에 실패했어요.");
         } finally {
             setIsCreatingCategory(false);
         }

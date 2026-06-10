@@ -12,6 +12,7 @@ import {
 } from "react-kakao-maps-sdk";
 import ErrorView from "../ui/ErrorView";
 import LoadingView from "../ui/LoadingView";
+import { toast } from "sonner";
 
 type Props = {
   center: {
@@ -118,7 +119,7 @@ export default function KakaoBaseMap({
 
   const moveToCurrentLocation = () => {
     if (!currentLocation) {
-      alert("현재 위치를 확인 중입니다. 잠시 후 다시 시도해주세요.");
+      toast.info("현재 위치를 확인 중입니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 

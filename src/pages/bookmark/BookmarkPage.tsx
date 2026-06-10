@@ -14,6 +14,7 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const sortOptions: { label: string; value: BookmarkSortType }[] = [
   { label: "최근 순", value: "LATEST" },
@@ -95,7 +96,7 @@ export default function BookmarkPage() {
     const trimmedName = newCategoryName.trim();
 
     if (!trimmedName) {
-      alert("카테고리명을 입력해주세요.");
+      toast.info("카테고리명을 입력해주세요.");
       return;
     }
 
@@ -115,7 +116,7 @@ export default function BookmarkPage() {
       setIsCreateCategoryOpen(false);
     } catch (error) {
       console.error(error);
-      alert("카테고리 생성에 실패했어요.");
+      toast.error("카테고리 생성에 실패했어요.");
     } finally {
       setIsCreatingCategory(false);
     }
@@ -129,7 +130,7 @@ export default function BookmarkPage() {
     if (!targetCategory) return;
 
     if (targetCategory.isDefault) {
-      alert("기본 카테고리는 삭제할 수 없어요.");
+      toast("기본 카테고리는 삭제할 수 없어요.");
       return;
     }
 
@@ -179,7 +180,7 @@ export default function BookmarkPage() {
       setBookmarks(bookmarkData);
     } catch (error) {
       console.error(error);
-      alert("카테고리 삭제에 실패했어요.");
+      toast.error("카테고리 삭제에 실패했어요.");
     } finally {
       setIsLoading(false);
     }
@@ -224,7 +225,7 @@ export default function BookmarkPage() {
       setBookmarks(data);
     } catch (error) {
       console.error(error);
-      alert("정렬에 실패했어요.");
+      toast.error("정렬에 실패했어요.");
     } finally {
       setIsLoading(false);
     }
@@ -232,7 +233,7 @@ export default function BookmarkPage() {
 
   async function handleDeleteRestaurant(restaurantId: number) {
     if (!selectedCategoryId) {
-      alert("카테고리를 선택해주세요.");
+      toast.info("카테고리를 선택해주세요.");
       return;
     }
 
@@ -263,7 +264,7 @@ export default function BookmarkPage() {
       );
     } catch (error) {
       console.error(error);
-      alert("맛집 삭제에 실패했어요.");
+      toast.error("맛집 삭제에 실패했어요.");
     }
   }
 
@@ -432,7 +433,7 @@ export default function BookmarkPage() {
           type="button"
           onClick={() => {
             if (!selectedCategoryId) {
-              alert("카테고리를 선택해주세요.");
+              toast.info("카테고리를 선택해주세요.");
               return;
             }
 

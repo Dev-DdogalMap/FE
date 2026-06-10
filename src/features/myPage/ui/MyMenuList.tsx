@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { toast } from "sonner";
 
 const MyMenuList = () => {
   const navigate = useNavigate();
@@ -28,11 +29,11 @@ const MyMenuList = () => {
     try {
       await withdraw();
 
-      alert("회원탈퇴가 완료되었습니다.");
+      ("회원탈퇴가 완료되었습니다.");
       navigate("/login", { replace: true });
     } catch (error) {
       console.error(error);
-      alert("회원탈퇴에 실패했습니다.");
+      toast.error("회원탈퇴에 실패했습니다.");
     }
   };
 

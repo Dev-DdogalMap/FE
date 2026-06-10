@@ -73,17 +73,17 @@ const MyNeighborhoodVerificationPage = () => {
 
 
         if (!location) {
-            toast.error("현재 위치를 확인할 수 없습니다.");
+            toast("현재 위치를 확인할 수 없습니다.");
             return;
         }
 
         if (location.accuracy > MAX_ACCURACY) {
-            toast.error("GPS 정확도가 낮습니다. 야외에서 다시 시도해주세요.");
+            toast("GPS 정확도가 낮습니다. 야외에서 다시 시도해주세요.");
             return;
         }
 
         if (!regionName) {
-            toast.error("위치 정보를 확인 중입니다. 잠시만 기다려주세요.");
+            toast("위치 정보를 확인 중입니다. 잠시만 기다려주세요.");
             return;
         }
 
