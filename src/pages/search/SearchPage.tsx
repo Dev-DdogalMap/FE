@@ -215,8 +215,14 @@ export default function SearchPage() {
         }
         // 사용자가 손으로 지역 골랐으면 자동 덮어쓰기 금지
         if (hasManuallySelectedRegion) return;
+
+        // race condition 방지: in-flight 요청이 effect 재실행/로그아웃 이후 resolve 되면 stale 응답으로 무시
+        // (예: 로그인 상태에서 getMyRegion 호출 후 응답 도착 전 로그아웃 → cleanup 분기로 "전체"/"" 리셋됨
+        //  → 늦게 도착한 응답이 setSelectedRegionName 호출하면 라벨이 다시 본인 동네로 덮어써짐)
+        let cancelled = false;
         getMyRegion({ accessToken, refreshAccessToken })
             .then((data) => {
+                if (cancelled) return;
                 if (data.verified && data.eupmyeondongName) {
                     setSelectedRegionName(data.eupmyeondongName);
                 }
@@ -224,6 +230,10 @@ export default function SearchPage() {
             .catch(() => {
                 // 실패해도 "전체" 표시로 폴백 — 별도 처리 없음
             });
+
+        return () => {
+            cancelled = true;
+        };
     }, [accessToken, refreshAccessToken, hasManuallySelectedRegion]);
 
     // 위치가 결정됐는지(성공 OR 거부) 판단
