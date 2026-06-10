@@ -28,6 +28,7 @@ import NotFoundPage from "@/pages/error/NotFoundPage.tsx";
 import ReviewPage from "@/pages/review/ReviewPage";
 import MyActivityPage from "@/pages/myPage/MyActivityPage";
 import MyReviewManagement from "@/features/myPage/ui/MyReviewManagement.tsx";
+import AboutPage from "@/pages/myPage/AboutPage";
 // import RequireAuth from "@/shared/auth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -138,7 +139,10 @@ export const router = createBrowserRouter([
         path: "/review/write/:visitVerificationId",
         element: <ReviewPage />,
       },
-
+      {
+        path: "/mypage/about",
+        element: <AboutPage />,
+      },
       {
         path: "*",
         element: <NotFoundPage />
