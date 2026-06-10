@@ -403,15 +403,13 @@ export default function BookmarkPage() {
                   </span>
                 </p>
 
-                {(bookmark.topTags ?? []).length > 0 && (
-                  <div style={styles.tagRow}>
-                    {(bookmark.topTags ?? []).slice(0, 2).map((tag) => (
-                      <span key={tag} style={styles.greenTag}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div style={styles.tagRow}>
+                  {(bookmark.topTags ?? []).slice(0, 2).map((tag) => (
+                    <span key={tag} style={styles.greenTag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
                 <p style={styles.locationLine}>⌖ {bookmark.address}</p>
               </div>
@@ -429,20 +427,22 @@ export default function BookmarkPage() {
         </section>
       )}
 
-      <button
-        type="button"
-        onClick={() => {
-          if (!selectedCategoryId) {
-            alert("카테고리를 선택해주세요.");
-            return;
-          }
+      <div style={styles.bottomBar}>
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedCategoryId) {
+              alert("카테고리를 선택해주세요.");
+              return;
+            }
 
-          navigate(`/bookmark-map/${selectedCategoryId}`);
-        }}
-        style={styles.mapButton}
-      >
-        🗺️ {selectedTitle} 지도 보기 ›
-      </button>
+            navigate(`/bookmark-map/${selectedCategoryId}`);
+          }}
+          style={styles.mapButton}
+        >
+          🗺️ {selectedTitle} 지도 보기 ›
+        </button>
+      </div>
 
       {isCreateCategoryOpen &&
         createPortal(
@@ -549,7 +549,7 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
     background: "#fff",
-    padding: "18px 18px 96px",
+    padding: "18px 18px 120px",
     boxSizing: "border-box",
   },
   center: {
@@ -704,29 +704,29 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
   },
   restaurantCard: {
-    width: "100%",
-    minHeight: 0,
-    border: "1px solid #eee",
-    borderRadius: 16,
-    background: "#fff",
-    padding: 0,
-    display: "grid",
-    gridTemplateColumns: "100px 1fr 62px",
-    overflow: "hidden",
-    cursor: "pointer",
-    textAlign: "left",
-    position: "relative",
+  width: "100%",
+  height: 140,
+  border: "1px solid #eee",
+  borderRadius: 16,
+  background: "#fff",
+  padding: 0,
+  display: "grid",
+  gridTemplateColumns: "100px 1fr 62px",
+  overflow: "hidden",
+  cursor: "pointer",
+  textAlign: "left",
+  position: "relative",
   },
   restaurantImage: {
-    width: 100,
-    height: "100%",
-    objectFit: "cover",
+  width: 100,
+  height: 140,
+  objectFit: "cover",
   },
 
   emptyImageBox: {
-  width: 100,
-  height: "100%",
-  background: "#f7f7f7",
+    width: 100,
+    height: 140,
+    background: "#f7f7f7",
   },
   restaurantInfo: {
     padding: "12px 8px 10px 14px",
@@ -753,10 +753,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#7b8190",
   },
   tagRow: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 6,
-    marginBottom: 12,
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 6,
+  height: 24,
+  marginBottom: 8,
   },
   greenTag: {
     background: "#e8f7ed",
@@ -767,12 +768,13 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   locationLine: {
-    margin: 0,
-    color: "#7b8190",
-    fontSize: 14,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+  margin: "16px 0 0",
+  color: "#7b8190",
+  fontSize: 14,
+  lineHeight: "18px",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
   },
   scoreBox: {
     padding: "12px 8px 10px 0",
@@ -796,17 +798,32 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.25,
     wordBreak: "keep-all",
   },
+  bottomBar: {
+  position: "fixed",
+  left: "50%",
+  bottom: 78,
+  transform: "translateX(-50%)",
+  zIndex: 60,
+  width: "100%",
+  maxWidth: 430,
+  padding: "0 18px",
+  boxSizing: "border-box",
+  background: "transparent",
+  pointerEvents: "none",
+  },
+
   mapButton: {
     width: "100%",
-    height: 58,
-    marginTop: 18,
+    height: 56,
     border: "none",
-    borderRadius: 14,
-    background: "#fff1e9",
-    color: "#ff5a00",
+    borderRadius: 16,
+    background: "#ff7a2f",
+    color: "#fff",
     fontSize: 17,
     fontWeight: 900,
     cursor: "pointer",
+    boxShadow: "0 8px 24px rgba(255, 90, 0, 0.28)",
+    pointerEvents: "auto",
   },
   emptyBox: {
     border: "1px solid #eee",
