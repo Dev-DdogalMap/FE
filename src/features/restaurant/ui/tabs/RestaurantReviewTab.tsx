@@ -7,7 +7,6 @@ interface ReviewResponse {
     reviewId: number;
     nickname?: string;
     userLevel?: number;
-    userLevelName?: string;
     isLocal?: boolean;
     score: number;
     createdAt: string;
@@ -118,29 +117,21 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
         }
 
         try {
-            // 1. 응답값을 response 변수에 담기
-            const response = await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
+            await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
             });
 
-            // 2. 백엔드가 리턴한 boolean 값 가져오기 (true = 좋아요 추가됨, false = 취소됨)
-            const isLiked = response.data;
-
             setReviews(prev =>
                 prev.map(review =>
                     review.reviewId === reviewId
-                        ? {
-                            ...review,
-                            // 3. 값에 따라 true면 +1, false면 -1 연산 적용
-                            likeCount: isLiked ? review.likeCount + 1 : Math.max(0, review.likeCount - 1)
-                        }
+                        ? { ...review, likeCount: review.likeCount + 1 }
                         : review
                 )
             );
         } catch (error) {
-            console.error("좋아요 처리에 실패했습니다.", error);
+            console.error("좋아요 등록에 실패했습니다.", error);
         }
     };
 
@@ -212,7 +203,7 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
                                             {review.nickname || "익명 유저"}
                                         </div>
                                         <div className="text-xs text-green-600 font-medium mt-0.5">
-                                            Lv.{review.userLevel ?? 1} · {review.userLevelName || (review.isLocal ? '로컬' : '맛집 새내기')}
+                                            Lv.{review.userLevel ?? 1} · {review.isLocal ? '로컬' : '미식가'}
                                         </div>
                                     </div>
                                 </div>

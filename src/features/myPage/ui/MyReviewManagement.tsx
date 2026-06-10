@@ -8,7 +8,6 @@ interface ReviewResponse {
     reviewId: number;
     nickname?: string;
     userLevel?: number;
-    userLevelName?: string;
     isLocal?: boolean;
     score: number;
     createdAt: string;
@@ -18,17 +17,15 @@ interface ReviewResponse {
     likeCount: number;
     commentCount: number;
     restaurantName: string;
-    isRevisit: boolean;
 }
 
 interface UnwrittenReviewResponse {
-    visitVerificationId: number;
+    visitVerificationId: number; // 💡 중복 Key 에러 해결을 위해 추가
     restaurantId: number;
     restaurantName: string;
     category: string;
     address: string;
     visitDate: string;
-    daysRemaining: number; // 💡 1. 백엔드 DTO와 맞추어 남은 일수 필드 추가
 }
 
 const MyReviewManagement = () => {
@@ -79,13 +76,13 @@ const MyReviewManagement = () => {
         if (!accessToken) return;
 
         try {
-            const [, direction] = sortOrder.split(",");
+            const [, direction] = sortOrder.split(","); // 💡 정렬 방향 추출
 
             const response = await axios.get(`${API_BASE_URL}/api/my/unwritten-reviews`, {
                 params: {
                     page,
                     size: 5,
-                    sort: `verifiedAt,${direction}`
+                    sort: `verifiedAt,${direction}` // 💡 정렬 조건 파라미터 추가
                 },
                 headers: {
                     Authorization: `Bearer ${accessToken}`
@@ -99,7 +96,7 @@ const MyReviewManagement = () => {
         } catch (error) {
             console.error("미작성 후기 목록을 불러오는 데 실패했습니다.", error);
         }
-    }, [API_BASE_URL, accessToken, sortOrder]);
+    }, [API_BASE_URL, accessToken, sortOrder]); // 💡 sortOrder 의존성 추가
 
     // --- 비동기 데이터 초기화 및 인증 수명 주기 관리 ---
     useEffect(() => {
@@ -131,7 +128,7 @@ const MyReviewManagement = () => {
         setLoading(true);
         setSortOrder(e.target.value);
         setWrittenPage(0);
-        setUnwrittenPage(0);
+        setUnwrittenPage(0); // 💡 미작성 후기 페이지 변수도 초기화
     };
 
     if (loading) {
@@ -145,39 +142,31 @@ const MyReviewManagement = () => {
     }
 
     const handleLike = async (reviewId: number) => {
-        if (!accessToken) {
-            alert("로그인이 필요한 기능입니다.");
-            return;
-        }
+        if (!accessToken) return;
 
         try {
-            // 백엔드의 토글 API 호출
-            const response = await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
+            // 백엔드를 위 마이그레이션 가이드대로 수정했다면 빈 객체({})를 전송합니다.
+            await axios.post(`${API_BASE_URL}/api/review/${reviewId}/like`, {}, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
             });
 
-            // 백엔드가 리턴한 좋아요 최종 상태 (true: 등록됨, false: 취소됨)
-            const isLiked = response.data;
-
+            // 성공 시 해당 리뷰의 좋아요 수만 1 증가 처리
             setWrittenReviews(prev =>
                 prev.map(review =>
                     review.reviewId === reviewId
-                        ? {
-                            ...review,
-                            // true면 +1, false면 -1 연산 적용
-                            likeCount: isLiked ? review.likeCount + 1 : Math.max(0, review.likeCount - 1)
-                        }
+                        ? { ...review, likeCount: review.likeCount + 1 }
                         : review
                 )
             );
         } catch (error) {
-            console.error("좋아요 처리에 실패했습니다.", error);
+            console.error("좋아요 등록에 실패했습니다.", error);
         }
     };
 
     const handleWriteClick = (item: UnwrittenReviewResponse) => {
+        // 새로고침 대응을 위해 URL 뒤에 ?restaurantId= 값을 함께 붙여서 이동
         navigate(`/review/write/${item.visitVerificationId}?restaurantId=${item.restaurantId}`, {
             state: item
         });
@@ -222,6 +211,8 @@ const MyReviewManagement = () => {
                     <div className="space-y-4">
                         {writtenReviews.map((review) => (
                             <div key={review.reviewId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+
+                                {/* 💡 가게 이름 표시 구역 추가 */}
                                 <div className="mb-2 text-base font-bold text-gray-900 border-b border-gray-50 pb-2">
                                     {review.restaurantName || "알 수 없는 가게"}
                                 </div>
@@ -232,15 +223,15 @@ const MyReviewManagement = () => {
                                         <div>
                                             <div className="text-sm font-bold text-gray-800">{review.nickname || "익명 유저"}</div>
                                             <div className="text-[11px] text-gray-400 font-medium">
-                                                Lv.{review.userLevel ?? 1} · {review.userLevelName || (review.isLocal ? '로컬' : '맛집 새내기')}
+                                                Lv.{review.userLevel ?? 1} · {review.isLocal ? '로컬' : '미식가'}
                                             </div>
                                         </div>
                                     </div>
-                                    {/*<button className="text-gray-300 hover:text-gray-500 p-1"> 나중에 더보기 추가 시 주석 해제
+                                    <button className="text-gray-300 hover:text-gray-500 p-1">
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM14 10a2 2 0 11-4 0 2 2 0 014 0zM22 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
-                                    </button>*/}
+                                    </button>
                                 </div>
 
                                 <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
@@ -271,7 +262,7 @@ const MyReviewManagement = () => {
 
                                 <div className="flex items-center gap-4 text-[11px] text-gray-400 pt-3 border-t border-gray-100">
                                     <button
-                                        onClick={() => handleLike(review.reviewId)}
+                                        onClick={() => handleLike(review.reviewId)} // 💡 클릭 이벤트 바인딩
                                         className="flex items-center gap-1 hover:text-gray-600 transition-colors"
                                     >
                                         <span>좋아요 {review.likeCount}</span>
@@ -307,6 +298,7 @@ const MyReviewManagement = () => {
                     {/* 미작성 카드 리스트 */}
                     <div className="space-y-4">
                         {unwrittenReviews.map((item) => (
+                            /* 💡 key 속성을 기존 restaurantId에서 고유값인 visitVerificationId로 변경 */
                             <div key={item.visitVerificationId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
@@ -315,16 +307,7 @@ const MyReviewManagement = () => {
                                     </div>
                                     <span className="bg-green-50 text-green-600 px-2 py-1 rounded text-[10px] font-bold border border-green-100 flex-shrink-0">방문 인증</span>
                                 </div>
-
-                                {/* 💡 2. 방문일 옆에 만료 D-Day 표시 영역 추가 */}
-                                <div className="text-xs text-gray-400 mb-4 flex items-center gap-1.5">
-                                    <span>방문일: {item.visitDate}</span>
-                                    <span>·</span>
-                                    <span className={`font-semibold ${item.daysRemaining <= 2 ? "text-red-500" : "text-orange-500"}`}>
-                                        {item.daysRemaining === 0 ? "오늘 만료" : `D-${item.daysRemaining}`}
-                                    </span>
-                                </div>
-
+                                <div className="text-xs text-gray-400 mb-4">방문일: {item.visitDate}</div>
                                 <button
                                     onClick={() => handleWriteClick(item)}
                                     className="w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold active:bg-orange-600 shadow-sm transition-colors"
