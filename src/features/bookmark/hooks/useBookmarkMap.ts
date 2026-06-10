@@ -2,14 +2,16 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { useEffect, useState } from "react";
 
 import {
-    getBookmarkCategories,
-    getBookmarkCategoryRestaurants,
+  getBookmarkCategories,
+  getBookmarkCategoryRestaurants,
+  getBookmarksByCategory,
 } from "../api/bookmarkApi";
 
 import type {
-    BookmarkCategory,
-    BookmarkMapRestaurant,
-    BookmarkSortType,
+  BookmarkCategory,
+  BookmarkMapRestaurant,
+  BookmarkRestaurant,
+  BookmarkSortType,
 } from "../model/bookmarkTypes";
 
 export function useBookmarkMap(initialCategoryId?: number) {
@@ -18,11 +20,16 @@ export function useBookmarkMap(initialCategoryId?: number) {
   const [categories, setCategories] = useState<BookmarkCategory[]>([]);
   const [restaurants, setRestaurants] = useState<BookmarkMapRestaurant[]>([]);
 
-  const [selectedCategoryId, setSelectedCategoryId] =
-    useState<number | null>(initialCategoryId ?? null);
+  // 리스트용 (정렬됨)
+  const [listRestaurants, setListRestaurants] = useState<BookmarkRestaurant[]>(
+    [],
+  );
 
-  const [sort, setSort] =
-    useState<BookmarkSortType>("LATEST");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    initialCategoryId ?? null,
+  );
+
+  const [sort, setSort] = useState<BookmarkSortType>("LATEST");
 
   // URL 변경 시 동기화
   useEffect(() => {
@@ -39,67 +46,63 @@ export function useBookmarkMap(initialCategoryId?: number) {
     if (!selectedCategoryId) return;
 
     fetchRestaurants(selectedCategoryId);
+  }, [selectedCategoryId]);
+
+  useEffect(() => {
+    if (!selectedCategoryId) return;
+    fetchListRestaurants(selectedCategoryId, sort);
   }, [selectedCategoryId, sort]);
 
   const fetchCategories = async () => {
     try {
-      const categories =
-        await getBookmarkCategories({
-          accessToken,
-          refreshAccessToken,
-        });
-
+      const categories = await getBookmarkCategories({
+        accessToken,
+        refreshAccessToken,
+      });
       setCategories(categories);
 
       // URL 값이 없을 때만 첫 카테고리 선택
-      if (
-        !initialCategoryId &&
-        categories.length > 0
-      ) {
-        setSelectedCategoryId(
-          categories[0].bookmarkCategoryId
-        );
+      if (!initialCategoryId && categories.length > 0) {
+        setSelectedCategoryId(categories[0].bookmarkCategoryId);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  useEffect(() => {
-  console.log("selectedCategoryId changed:", selectedCategoryId);
-}, [selectedCategoryId]);
-
-  const fetchRestaurants = async (
-    categoryId: number
-  ) => {
+  const fetchRestaurants = async (categoryId: number) => {
     try {
-      const response =
-        await getBookmarkCategoryRestaurants({
-          bookmarkCategoryId: categoryId,
-          accessToken,
-          refreshAccessToken,
-        });
+      const response = await getBookmarkCategoryRestaurants({
+        bookmarkCategoryId: categoryId,
+        accessToken,
+        refreshAccessToken,
+      });
 
-      console.log(
-        "restaurants response",
-        response
-      );
-
-      setRestaurants(
-        response.restaurants ?? []
-      );
+      setRestaurants(response.restaurants ?? []);
     } catch (error) {
-      console.error(
-        "fetchRestaurants error",
-        error
-      );
+      console.error("fetchRestaurants error", error);
     }
   };
-
+  const fetchListRestaurants = async (
+    categoryId: number,
+    sortType: BookmarkSortType,
+  ) => {
+    try {
+      const data = await getBookmarksByCategory({
+        bookmarkCategoryId: categoryId,
+        sort: sortType,
+        accessToken,
+        refreshAccessToken,
+      });
+      setListRestaurants(data ?? []);
+    } catch (error) {
+      console.error("fetchListRestaurants error", error);
+    }
+  };
   return {
     categories,
     restaurants,
-
+ listRestaurants,
     selectedCategoryId,
 
     sort,

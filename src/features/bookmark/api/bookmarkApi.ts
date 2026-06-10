@@ -219,6 +219,3 @@ export async function getBookmarkCategoryRestaurants({
     response,
   );
 }
-
-
-
