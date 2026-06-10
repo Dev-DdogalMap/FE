@@ -28,7 +28,8 @@ const setReadDirectChatMarker = (directChatRoomId: number, lastMessageAt?: strin
     window.localStorage.setItem(READ_DIRECT_CHAT_MARKERS_KEY, JSON.stringify(markers));
 };
 
-const hasUnreadConversation = (conversation: DirectChatRoomSummary) => {
+const hasUnreadConversation = (conversation: DirectChatRoomSummary, currentUserId?: number) => {
+    if (currentUserId != null && conversation.lastMessageSenderId === currentUserId) return false;
     if (!conversation.lastMessageAt) return conversation.unreadCount > 0;
     const markers = getReadDirectChatMarkers();
     const lastReadMessageAt = markers[String(conversation.directChatRoomId)];
@@ -59,15 +60,18 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
     // 대화 목록 조회
     useEffect(() => {
         setIsLoading(true);
-        if (!chatAuth) return;  // null 체크 추가
+        if (!chatAuth) {
+            setIsLoading(false);
+            return;
+        }
         void getDirectChats(chatAuth)
             .then((response) => {
                 setConversations(sortByLastMessage(response));
-                setUnreadRoomIds((prev) => {
-                    const next = new Set(prev);
+                setUnreadRoomIds(() => {
+                    const next = new Set<string>();
                     response.forEach((conversation) => {
                         if (conversation.chatType === "GROUP") return;
-                        if (hasUnreadConversation(conversation)) {
+                        if (hasUnreadConversation(conversation, currentUserId)) {
                             next.add(`DIRECT-${conversation.directChatRoomId}`);
                         }
                     });
@@ -79,7 +83,7 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
                 setConversations([]);
             })
             .finally(() => setIsLoading(false));
-    }, []);
+    }, [chatAuth, currentUserId]);
 
     // 1:1 채팅 소켓 연결
     const directRoomIds = useMemo(
@@ -100,7 +104,12 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
             setConversations((prev) => {
                 const updated = prev.map((c) => {
                     if (c.directChatRoomId !== receivedMessage.directChatRoomId || c.chatType !== "DIRECT") return c;
-                    return { ...c, lastMessage: receivedMessage.message, lastMessageAt: receivedMessage.createdAt };
+                    return {
+                        ...c,
+                        lastMessage: receivedMessage.message,
+                        lastMessageAt: receivedMessage.createdAt,
+                        lastMessageSenderId: receivedMessage.senderId,
+                    };
                 });
                 return sortByLastMessage(updated);
             });
@@ -186,7 +195,12 @@ export default function ConversationsTab({ chatAuth, currentUserId }: Props) {
                     setConversations((prev) => {
                         const updated = prev.map((c) => {
                             if (c.directChatRoomId !== roomId || c.chatType !== "GROUP") return c;
-                            return { ...c, lastMessage: data.content, lastMessageAt: data.sentAt };
+                            return {
+                                ...c,
+                                lastMessage: data.content,
+                                lastMessageAt: data.sentAt,
+                                lastMessageSenderId: data.senderId,
+                            };
                         });
                         return sortByLastMessage(updated);  // 맨 위로 올라감
                     });
