@@ -1,6 +1,6 @@
 import { authFetch } from "@/shared/api/authFetch"; // 경로 맞게 수정
 import type {
-  ChatMessageResponse,
+  //ChatMessageResponse,
   ChatRoomInfoResponse,
   CreateGroupChatRequest,
   CreateGroupChatResponse,
@@ -13,7 +13,8 @@ import type {
   ChatRoomMembersResponse,
   FoodTypeResponse,
   ChatRoomKickResponse,
-  ChatRoomGrantResponse
+  ChatRoomGrantResponse,
+  ChatMessageCursorResponse
 } from "../model/groupChatTypes";
 
 interface AuthParams {
@@ -35,16 +36,32 @@ interface GetGroupChatRoomListParams {
  * 그룹 채팅 메시지 조회
  * GET /api/chat-rooms/{roomId}/messages
  */
+// export async function getGroupChatMessages(
+//   { roomId, size }: GetGroupChatMessagesParams,
+//   { accessToken, refreshAccessToken }: AuthParams,
+// ) {
+//   const response = await authFetch({
+//     path: `/api/chat-rooms/${roomId}/messages${size ? `?size=${size}` : ""}`,
+//     accessToken,
+//     refreshAccessToken,
+//   });
+//   return response.json() as Promise<ChatMessageResponse[]>;
+// }
+
 export async function getGroupChatMessages(
-  { roomId, size }: GetGroupChatMessagesParams,
-  { accessToken, refreshAccessToken }: AuthParams,
-) {
+  { roomId, size, cursorId }: { roomId: number; size: number; cursorId?: number | null },
+  { accessToken, refreshAccessToken }: AuthParams
+): Promise<ChatMessageCursorResponse> {
+  const params = new URLSearchParams();
+  params.set("size", String(size));
+  if (cursorId != null) params.set("cursorId", String(cursorId));
+
   const response = await authFetch({
-    path: `/api/chat-rooms/${roomId}/messages${size ? `?size=${size}` : ""}`,
+    path: `/api/chat-rooms/${roomId}/messages/v2?${params.toString()}`,
     accessToken,
-    refreshAccessToken,
+    refreshAccessToken
   });
-  return response.json() as Promise<ChatMessageResponse[]>;
+  return response.json() as Promise<ChatMessageCursorResponse>;
 }
 
 /**

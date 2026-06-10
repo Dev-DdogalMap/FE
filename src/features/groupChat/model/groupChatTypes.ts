@@ -21,6 +21,14 @@ export interface ChatMessageResponse {
   createdAt: string;
 }
 
+//커서 기반 메세지 목록 조회
+// groupChatTypes.ts에 추가
+export interface ChatMessageCursorResponse {
+  messages: ChatMessageResponse[];
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
 //그룹 채팅방 정보
 export interface ChatRoomInfoResponse {
   roomImage: string | null;
