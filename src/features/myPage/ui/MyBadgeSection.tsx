@@ -74,8 +74,8 @@ const MyBadgeSection = () => {
   const progressPercent = Math.min(Math.max(level.progressPercent, 0), 100);
 
   return (
-    <section className="mt-6 px-6">
-      <div className="rounded-3xl bg-white p-5 shadow-sm">
+    <section className="mx-6 mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="p-5">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">활동 현황</h2>
 

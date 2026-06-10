@@ -113,12 +113,9 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                 <button
                     onClick={() => navigate(-1)}
                     aria-label="뒤로 가기"
-                    className="absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95"
+                    className="absolute left-4 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm"
                 >
-                    <ArrowLeft
-                        size={22}
-                        className="text-gray-800"
-                    />
+                    <ArrowLeft size={22} className="text-gray-900" />
                 </button>
 
                 {/* 공유 버튼 */}
@@ -149,9 +146,9 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                         }
                     }}
                     aria-label="공유하기"
-                    className="absolute right-4 top-6 flex h-10 w-10 items-center justify-center rounded-full active:scale-95"
+                    className="absolute right-4 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm"
                 >
-                    <Share2 size={20} className="text-gray-800" />
+                    <Share2 size={20} className="text-gray-900" />
                 </button>
             </div>
 
