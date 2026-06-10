@@ -1,9 +1,11 @@
-import { AuthProvider } from "@/shared/auth/AuthContext";
+import { useEffect, useState } from "react";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
-import { router } from "./router/router";
+
+import { AuthProvider } from "@/shared/auth/AuthContext";
 import SplashScreen from "@/pages/splash/SplashScreen";
-import { useEffect, useState } from "react";
+
+import { router } from "./router/router";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(() => {
@@ -22,14 +24,10 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [showSplash]);
 
-  if (showSplash) {
-    return <SplashScreen />;
-  }
-
   return (
     <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster position="top-center" richColors />
+      {showSplash ? <SplashScreen /> : <RouterProvider router={router} />}
+      <Toaster position="top-center" richColors />
     </AuthProvider>
   );
 }
