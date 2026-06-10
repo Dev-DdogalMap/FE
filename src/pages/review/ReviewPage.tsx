@@ -3,6 +3,7 @@ import { authFetch } from '@/shared/api/authFetch';
 import { Check, X} from 'lucide-react';
 import { useSearchParams, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from "@/shared/auth/AuthContext";
+import { toast } from "sonner";
 
 const TAG_OPTIONS = [
     "혼밥 가능", "데이트", "분위기 좋아요",
@@ -134,7 +135,7 @@ const ReviewPage = () => {
             setSelectedTags(selectedTags.filter(t => t !== tag));
         } else {
             if (selectedTags.length >= 3) {
-                alert("태그는 최대 3개까지 선택 가능합니다.");
+                toast.error("태그는 최대 3개까지 선택 가능합니다.");
                 return;
             }
             setSelectedTags([...selectedTags, tag]);
@@ -147,7 +148,7 @@ const ReviewPage = () => {
             const filesArray = Array.from(e.target.files);
 
             if (images.length + filesArray.length > 5) {
-                alert("사진은 최대 5장까지 등록 가능합니다.");
+                toast.error("사진은 최대 5장까지 등록 가능합니다.");
                 return;
             }
 
@@ -185,28 +186,28 @@ const ReviewPage = () => {
         const token = state?.accessToken || accessToken;
 
         if (!restaurantId) {
-            alert("식당 정보가 올바르지 않습니다.");
+            toast.error("식당 정보가 올바르지 않습니다.");
             return;
         }
         if (score === 0) {
-            alert("별점을 선택해주세요.");
+            toast.error("별점을 선택해주세요.");
             return;
         }
         if (isRevisit == null) {
-            alert("재방문 의사를 선택해주세요.");
+            toast.error("재방문 의사를 선택해주세요.");
             return;
         }
         if (!content.trim()) {
-            alert("상세 후기를 입력해주세요.");
+            toast.error("상세 후기를 입력해주세요.");
             return;
         }
         if (selectedTags.length < 1) {
-            alert("태그를 최소 1개 이상 선택해주세요.");
+            toast.error("태그를 최소 1개 이상 선택해주세요.");
             return;
         }
 
         if (!token) {
-            alert("로그인이 필요합니다.");
+            toast.error("로그인이 필요합니다.");
             return;
         }
 
@@ -250,18 +251,18 @@ const ReviewPage = () => {
 
             // 성공 시 백엔드의 성공 메시지("리뷰가 성공적으로 등록되었습니다...") 출력
             const resText = await response.text();
-            alert(resText);
+            toast.success(resText);
             clearAllImages();
 
             navigate(-1);
 
         } catch (error) {
             console.error(error);
-            // 💡 던져진 에러 객체의 실제 메시지를 alert으로 보여줍니다.
+            // 💡 던져진 에러 객체의 실제 메시지를 toast로 보여줍니다.
             if (error instanceof Error) {
-                alert(error.message);
+                toast.error(error.message);
             } else {
-                alert('알 수 없는 오류가 발생했습니다.');
+                toast.error('알 수 없는 오류가 발생했습니다.');
             }
         }
     };
