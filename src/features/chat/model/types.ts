@@ -43,6 +43,7 @@ export interface DirectChatRoomSummary {
   targetCertified?: boolean | null;
   lastMessage?: string | null;
   lastMessageAt?: string | null;
+  lastMessageSenderId?: number | null;
   unreadCount: number;
   createdAt: string;
   chatType: "DIRECT" | "GROUP";

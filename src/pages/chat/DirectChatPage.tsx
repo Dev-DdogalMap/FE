@@ -17,6 +17,7 @@ import { connectDirectChatSocket } from "@/features/chat/api/directChatSocket";
 import type { DirectChatMessage } from "@/features/chat/model/types";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { ROUTES } from "@/shared/constants/routes";
+import { toast } from "sonner";
 
 const FALLBACK_LEVEL_NAME = "레벨 미설정";
 const FALLBACK_SPECIALTY = "전문 분야 준비중";
@@ -158,7 +159,7 @@ export default function DirectChatPage() {
       })
       .catch((error) => {
         console.error(error);
-        alert("채팅방 정보를 불러오지 못했습니다.");
+        toast.error("채팅방 정보를 불러오지 못했습니다.");
       })
       .finally(() => {
         setIsLoading(false);
@@ -253,12 +254,12 @@ export default function DirectChatPage() {
     }
 
     if (hasPartnerLeft) {
-      alert("대화 상대가 없어 메시지를 보낼 수 없습니다.");
+      toast.info("대화 상대가 없어 메시지를 보낼 수 없습니다.");
       return;
     }
 
     if (!socketRef.current || !isSocketReady) {
-      alert("실시간 채팅 연결이 아직 완료되지 않았습니다.");
+      toast.info("실시간 채팅 연결이 아직 완료되지 않았습니다.");
       return;
     }
 
@@ -267,7 +268,7 @@ export default function DirectChatPage() {
       setMessage("");
     } catch (error) {
       console.error(error);
-      alert("메시지 전송에 실패했습니다.");
+      toast.error("메시지 전송에 실패했습니다.");
     }
   };
 
@@ -293,7 +294,7 @@ export default function DirectChatPage() {
       navigate(ROUTES.chat, { replace: true });
     } catch (error) {
       console.error(error);
-      alert("채팅방 나가기에 실패했습니다.");
+      toast.error("채팅방 나가기에 실패했습니다.");
     } finally {
       setIsLeaving(false);
       setIsMenuOpen(false);

@@ -5,11 +5,13 @@ import {
   Settings,
   UserX,
   X,
+  Info
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { toast } from "sonner";
 
 const MyMenuList = () => {
   const navigate = useNavigate();
@@ -27,11 +29,11 @@ const MyMenuList = () => {
     try {
       await withdraw();
 
-      alert("회원탈퇴가 완료되었습니다.");
+      ("회원탈퇴가 완료되었습니다.");
       navigate("/login", { replace: true });
     } catch (error) {
       console.error(error);
-      alert("회원탈퇴에 실패했습니다.");
+      toast.error("회원탈퇴에 실패했습니다.");
     }
   };
 
@@ -59,6 +61,18 @@ const MyMenuList = () => {
           <div className="flex items-center gap-3">
             <CircleHelp size={20} className="text-gray-500" />
             <span className="text-base font-bold text-gray-800">고객센터</span>
+          </div>
+          <ChevronRight size={22} className="text-gray-400" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/mypage/about")}
+          className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-5 text-left"
+        >
+          <div className="flex items-center gap-3">
+            <Info size={20} className="text-gray-500" />
+            <span className="text-base font-bold text-gray-800">앱 정보</span>
           </div>
           <ChevronRight size={22} className="text-gray-400" />
         </button>

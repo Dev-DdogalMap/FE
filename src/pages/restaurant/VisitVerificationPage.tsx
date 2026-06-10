@@ -2,6 +2,7 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import { Circle, MapMarker } from "react-kakao-maps-sdk";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import {
   createVisitVerification,
@@ -84,7 +85,7 @@ const VisitVerificationPage = () => {
         setRestaurant(data);
       } catch (error) {
         console.error("가게 위치 정보 조회 실패:", error);
-        alert("가게 정보를 불러오지 못했습니다.");
+        toast.error("가게 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -178,12 +179,12 @@ const VisitVerificationPage = () => {
 
   const handleVisitVerificationSubmit = async () => {
     if (!restaurantId || !restaurant || !userLocation || distance === null) {
-      alert("방문 인증 정보를 확인할 수 없습니다.");
+      toast("방문 인증 정보를 확인할 수 없습니다.");
       return;
     }
 
     if (status !== "success") {
-      alert("가게 반경 50m 이내에서만 방문 인증할 수 있습니다.");
+      toast("가게 반경 50m 이내에서만 방문 인증할 수 있습니다.");
       return;
     }
 
@@ -209,7 +210,7 @@ const VisitVerificationPage = () => {
       setIsCompleteModalOpen(true);
     } catch (error) {
       console.error("방문 인증 저장 실패:", error);
-      alert("방문 인증 저장에 실패했습니다.");
+      toast.error("방문 인증 저장에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }

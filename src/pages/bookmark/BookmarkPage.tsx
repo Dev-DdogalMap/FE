@@ -11,9 +11,11 @@ import type {
   BookmarkSortType,
 } from "@/features/bookmark/model/bookmarkTypes";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { Map } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const sortOptions: { label: string; value: BookmarkSortType }[] = [
   { label: "최근 순", value: "LATEST" },
@@ -49,6 +51,8 @@ export default function BookmarkPage() {
     sortOptions.find((option) => option.value === sortType)?.label ??
     "최근 추가순";
 
+
+  const LAST_CATEGORY_KEY = "lastBookmarkCategoryId";
   useEffect(() => {
     if (authLoading || !isLoggedIn) return;
 
@@ -63,18 +67,24 @@ export default function BookmarkPage() {
 
         setCategories(categoryData);
 
-        const firstCategory = categoryData[0];
-
-        if (!firstCategory) {
+        if (categoryData.length === 0) {
           setSelectedCategoryId(null);
           setBookmarks([]);
           return;
         }
 
-        setSelectedCategoryId(firstCategory.bookmarkCategoryId);
+        const lastId = sessionStorage.getItem(LAST_CATEGORY_KEY);
+        const initialCategoryId = lastId ? Number(lastId) : undefined;
+
+        const targetCategory = (initialCategoryId && categoryData.find(
+          (c) => c.bookmarkCategoryId === initialCategoryId
+        )) ||
+          categoryData[0];
+
+        setSelectedCategoryId(targetCategory.bookmarkCategoryId);
 
         const bookmarkData = await getBookmarksByCategory({
-          bookmarkCategoryId: firstCategory.bookmarkCategoryId,
+          bookmarkCategoryId: targetCategory.bookmarkCategoryId,
           sort: "LATEST",
           accessToken,
           refreshAccessToken,
@@ -95,7 +105,7 @@ export default function BookmarkPage() {
     const trimmedName = newCategoryName.trim();
 
     if (!trimmedName) {
-      alert("카테고리명을 입력해주세요.");
+      toast.info("카테고리명을 입력해주세요.");
       return;
     }
 
@@ -115,7 +125,7 @@ export default function BookmarkPage() {
       setIsCreateCategoryOpen(false);
     } catch (error) {
       console.error(error);
-      alert("카테고리 생성에 실패했어요.");
+      toast.error("카테고리 생성에 실패했어요.");
     } finally {
       setIsCreatingCategory(false);
     }
@@ -129,7 +139,7 @@ export default function BookmarkPage() {
     if (!targetCategory) return;
 
     if (targetCategory.isDefault) {
-      alert("기본 카테고리는 삭제할 수 없어요.");
+      toast("기본 카테고리는 삭제할 수 없어요.");
       return;
     }
 
@@ -158,8 +168,8 @@ export default function BookmarkPage() {
       const nextSelectedCategory = wasSelected
         ? nextCategories[0]
         : nextCategories.find(
-            (category) => category.bookmarkCategoryId === selectedCategoryId
-          );
+          (category) => category.bookmarkCategoryId === selectedCategoryId
+        );
 
       if (!nextSelectedCategory) {
         setSelectedCategoryId(null);
@@ -179,7 +189,7 @@ export default function BookmarkPage() {
       setBookmarks(bookmarkData);
     } catch (error) {
       console.error(error);
-      alert("카테고리 삭제에 실패했어요.");
+      toast.error("카테고리 삭제에 실패했어요.");
     } finally {
       setIsLoading(false);
     }
@@ -224,7 +234,7 @@ export default function BookmarkPage() {
       setBookmarks(data);
     } catch (error) {
       console.error(error);
-      alert("정렬에 실패했어요.");
+      toast.error("정렬에 실패했어요.");
     } finally {
       setIsLoading(false);
     }
@@ -232,7 +242,7 @@ export default function BookmarkPage() {
 
   async function handleDeleteRestaurant(restaurantId: number) {
     if (!selectedCategoryId) {
-      alert("카테고리를 선택해주세요.");
+      toast.info("카테고리를 선택해주세요.");
       return;
     }
 
@@ -255,15 +265,15 @@ export default function BookmarkPage() {
         prev.map((category) =>
           category.bookmarkCategoryId === selectedCategoryId
             ? {
-                ...category,
-                bookmarkCount: Math.max(0, category.bookmarkCount - 1),
-              }
+              ...category,
+              bookmarkCount: Math.max(0, category.bookmarkCount - 1),
+            }
             : category
         )
       );
     } catch (error) {
       console.error(error);
-      alert("맛집 삭제에 실패했어요.");
+      toast.error("맛집 삭제에 실패했어요.");
     }
   }
 
@@ -403,15 +413,13 @@ export default function BookmarkPage() {
                   </span>
                 </p>
 
-                {(bookmark.topTags ?? []).length > 0 && (
-                  <div style={styles.tagRow}>
-                    {(bookmark.topTags ?? []).slice(0, 2).map((tag) => (
-                      <span key={tag} style={styles.greenTag}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div style={styles.tagRow}>
+                  {(bookmark.topTags ?? []).slice(0, 2).map((tag) => (
+                    <span key={tag} style={styles.greenTag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
                 <p style={styles.locationLine}>⌖ {bookmark.address}</p>
               </div>
@@ -439,9 +447,10 @@ export default function BookmarkPage() {
 
           navigate(`/bookmark-map/${selectedCategoryId}`);
         }}
-        style={styles.mapButton}
+        style={styles.mapFloatingButton}
+        aria-label={`${selectedTitle} 지도 보기`}
       >
-        🗺️ {selectedTitle} 지도 보기 ›
+        <Map size={26} />
       </button>
 
       {isCreateCategoryOpen &&
@@ -535,21 +544,20 @@ function FolderCard({
           color: active ? "#ff5a00" : "#8b8f98",
         }}
       >
-        ▭
       </span>
       <strong style={{ color: active ? "#ff5a00" : "#111" }}>{name}</strong>
-      <span style={{ color: active ? "#ff5a00" : "#7b8190" }}>{count}</span>
+      <span style={{ color: active ? "#ff5a00" : "#7b8190" }}>[{count}]</span>
     </button>
 
-    
-  ); 
+
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
     background: "#fff",
-    padding: "18px 18px 96px",
+    padding: "18px 18px 120px",
     boxSizing: "border-box",
   },
   center: {
@@ -610,18 +618,18 @@ const styles: Record<string, React.CSSProperties> = {
     paddingBottom: 22,
   },
   folderCard: {
-    minWidth: 92,
-    height: 96,
+    minWidth: 78,
+    height: 82,
     border: "1px solid #dedede",
-    borderRadius: 18,
+    borderRadius: 16,
     background: "#fff",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 4,
     cursor: "pointer",
-    fontSize: 15,
+    fontSize: 14,
     position: "relative",
   },
   activeFolderCard: {
@@ -647,29 +655,29 @@ const styles: Record<string, React.CSSProperties> = {
     position: "relative",
   },
   sortButton: {
-  height: 36,
-  border: "1px solid #e5e5e5",
-  borderRadius: 12,
-  background: "#fff",
-  color: "#333",
-  padding: "0 12px",
-  display: "flex",
-  alignItems: "center",
-  gap: 2,
-  fontSize: 13,
-  fontWeight: 800,
-  cursor: "pointer",
+    height: 36,
+    border: "1px solid #e5e5e5",
+    borderRadius: 12,
+    background: "#fff",
+    color: "#333",
+    padding: "0 12px",
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    fontSize: 13,
+    fontWeight: 800,
+    cursor: "pointer",
   },
   sortArrow: {
-  fontSize: 13,
-  lineHeight: 1,
-  color: "inherit",
+    fontSize: 13,
+    lineHeight: 1,
+    color: "inherit",
   },
 
   sortButtonActive: {
-  border: "1px solid #ff5a00",
-  background: "#fff7f2",
-  color: "#ff5a00",
+    border: "1px solid #ff5a00",
+    background: "#fff7f2",
+    color: "#ff5a00",
   },
   sortDropdown: {
     position: "absolute",
@@ -705,7 +713,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   restaurantCard: {
     width: "100%",
-    minHeight: 0,
+    height: 140,
     border: "1px solid #eee",
     borderRadius: 16,
     background: "#fff",
@@ -719,14 +727,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   restaurantImage: {
     width: 100,
-    height: "100%",
+    height: 140,
     objectFit: "cover",
   },
 
   emptyImageBox: {
-  width: 100,
-  height: "100%",
-  background: "#f7f7f7",
+    width: 100,
+    height: 140,
+    background: "#f7f7f7",
   },
   restaurantInfo: {
     padding: "12px 8px 10px 14px",
@@ -756,7 +764,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexWrap: "wrap",
     gap: 6,
-    marginBottom: 12,
+    height: 24,
+    marginBottom: 8,
   },
   greenTag: {
     background: "#e8f7ed",
@@ -767,9 +776,10 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   locationLine: {
-    margin: 0,
+    margin: "16px 0 0",
     color: "#7b8190",
     fontSize: 14,
+    lineHeight: "18px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -796,18 +806,30 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.25,
     wordBreak: "keep-all",
   },
-  mapButton: {
-    width: "100%",
+  mapFloatingButton: {
+    position: "fixed",
+    left: "50%",
+    bottom: 88,
+    transform: "translateX(145px)",
+    zIndex: 60,
+    width: 58,
     height: 58,
-    marginTop: 18,
     border: "none",
-    borderRadius: 14,
-    background: "#fff1e9",
-    color: "#ff5a00",
-    fontSize: 17,
+    borderRadius: "50%",
+    background: "#ff7a2f",
+    color: "#fff",
+    fontSize: 25,
     fontWeight: 900,
     cursor: "pointer",
+    boxShadow: "0 10px 26px rgba(255, 90, 0, 0.28)",
+
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
   },
+
+
   emptyBox: {
     border: "1px solid #eee",
     borderRadius: 18,

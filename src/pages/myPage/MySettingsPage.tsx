@@ -17,7 +17,7 @@ const MySettingsPage = () => {
     if (isLoading) return;
     if (!accessToken) {
       setLoading(false);
-      toast.error("로그인이 필요합니다.");
+      toast.info("로그인이 필요합니다.");
       navigate("/login");
       return;
     }

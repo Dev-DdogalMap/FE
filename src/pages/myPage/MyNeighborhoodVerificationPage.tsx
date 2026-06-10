@@ -1,5 +1,3 @@
-
-//v4 - 역지오코딩, 인증하기 버튼 클릭 시 모달 표시
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,6 +11,7 @@ import KakaoBaseMap from "@/shared/map/KakaoBaseMap";
 import { MapMarker } from "react-kakao-maps-sdk";
 
 
+
 const MAX_ACCURACY = 50;
 
 const MyNeighborhoodVerificationPage = () => {
@@ -24,8 +23,6 @@ const MyNeighborhoodVerificationPage = () => {
     const [regionName, setRegionName] = useState<string | null>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-
-
 
     // errorMessage 발생 시 토스트로 표시
     useEffect(() => {
@@ -76,17 +73,17 @@ const MyNeighborhoodVerificationPage = () => {
 
 
         if (!location) {
-            toast.error("현재 위치를 확인할 수 없습니다.");
+            toast("현재 위치를 확인할 수 없습니다.");
             return;
         }
 
         if (location.accuracy > MAX_ACCURACY) {
-            toast.error("GPS 정확도가 낮습니다. 야외에서 다시 시도해주세요.");
+            toast("GPS 정확도가 낮습니다. 야외에서 다시 시도해주세요.");
             return;
         }
 
         if (!regionName) {
-            toast.error("위치 정보를 확인 중입니다. 잠시만 기다려주세요.");
+            toast("위치 정보를 확인 중입니다. 잠시만 기다려주세요.");
             return;
         }
 
@@ -196,7 +193,7 @@ const MyNeighborhoodVerificationPage = () => {
 
             {/* 확인 모달 */}
             {showConfirmModal && regionName && (
-                <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-30">
+                <div className="fixed inset-0 z-[10000] flex items-start justify-center bg-black/40 pt-30">
                     <div className="w-[320px] rounded-2xl bg-white p-5 shadow-lg">
                         <h2 className="text-lg font-bold">
                             동네 인증 확인

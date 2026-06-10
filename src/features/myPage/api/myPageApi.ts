@@ -10,7 +10,8 @@ import type {
   MyNeighborhoodVerificationResponse,
   MyStatsResponse,
   RepresentativeBadgeResponse,
-  UpdateRepresentativeBadgeRequest
+  UpdateRepresentativeBadgeRequest,
+  MyProfileResponse
 } from "../model/myPageTypes";
 
 type AuthApiParams = {
@@ -196,4 +197,22 @@ export async function getMyStats(
   });
 
   return parseResponse<MyStatsResponse>(response);
+}
+
+export async function getMyProfile(
+  {
+    accessToken,
+    refreshAccessToken,
+  }: AuthApiParams,
+): Promise<MyProfileResponse> {
+  const response = await authFetch({
+    path: "/api/users/me/profile",
+    accessToken,
+    refreshAccessToken,
+    options: {
+      method: "GET",
+    },
+  });
+
+  return parseResponse<MyProfileResponse>(response);
 }

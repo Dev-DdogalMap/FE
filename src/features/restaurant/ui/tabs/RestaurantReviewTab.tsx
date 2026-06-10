@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import {useAuth} from "@/shared/auth/AuthContext.tsx";
+import { toast } from "sonner";
 
 interface ReviewResponse {
     reviewId: number;
@@ -112,7 +113,7 @@ const RestaurantReviewTab = ({ restaurantId }: RestaurantReviewTabProps) => {
 
     const handleLike = async (reviewId: number) => {
         if (!accessToken) {
-            alert("로그인이 필요한 기능입니다.");
+            toast.info("로그인이 필요한 기능입니다.");
             return;
         }
 
