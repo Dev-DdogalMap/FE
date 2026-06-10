@@ -2,7 +2,7 @@ import MessageList from "@/features/groupChat/ui/MessageList";
 import MessageInput from "@/features/groupChat/ui/MessageInput";
 import ChatHeader from "@/features/groupChat/ui/ChatHeader";
 import { useNavigate } from "react-router-dom";
-import { useGroupChat } from "@/features/groupChat/hooks/useGroupChat";
+import { useGroupChat2 } from "@/features/groupChat/hooks/useGroupChat2";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { useGroupChatSocket } from "@/features/groupChat/hooks/useGroupChatSocket";
 import { useParams } from "react-router-dom";
@@ -30,11 +30,8 @@ export default function ChatRoomPage() {
     setMessages((prev) => [...prev, newMessage]); // 새 메시지 오면 목록에 추가
   });
   const {
-    messages,
-    roomInfo,
-    loading,
-    setMessages,
-  } = useGroupChat(Number(roomId));
+    messages, roomInfo, loading, setMessages, hasNext, loadingMore, loadMore
+  } = useGroupChat2(Number(roomId));
 
   function handleMenuClick() {
     navigate(`/chat/group/info/${roomId}`);
@@ -71,7 +68,13 @@ export default function ChatRoomPage() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto bg-[#F7F7F7]">
-        <MessageList messages={messages} currentUserId={user?.userId ?? -1} />
+        <MessageList
+          messages={messages}
+          currentUserId={user?.userId ?? -1}
+          hasNext={hasNext}
+          loadingMore={loadingMore}
+          onLoadMore={loadMore}
+        />
       </div>
 
       <div className="flex-shrink-0">
