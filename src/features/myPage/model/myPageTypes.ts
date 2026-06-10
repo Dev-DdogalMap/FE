@@ -89,3 +89,9 @@ export type MyStatsResponse = {
   bookmarkCount: number;
   chatRoomCount: number;
 };
+
+export type MyProfileResponse = {
+  nickname: string;
+  profileImageUrl: string | null;
+  email: string;
+};
