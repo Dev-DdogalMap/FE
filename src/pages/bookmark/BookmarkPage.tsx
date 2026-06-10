@@ -14,6 +14,7 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { Map } from "lucide-react";
 import { toast } from "sonner";
 
 const sortOptions: { label: string; value: BookmarkSortType }[] = [
@@ -428,23 +429,22 @@ export default function BookmarkPage() {
         </section>
       )}
 
-      <div style={styles.bottomBar}>
         <button
           type="button"
           onClick={() => {
             if (!selectedCategoryId) {
-              toast.info("카테고리를 선택해주세요.");
+              alert("카테고리를 선택해주세요.");
               return;
             }
 
             navigate(`/bookmark-map/${selectedCategoryId}`);
           }}
-          style={styles.mapButton}
+          style={styles.mapFloatingButton}
+          aria-label={`${selectedTitle} 지도 보기`}
         >
-          🗺️ {selectedTitle} 지도 보기 ›
+          <Map size={26} />
         </button>
-      </div>
-
+        
       {isCreateCategoryOpen &&
         createPortal(
           <div
@@ -536,10 +536,9 @@ function FolderCard({
           color: active ? "#ff5a00" : "#8b8f98",
         }}
       >
-        ▭
       </span>
       <strong style={{ color: active ? "#ff5a00" : "#111" }}>{name}</strong>
-      <span style={{ color: active ? "#ff5a00" : "#7b8190" }}>{count}</span>
+      <span style={{ color: active ? "#ff5a00" : "#7b8190" }}>[{count}]</span>
     </button>
 
     
@@ -611,18 +610,18 @@ const styles: Record<string, React.CSSProperties> = {
     paddingBottom: 22,
   },
   folderCard: {
-    minWidth: 92,
-    height: 96,
+    minWidth: 78,
+    height: 82,
     border: "1px solid #dedede",
-    borderRadius: 18,
+    borderRadius: 16,
     background: "#fff",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 4,
     cursor: "pointer",
-    fontSize: 15,
+    fontSize: 14,
     position: "relative",
   },
   activeFolderCard: {
@@ -648,18 +647,18 @@ const styles: Record<string, React.CSSProperties> = {
     position: "relative",
   },
   sortButton: {
-  height: 36,
-  border: "1px solid #e5e5e5",
-  borderRadius: 12,
-  background: "#fff",
-  color: "#333",
-  padding: "0 12px",
-  display: "flex",
-  alignItems: "center",
-  gap: 2,
-  fontSize: 13,
-  fontWeight: 800,
-  cursor: "pointer",
+    height: 36,
+    border: "1px solid #e5e5e5",
+    borderRadius: 12,
+    background: "#fff",
+    color: "#333",
+    padding: "0 12px",
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    fontSize: 13,
+    fontWeight: 800,
+    cursor: "pointer",
   },
   sortArrow: {
   fontSize: 13,
@@ -705,23 +704,23 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
   },
   restaurantCard: {
-  width: "100%",
-  height: 140,
-  border: "1px solid #eee",
-  borderRadius: 16,
-  background: "#fff",
-  padding: 0,
-  display: "grid",
-  gridTemplateColumns: "100px 1fr 62px",
-  overflow: "hidden",
-  cursor: "pointer",
-  textAlign: "left",
-  position: "relative",
+    width: "100%",
+    height: 140,
+    border: "1px solid #eee",
+    borderRadius: 16,
+    background: "#fff",
+    padding: 0,
+    display: "grid",
+    gridTemplateColumns: "100px 1fr 62px",
+    overflow: "hidden",
+    cursor: "pointer",
+    textAlign: "left",
+    position: "relative",
   },
   restaurantImage: {
-  width: 100,
-  height: 140,
-  objectFit: "cover",
+    width: 100,
+    height: 140,
+    objectFit: "cover",
   },
 
   emptyImageBox: {
@@ -754,11 +753,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#7b8190",
   },
   tagRow: {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: 6,
-  height: 24,
-  marginBottom: 8,
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 6,
+    height: 24,
+    marginBottom: 8,
   },
   greenTag: {
     background: "#e8f7ed",
@@ -769,13 +768,13 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   locationLine: {
-  margin: "16px 0 0",
-  color: "#7b8190",
-  fontSize: 14,
-  lineHeight: "18px",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+    margin: "16px 0 0",
+    color: "#7b8190",
+    fontSize: 14,
+    lineHeight: "18px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   scoreBox: {
     padding: "12px 8px 10px 0",
@@ -799,33 +798,30 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.25,
     wordBreak: "keep-all",
   },
-  bottomBar: {
-  position: "fixed",
-  left: "50%",
-  bottom: 78,
-  transform: "translateX(-50%)",
-  zIndex: 60,
-  width: "100%",
-  maxWidth: 430,
-  padding: "0 18px",
-  boxSizing: "border-box",
-  background: "transparent",
-  pointerEvents: "none",
-  },
-
-  mapButton: {
-    width: "100%",
-    height: 56,
+  mapFloatingButton: {
+    position: "fixed",
+    left: "50%",
+    bottom: 88,
+    transform: "translateX(145px)",
+    zIndex: 60,
+    width: 58,
+    height: 58,
     border: "none",
-    borderRadius: 16,
+    borderRadius: "50%",
     background: "#ff7a2f",
     color: "#fff",
-    fontSize: 17,
+    fontSize: 25,
     fontWeight: 900,
     cursor: "pointer",
-    boxShadow: "0 8px 24px rgba(255, 90, 0, 0.28)",
-    pointerEvents: "auto",
+    boxShadow: "0 10px 26px rgba(255, 90, 0, 0.28)",
+
+     display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
   },
+
+
   emptyBox: {
     border: "1px solid #eee",
     borderRadius: 18,
