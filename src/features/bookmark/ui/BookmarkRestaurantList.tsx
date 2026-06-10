@@ -5,18 +5,12 @@ type Props = {
     restaurants: BookmarkRestaurant[];
 };
 
-const cleanImageUrl = (url?: string) => {
-    if (!url) return undefined;
-    return url.replace(/([^:]\/)\/+/g, "$1");
-};
-
 const BookmarkRestaurantList = ({ restaurants }: Props) => {
 
     return (
         <div>
             {restaurants.map((restaurant) => {
 
-                const imageUrl = cleanImageUrl(restaurant.imageUrl);
 
                 return (
                     <Link
@@ -24,9 +18,9 @@ const BookmarkRestaurantList = ({ restaurants }: Props) => {
                         to={`/restaurants/${restaurant.restaurantId}`}
                         className="flex items-center gap-3 p-3 hover:bg-gray-50 active:bg-gray-100"
                     >
-                        {imageUrl ? (
+                        {restaurant.imageUrl ? (
                             <img
-                                src={imageUrl}
+                                src={restaurant.imageUrl}
                                 alt={restaurant.restaurantName}
                                 onError={(e) => {
                                     (e.currentTarget as HTMLImageElement).src = defaultImage;
