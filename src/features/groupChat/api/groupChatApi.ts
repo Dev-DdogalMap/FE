@@ -22,10 +22,10 @@ interface AuthParams {
   refreshAccessToken: () => Promise<string | null>;
 }
 
-interface GetGroupChatMessagesParams {
-  roomId: number;
-  size?: number;
-}
+// interface GetGroupChatMessagesParams {
+//   roomId: number;
+//   size?: number;
+// }
 
 interface GetGroupChatRoomListParams {
   page?: number;
