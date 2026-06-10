@@ -204,10 +204,13 @@ export default function SearchPage() {
     // 로그인 사용자의 인증 동네를 가져와서 RegionSelect 표시값 초기화
     // (실제 검색 region 파라미터는 빈 문자열로 유지 → BE 가 user.region 자동 적용)
     useEffect(() => {
-        // 로그아웃(accessToken null) 시 라벨/깃발 초기화
+        // 로그아웃(accessToken null) 시 라벨/깃발/region 초기화
+        // - region 까지 리셋해야 재로그인 시 UI 라벨 / 검색 region 파라미터 mismatch 방지
+        //   (예: "전체" 선택 → region="ALL" 상태로 로그아웃 → 재로그인 시 라벨만 본인 동네로 채워지고 검색은 전국으로 나감)
         if (!accessToken) {
             setSelectedRegionName("전체");
             setHasManuallySelectedRegion(false);
+            setRegion("");
             return;
         }
         // 사용자가 손으로 지역 골랐으면 자동 덮어쓰기 금지
