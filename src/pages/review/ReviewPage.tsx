@@ -135,7 +135,7 @@ const ReviewPage = () => {
             setSelectedTags(selectedTags.filter(t => t !== tag));
         } else {
             if (selectedTags.length >= 3) {
-                toast("태그는 최대 3개까지 선택 가능합니다.");
+                toast.error("태그는 최대 3개까지 선택 가능합니다.");
                 return;
             }
             setSelectedTags([...selectedTags, tag]);
@@ -148,7 +148,7 @@ const ReviewPage = () => {
             const filesArray = Array.from(e.target.files);
 
             if (images.length + filesArray.length > 5) {
-                toast("사진은 최대 5장까지 등록 가능합니다.");
+                toast.error("사진은 최대 5장까지 등록 가능합니다.");
                 return;
             }
 
@@ -186,28 +186,28 @@ const ReviewPage = () => {
         const token = state?.accessToken || accessToken;
 
         if (!restaurantId) {
-            toast("식당 정보가 올바르지 않습니다.");
+            toast.error("식당 정보가 올바르지 않습니다.");
             return;
         }
         if (score === 0) {
-            toast.info("별점을 선택해주세요.");
+            toast.error("별점을 선택해주세요.");
             return;
         }
         if (isRevisit == null) {
-            toast.info("재방문 의사를 선택해주세요.");
+            toast.error("재방문 의사를 선택해주세요.");
             return;
         }
         if (!content.trim()) {
-            toast.info("상세 후기를 입력해주세요.");
+            toast.error("상세 후기를 입력해주세요.");
             return;
         }
         if (selectedTags.length < 1) {
-            toast.info("태그를 최소 1개 이상 선택해주세요.");
+            toast.error("태그를 최소 1개 이상 선택해주세요.");
             return;
         }
 
         if (!token) {
-            toast("로그인이 필요합니다.");
+            toast.error("로그인이 필요합니다.");
             return;
         }
 
@@ -258,7 +258,7 @@ const ReviewPage = () => {
 
         } catch (error) {
             console.error(error);
-            // 💡 던져진 에러 객체의 실제 메시지를 toast으로 보여줍니다.
+            // 💡 던져진 에러 객체의 실제 메시지를 toast로 보여줍니다.
             if (error instanceof Error) {
                 toast.error(error.message);
             } else {
