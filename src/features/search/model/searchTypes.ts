@@ -15,6 +15,8 @@ export interface RestaurantSearchItem {
     reviewCount: number;
     jjinScore: number | null;
     tags: string[];
+    // 후기 이미지 중 좋아요 최다 1장. 후기 없거나 이미지 없으면 null → 카드에서 "이미지 없음" 폴백 표시
+    imageUrl: string | null;
 }
 
 /**
