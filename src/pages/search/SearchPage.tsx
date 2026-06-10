@@ -39,7 +39,8 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
     placeName: item.placeName,
     foodType: item.foodType,
     addressName: item.roadAddressName ?? item.addressName ?? "",
-    imageUrl: null,
+    // 후기 없거나 이미지 없으면 BE 가 null 반환 → 카드 컴포넌트가 "이미지 없음" 폴백 처리
+    imageUrl: item.imageUrl,
     distance: item.distance,
     averageScore: item.averageScore,
     reviewCount: item.reviewCount,
