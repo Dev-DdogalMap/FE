@@ -11,10 +11,10 @@ import type {
   BookmarkSortType,
 } from "@/features/bookmark/model/bookmarkTypes";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { Map } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Map } from "lucide-react";
 import { toast } from "sonner";
 
 const sortOptions: { label: string; value: BookmarkSortType }[] = [
@@ -51,6 +51,8 @@ export default function BookmarkPage() {
     sortOptions.find((option) => option.value === sortType)?.label ??
     "최근 추가순";
 
+
+  const LAST_CATEGORY_KEY = "lastBookmarkCategoryId";
   useEffect(() => {
     if (authLoading || !isLoggedIn) return;
 
@@ -65,18 +67,24 @@ export default function BookmarkPage() {
 
         setCategories(categoryData);
 
-        const firstCategory = categoryData[0];
-
-        if (!firstCategory) {
+        if (categoryData.length === 0) {
           setSelectedCategoryId(null);
           setBookmarks([]);
           return;
         }
 
-        setSelectedCategoryId(firstCategory.bookmarkCategoryId);
+        const lastId = sessionStorage.getItem(LAST_CATEGORY_KEY);
+        const initialCategoryId = lastId ? Number(lastId) : undefined;
+
+        const targetCategory = (initialCategoryId && categoryData.find(
+          (c) => c.bookmarkCategoryId === initialCategoryId
+        )) ||
+          categoryData[0];
+
+        setSelectedCategoryId(targetCategory.bookmarkCategoryId);
 
         const bookmarkData = await getBookmarksByCategory({
-          bookmarkCategoryId: firstCategory.bookmarkCategoryId,
+          bookmarkCategoryId: targetCategory.bookmarkCategoryId,
           sort: "LATEST",
           accessToken,
           refreshAccessToken,
@@ -160,8 +168,8 @@ export default function BookmarkPage() {
       const nextSelectedCategory = wasSelected
         ? nextCategories[0]
         : nextCategories.find(
-            (category) => category.bookmarkCategoryId === selectedCategoryId
-          );
+          (category) => category.bookmarkCategoryId === selectedCategoryId
+        );
 
       if (!nextSelectedCategory) {
         setSelectedCategoryId(null);
@@ -257,9 +265,9 @@ export default function BookmarkPage() {
         prev.map((category) =>
           category.bookmarkCategoryId === selectedCategoryId
             ? {
-                ...category,
-                bookmarkCount: Math.max(0, category.bookmarkCount - 1),
-              }
+              ...category,
+              bookmarkCount: Math.max(0, category.bookmarkCount - 1),
+            }
             : category
         )
       );
@@ -429,22 +437,22 @@ export default function BookmarkPage() {
         </section>
       )}
 
-        <button
-          type="button"
-          onClick={() => {
-            if (!selectedCategoryId) {
-              alert("카테고리를 선택해주세요.");
-              return;
-            }
+      <button
+        type="button"
+        onClick={() => {
+          if (!selectedCategoryId) {
+            alert("카테고리를 선택해주세요.");
+            return;
+          }
 
-            navigate(`/bookmark-map/${selectedCategoryId}`);
-          }}
-          style={styles.mapFloatingButton}
-          aria-label={`${selectedTitle} 지도 보기`}
-        >
-          <Map size={26} />
-        </button>
-        
+          navigate(`/bookmark-map/${selectedCategoryId}`);
+        }}
+        style={styles.mapFloatingButton}
+        aria-label={`${selectedTitle} 지도 보기`}
+      >
+        <Map size={26} />
+      </button>
+
       {isCreateCategoryOpen &&
         createPortal(
           <div
@@ -541,8 +549,8 @@ function FolderCard({
       <span style={{ color: active ? "#ff5a00" : "#7b8190" }}>[{count}]</span>
     </button>
 
-    
-  ); 
+
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -661,15 +669,15 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
   sortArrow: {
-  fontSize: 13,
-  lineHeight: 1,
-  color: "inherit",
+    fontSize: 13,
+    lineHeight: 1,
+    color: "inherit",
   },
 
   sortButtonActive: {
-  border: "1px solid #ff5a00",
-  background: "#fff7f2",
-  color: "#ff5a00",
+    border: "1px solid #ff5a00",
+    background: "#fff7f2",
+    color: "#ff5a00",
   },
   sortDropdown: {
     position: "absolute",
@@ -815,7 +823,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     boxShadow: "0 10px 26px rgba(255, 90, 0, 0.28)",
 
-     display: "flex",
+    display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 0,
