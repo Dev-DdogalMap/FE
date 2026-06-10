@@ -56,7 +56,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
 export default function SearchPage() {
     const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
-    const { accessToken, refreshAccessToken } = useAuth();
+    const { accessToken, refreshAccessToken, isLoading: authLoading } = useAuth();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
     const [totalCount, setTotalCount] = useState(0);
@@ -70,6 +70,10 @@ export default function SearchPage() {
     const [sort, setSort] = useState<SearchSort>("distance");
     const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
     const [selectedRegionName, setSelectedRegionName] = useState("전체");
+    // 사용자가 RegionSelect 에서 손으로 골랐는지 여부
+    // - true 면 본인 동네 자동 채우기 effect 가 라벨을 덮어쓰지 않음
+    //   (silent token refresh 로 accessToken 만 갱신될 때 라벨이 본인 동네로 되돌아가는 문제 방지)
+    const [hasManuallySelectedRegion, setHasManuallySelectedRegion] = useState(false);
 
     // 검색 파라미터
     const [searchParams] = useSearchParams();
@@ -200,7 +204,14 @@ export default function SearchPage() {
     // 로그인 사용자의 인증 동네를 가져와서 RegionSelect 표시값 초기화
     // (실제 검색 region 파라미터는 빈 문자열로 유지 → BE 가 user.region 자동 적용)
     useEffect(() => {
-        if (!accessToken) return;
+        // 로그아웃(accessToken null) 시 라벨/깃발 초기화
+        if (!accessToken) {
+            setSelectedRegionName("전체");
+            setHasManuallySelectedRegion(false);
+            return;
+        }
+        // 사용자가 손으로 지역 골랐으면 자동 덮어쓰기 금지
+        if (hasManuallySelectedRegion) return;
         getMyRegion({ accessToken, refreshAccessToken })
             .then((data) => {
                 if (data.verified && data.eupmyeondongName) {
@@ -210,19 +221,26 @@ export default function SearchPage() {
             .catch(() => {
                 // 실패해도 "전체" 표시로 폴백 — 별도 처리 없음
             });
-    }, [accessToken, refreshAccessToken]);
+    }, [accessToken, refreshAccessToken, hasManuallySelectedRegion]);
 
     // 위치가 결정됐는지(성공 OR 거부) 판단
     // - location 값이 채워짐 → 권한 허용 + 위치 받음
     // - locationError 값이 채워짐 → 권한 거부 또는 에러
     // 둘 중 하나라도 일어나기 전에는 검색 호출하지 않음 (페이지 진입 시 2번 호출 방지)
     const locationResolved = location !== null || locationError !== null;
+    // auth 결정됐는지 (로그인/비로그인 확정) — useAuth.isLoading 으로 판단
+    // false 면 refresh 진행 중 → 이 시점에 검색 나가면 accessToken 없이 호출 → 비로그인 결과 반환
+    // (location 거부 케이스에서 locationResolved 가 즉시 true 되어 auth 도착 전 검색 나가는 회귀 방지)
+    const authResolved = !authLoading;
 
     useEffect(() => {
+        // location/auth 둘 다 결정되기 전엔 검색 호출하지 않음
+        // - authResolved 는 한 번 true 되면 다시 false 안 됨 → silent token refresh 시 재검색 안 일어남
         if (!locationResolved) return;
+        if (!authResolved) return;
         fetchSearchReset(keyword, region, selectedFoodTypeId, sort);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location?.lat, location?.lng, locationError]);
+    }, [location?.lat, location?.lng, locationError, authResolved]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -277,6 +295,8 @@ export default function SearchPage() {
                     selectedRegionId={selectedRegionId}
                     selectedRegionName={selectedRegionName}
                     onChange={(regionName, dong) => {
+                        // 사용자가 손으로 지역 선택했음을 표시 → 이후 token refresh 가 라벨 덮어쓰지 못함
+                        setHasManuallySelectedRegion(true);
                         // "전체"(빈 문자열) 명시적 선택 시 BE 에 "ALL" 전송 → user.region 자동 적용 방지 → 전국 검색
                         const effectiveRegion = regionName || "ALL";
                         setRegion(effectiveRegion);
