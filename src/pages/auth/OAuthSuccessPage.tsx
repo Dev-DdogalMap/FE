@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/auth/AuthContext";
+import { toast } from "sonner";
 
 export default function OAuthSuccessPage() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function OAuthSuccessPage() {
       const isAuthenticated = await checkAuth();
 
       if (!isAuthenticated) {
-        alert("로그인에 실패했습니다.");
+        toast.error("로그인에 실패했습니다.");
         navigate("/login", { replace: true });
         return;
       }

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/shared/auth/AuthContext";
 import BookmarkCategoryModal from "@/features/bookmark/ui/BookmarkCategoryModal";
+import { toast } from "sonner";
 
 const RestaurantBottom = () => {
   const navigate = useNavigate();
@@ -19,14 +20,14 @@ const RestaurantBottom = () => {
 
   const handleBookmarkClick = () => {
     if (!numericRestaurantId || Number.isNaN(numericRestaurantId)) {
-      alert("음식점 정보를 찾을 수 없습니다.");
+      toast("음식점 정보를 찾을 수 없습니다.");
       return;
     }
 
     if (isLoading) return;
 
     if (!isLoggedIn) {
-      alert("찜하기는 로그인이 필요합니다.");
+      toast.info("찜하기는 로그인이 필요합니다.");
       sessionStorage.setItem("redirectAfterLogin", `/restaurants/${restaurantId}`);
       navigate("/login");
       return;
@@ -40,7 +41,7 @@ const RestaurantBottom = () => {
 
   const handleVisitClick = () => {
     if (!restaurantId) {
-      alert("음식점 정보를 찾을 수 없습니다.");
+      toast("음식점 정보를 찾을 수 없습니다.");
       return;
     }
 
@@ -49,7 +50,7 @@ const RestaurantBottom = () => {
     if (isLoading) return;
 
     if (!isLoggedIn) {
-      alert("방문 인증은 로그인이 필요합니다.");
+      toast("방문 인증은 로그인이 필요합니다.");
       sessionStorage.setItem("redirectAfterLogin", visitPath);
       navigate("/login");
       return;

@@ -12,6 +12,7 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import RecommendedTab from "../../features/chat/ui/chatPage/RecommendedTab";
 import ConversationsTab from "../../features/chat/ui/chatPage/ConversationsTab";
 import GroupsTab from "../../features/chat/ui/chatPage/GroupsTab";
+import { toast } from "sonner";
 
 const defaultFilters: TasteExpertFilters = {
   keyword: "",
@@ -59,7 +60,7 @@ export default function ChatPageRefactoring() {
       navigate(ROUTES.directChat(room.directChatRoomId));
     } catch (error) {
       console.error(error);
-      alert("채팅방 생성에 실패했습니다.");
+      toast.error("채팅방 생성에 실패했습니다.");
     }
   };
 
