@@ -53,8 +53,6 @@ export interface BookmarkMapRestaurant {
     addressName: string;
     latitude: number;
     longitude: number;
-    
-    // TODO
     thumbnailImageUrl?: string;
     averageRating?: number;
     reviewCount?: number;

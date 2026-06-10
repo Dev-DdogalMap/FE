@@ -1,25 +1,63 @@
+import defaultImage from "@/assets/images/logo.png";
 import { Link } from "react-router-dom";
-import type { BookmarkMapRestaurant } from "../model/bookmarkTypes";
-
+import type { BookmarkRestaurant } from "../model/bookmarkTypes";
 type Props = {
-    restaurants: BookmarkMapRestaurant[];
+    restaurants: BookmarkRestaurant[];
+};
+
+const cleanImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    return url.replace(/([^:]\/)\/+/g, "$1");
 };
 
 const BookmarkRestaurantList = ({ restaurants }: Props) => {
+
     return (
         <div>
-            {restaurants.map((restaurant) => (
-                <Link
-                    key={restaurant.restaurantId}
-                    to={`/restaurants/${restaurant.restaurantId}`}
-                    className="block p-3 hover:bg-gray-50 active:bg-gray-100"
-                >
-                    <p className="font-bold">{restaurant.placeName}
-                    <span className="text-sm text-gray-500"> &nbsp;{restaurant.foodType}</span></p>
-                    
-                    <p className="text-sm text-gray-500">{restaurant.addressName}</p>
-                </Link>
-            ))}
+            {restaurants.map((restaurant) => {
+
+                const imageUrl = cleanImageUrl(restaurant.imageUrl);
+
+                return (
+                    <Link
+                        key={restaurant.restaurantId}
+                        to={`/restaurants/${restaurant.restaurantId}`}
+                        className="flex items-center gap-3 p-3 hover:bg-gray-50 active:bg-gray-100"
+                    >
+                        {imageUrl ? (
+                            <img
+                                src={imageUrl}
+                                alt={restaurant.restaurantName}
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = defaultImage;
+                                }}
+                                className="w-16 h-16 rounded-lg object-cover shrink-0"
+                            />
+                        ) : (
+                            <div className="w-16 h-16 rounded-lg bg-orange-50 shrink-0 flex items-center justify-center">
+                                <img
+                                    src={defaultImage}
+                                    alt="default"
+                                    className="w-10 h-10 object-contain"
+                                />
+                            </div>
+                        )}
+
+                        {/* 우측 텍스트 정보 */}
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold truncate">
+                                {restaurant.restaurantName}
+                                <span className="text-sm text-gray-500 font-normal">
+                                    &nbsp;{restaurant.category}
+                                </span>
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                                {restaurant.address}
+                            </p>
+                        </div>
+                    </Link>
+                )
+            })}
         </div>
     );
 };
