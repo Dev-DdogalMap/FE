@@ -7,6 +7,7 @@ import type {
     SearchSort,
 } from "@/features/search/model/searchTypes";
 import { getFoodTypes } from "@/features/restaurant/api/restaurantApi";
+import { getMyRegion } from "@/features/myPage/api/myPageApi";
 import { useWatchLocation } from "@/shared/location/useWatchLocation";
 import { useAuth } from "@/shared/auth/AuthContext";
 import RestaurantPreviewCard from "@/features/restaurant/ui/RestaurantPreviewCard";
@@ -55,7 +56,7 @@ const toPreview = (item: RestaurantSearchItem): RestaurantPreview => ({
 export default function SearchPage() {
     const navigate = useNavigate();
     const { location, errorMessage: locationError } = useWatchLocation();
-    const { accessToken } = useAuth();
+    const { accessToken, refreshAccessToken, isLoading: authLoading } = useAuth();
 
     const [items, setItems] = useState<RestaurantSearchItem[]>([]);
     const [totalCount, setTotalCount] = useState(0);
@@ -69,6 +70,10 @@ export default function SearchPage() {
     const [sort, setSort] = useState<SearchSort>("distance");
     const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
     const [selectedRegionName, setSelectedRegionName] = useState("전체");
+    // 사용자가 RegionSelect 에서 손으로 골랐는지 여부
+    // - true 면 본인 동네 자동 채우기 effect 가 라벨을 덮어쓰지 않음
+    //   (silent token refresh 로 accessToken 만 갱신될 때 라벨이 본인 동네로 되돌아가는 문제 방지)
+    const [hasManuallySelectedRegion, setHasManuallySelectedRegion] = useState(false);
 
     // 검색 파라미터
     const [searchParams] = useSearchParams();
@@ -180,16 +185,75 @@ export default function SearchPage() {
         MAX_PAGES,
     );
 
+    // 페이지네이션 sliding window — 현재 페이지 ±2 까지만 노출 (최대 5개 버튼)
+    // 끝(1 또는 totalPages)에 가까우면 자동으로 잘림: 1페이지는 [1 2 3], 마지막은 [n-2 n-1 n] 처럼
+    const PAGE_WINDOW = 2;
+    const pageStart = Math.max(1, page - PAGE_WINDOW);
+    const pageEnd = Math.min(totalPages, page + PAGE_WINDOW);
+    const visiblePages = Array.from(
+        { length: Math.max(0, pageEnd - pageStart + 1) },
+        (_, i) => pageStart + i,
+    );
+
     useEffect(() => {
         getFoodTypes()
             .then(setFoodTypes)
             .catch(() => setFoodTypesError("음식 종류 목록을 불러오지 못했습니다."));
     }, []);
 
+    // 로그인 사용자의 인증 동네를 가져와서 RegionSelect 표시값 초기화
+    // (실제 검색 region 파라미터는 빈 문자열로 유지 → BE 가 user.region 자동 적용)
     useEffect(() => {
+        // 로그아웃(accessToken null) 시 라벨/깃발/region 초기화
+        // - region 까지 리셋해야 재로그인 시 UI 라벨 / 검색 region 파라미터 mismatch 방지
+        //   (예: "전체" 선택 → region="ALL" 상태로 로그아웃 → 재로그인 시 라벨만 본인 동네로 채워지고 검색은 전국으로 나감)
+        if (!accessToken) {
+            setSelectedRegionName("전체");
+            setHasManuallySelectedRegion(false);
+            setRegion("");
+            return;
+        }
+        // 사용자가 손으로 지역 골랐으면 자동 덮어쓰기 금지
+        if (hasManuallySelectedRegion) return;
+
+        // race condition 방지: in-flight 요청이 effect 재실행/로그아웃 이후 resolve 되면 stale 응답으로 무시
+        // (예: 로그인 상태에서 getMyRegion 호출 후 응답 도착 전 로그아웃 → cleanup 분기로 "전체"/"" 리셋됨
+        //  → 늦게 도착한 응답이 setSelectedRegionName 호출하면 라벨이 다시 본인 동네로 덮어써짐)
+        let cancelled = false;
+        getMyRegion({ accessToken, refreshAccessToken })
+            .then((data) => {
+                if (cancelled) return;
+                if (data.verified && data.eupmyeondongName) {
+                    setSelectedRegionName(data.eupmyeondongName);
+                }
+            })
+            .catch(() => {
+                // 실패해도 "전체" 표시로 폴백 — 별도 처리 없음
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [accessToken, refreshAccessToken, hasManuallySelectedRegion]);
+
+    // 위치가 결정됐는지(성공 OR 거부) 판단
+    // - location 값이 채워짐 → 권한 허용 + 위치 받음
+    // - locationError 값이 채워짐 → 권한 거부 또는 에러
+    // 둘 중 하나라도 일어나기 전에는 검색 호출하지 않음 (페이지 진입 시 2번 호출 방지)
+    const locationResolved = location !== null || locationError !== null;
+    // auth 결정됐는지 (로그인/비로그인 확정) — useAuth.isLoading 으로 판단
+    // false 면 refresh 진행 중 → 이 시점에 검색 나가면 accessToken 없이 호출 → 비로그인 결과 반환
+    // (location 거부 케이스에서 locationResolved 가 즉시 true 되어 auth 도착 전 검색 나가는 회귀 방지)
+    const authResolved = !authLoading;
+
+    useEffect(() => {
+        // location/auth 둘 다 결정되기 전엔 검색 호출하지 않음
+        // - authResolved 는 한 번 true 되면 다시 false 안 됨 → silent token refresh 시 재검색 안 일어남
+        if (!locationResolved) return;
+        if (!authResolved) return;
         fetchSearchReset(keyword, region, selectedFoodTypeId, sort);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location?.lat, location?.lng]);
+    }, [location?.lat, location?.lng, locationError, authResolved]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -244,11 +308,15 @@ export default function SearchPage() {
                     selectedRegionId={selectedRegionId}
                     selectedRegionName={selectedRegionName}
                     onChange={(regionName, dong) => {
-                        setRegion(regionName);
+                        // 사용자가 손으로 지역 선택했음을 표시 → 이후 token refresh 가 라벨 덮어쓰지 못함
+                        setHasManuallySelectedRegion(true);
+                        // "전체"(빈 문자열) 명시적 선택 시 BE 에 "ALL" 전송 → user.region 자동 적용 방지 → 전국 검색
+                        const effectiveRegion = regionName || "ALL";
+                        setRegion(effectiveRegion);
                         setSelectedRegionName(regionName || "전체");
                         setSelectedRegionId(dong?.regionId);
 
-                        fetchSearchReset(keyword, regionName, selectedFoodTypeId, sort);
+                        fetchSearchReset(keyword, effectiveRegion, selectedFoodTypeId, sort);
                 }}
                 />
 
@@ -309,7 +377,9 @@ export default function SearchPage() {
 
             <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-500">
-                    검색 결과 {totalCount.toLocaleString()}개
+                    {totalCount > MAX_PAGES * PAGE_SIZE
+                        ? `검색 결과 ${totalCount.toLocaleString()}개 중 상위 ${(MAX_PAGES * PAGE_SIZE).toLocaleString()}개`
+                        : `검색 결과 ${totalCount.toLocaleString()}개`}
                 </p>
 
                 <div className="flex gap-2">
@@ -324,7 +394,7 @@ export default function SearchPage() {
                                     setSort(opt.value);
                                     fetchSearchReset(keyword, region, selectedFoodTypeId, opt.value);
                                 }}
-                                className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition active:scale-95"
+                                className="whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition active:scale-95"
                                 style={
                                     isSelected
                                         ? {
@@ -415,7 +485,7 @@ export default function SearchPage() {
                         <ChevronLeft size={16} />
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                    {visiblePages.map((p) => {
                         const isActive = p === page;
                         return (
                             <button
