@@ -45,34 +45,42 @@ const MyStatsSection = () => {
       <div className="grid grid-cols-4 divide-x divide-gray-100 py-5">
         <div className="flex flex-col items-center">
           <span className="text-sm font-bold text-gray-800">방문 인증</span>
-          <strong className="mt-3 text-3xl font-extrabold text-orange-500">
-            {isFetching ? "-" : (stats?.visitCount ?? 0)}
-          </strong>
-          <span className="mt-1 text-sm font-semibold text-gray-700">회</span>
+          <div className="mt-3 flex items-baseline gap-1">
+            <strong className="text-3xl font-extrabold text-orange-500">
+              {isFetching ? "-" : (stats?.visitCount ?? 0)}
+            </strong>
+            <span className="text-sm font-semibold text-gray-700">회</span>
+          </div>
         </div>
 
         <div className="flex flex-col items-center">
           <span className="text-sm font-bold text-gray-800">작성한 후기</span>
-          <strong className="mt-3 text-3xl font-extrabold text-gray-900">
-            {isFetching ? "-" : (stats?.reviewCount ?? 0)}
-          </strong>
-          <span className="mt-1 text-sm font-semibold text-gray-700">개</span>
+          <div className="mt-3 flex items-baseline gap-1">
+            <strong className="text-3xl font-extrabold text-gray-900">
+              {isFetching ? "-" : (stats?.reviewCount ?? 0)}
+            </strong>
+            <span className="text-sm font-semibold text-gray-700">개</span>
+          </div>
         </div>
 
         <div className="flex flex-col items-center">
           <span className="text-sm font-bold text-gray-800">북마크</span>
-          <strong className="mt-3 text-3xl font-extrabold text-gray-900">
-            {isFetching ? "-" : (stats?.bookmarkCount ?? 0)}
-          </strong>
-          <span className="mt-1 text-sm font-semibold text-gray-700">개</span>
+          <div className="mt-3 flex items-baseline gap-1">
+            <strong className="text-3xl font-extrabold text-gray-900">
+              {isFetching ? "-" : (stats?.bookmarkCount ?? 0)}
+            </strong>
+            <span className="text-sm font-semibold text-gray-700">개</span>
+          </div>
         </div>
 
         <div className="flex flex-col items-center">
           <span className="text-sm font-bold text-gray-800">채팅방</span>
-          <strong className="mt-3 text-3xl font-extrabold text-gray-900">
-            {isFetching ? "-" : (stats?.chatRoomCount ?? 0)}
-          </strong>
-          <span className="mt-1 text-sm font-semibold text-gray-700">개</span>
+          <div className="mt-3 flex items-baseline gap-1">
+            <strong className="text-3xl font-extrabold text-gray-900">
+              {isFetching ? "-" : (stats?.chatRoomCount ?? 0)}
+            </strong>
+            <span className="text-sm font-semibold text-gray-700">개</span>
+          </div>
         </div>
       </div>
     </section>
