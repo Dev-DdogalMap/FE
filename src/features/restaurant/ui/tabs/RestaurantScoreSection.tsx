@@ -80,9 +80,8 @@ const RestaurantScoreSection = ({ restaurant }: Props) => {
 
     return (
         <section className="px-4 py-6">
-            <div className="mb-4 flex items-center gap-1">
-                <h3 className="text-lg font-bold">찐 맛집 지수</h3>
-                <span className="text-xs text-gray-400">ⓘ</span>
+            <div className="mb-4">
+                <h3 className="text-lg font-bold">음식점 통계</h3>
             </div>
 
             <div className="grid grid-cols-5 gap-1">

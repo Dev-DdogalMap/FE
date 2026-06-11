@@ -2,7 +2,8 @@ import type { RestaurantInfoResponse } from "@/features/restaurant/model/restaur
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import ErrorView from "@/shared/ui/ErrorView";
 import LoadingView from "@/shared/ui/LoadingView";
-import { ArrowLeft, MapPin, Phone, Share2, Star, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Info, MapPin, Phone, Share2, Star, UtensilsCrossed } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
 
@@ -26,6 +27,8 @@ const Tag = ({ text }: TagProps) => {
 const RestaurantCommon = ({ restaurant, loading }: Props) => {
     const navigate = useNavigate();
     const isMobile = useIsMobile();
+    // 맛집지수 산식 설명 모달 표시 여부
+    const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
 
     if (loading) {
         return (
@@ -170,8 +173,16 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     <div className="flex shrink-0 flex-col items-center">
                         {isFoodScoreCalculating ? (
                             <>
-                                <div className="text-xs font-semibold text-gray-500">
+                                <div className="flex items-center gap-1 text-xs font-semibold text-gray-500">
                                     맛집지수
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsScoreModalOpen(true)}
+                                        aria-label="맛집지수 계산 방식"
+                                        className="flex items-center justify-center"
+                                    >
+                                        <Info size={12} className="text-gray-400" />
+                                    </button>
                                 </div>
                                 <div className="mt-1 text-[32px] font-black leading-none text-[#ff6b00]">
                                     {foodScoreText}
@@ -182,8 +193,16 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                                 <div className="text-[32px] font-black leading-none text-[#ff6b00]">
                                     {foodScoreText}
                                 </div>
-                                <div className="mt-1 text-xs font-semibold text-gray-500">
+                                <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-gray-500">
                                     맛집지수
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsScoreModalOpen(true)}
+                                        aria-label="맛집지수 계산 방식"
+                                        className="flex items-center justify-center"
+                                    >
+                                        <Info size={12} className="text-gray-400" />
+                                    </button>
                                 </div>
                             </>
                         )}
@@ -269,6 +288,58 @@ const RestaurantCommon = ({ restaurant, loading }: Props) => {
                     )}
                 </div>
             </div>
+
+            {/* 맛집지수 산식 안내 모달 */}
+            {isScoreModalOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+                    onClick={() => setIsScoreModalOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-sm rounded-2xl bg-white p-6"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold text-gray-900">맛집지수 계산 방식</h3>
+
+                        <p className="mt-3 text-sm text-gray-700">
+                            맛집지수는 다음 세 가지 항목으로 계산됩니다.
+                        </p>
+
+                        <ul className="mt-3 space-y-3 text-sm text-gray-700">
+                            <li>
+                                <div className="font-bold">주민 평점 × 40%</div>
+                                <div className="text-xs text-gray-500">
+                                    동네 인증 주민이 준 별점 (사용자 레벨 가중 평균)
+                                </div>
+                            </li>
+                            <li>
+                                <div className="font-bold">재방문율 × 35%</div>
+                                <div className="text-xs text-gray-500">
+                                    재방문 의향 후기 비율
+                                </div>
+                            </li>
+                            <li>
+                                <div className="font-bold">비주민 평점 × 25%</div>
+                                <div className="text-xs text-gray-500">
+                                    동네 외 사용자가 준 별점 (사용자 레벨 가중 평균)
+                                </div>
+                            </li>
+                        </ul>
+
+                        <p className="mt-4 text-xs text-gray-500">
+                            활동량(레벨)이 높은 사용자의 평점에 더 큰 비중을 둡니다.
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsScoreModalOpen(false)}
+                            className="mt-6 h-12 w-full rounded-xl bg-[#ff6b00] font-bold text-white"
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };
