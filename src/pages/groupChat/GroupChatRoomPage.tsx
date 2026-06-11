@@ -62,7 +62,7 @@ export default function ChatRoomPage() {
           currentCount={roomInfo?.participantCount}
           maxCount={roomInfo?.maxParticipantCount}
           thumbnailUrl={roomInfo?.roomImage ?? ""}
-          onBack={() => navigate(-1)}
+          onBack={() => navigate("/chat")}
           onMenuClick={handleMenuClick}
         />
       </div>

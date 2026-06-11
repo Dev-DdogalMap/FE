@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFoodTypes } from "../hooks/useFoodTypes";
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 export default function CreateGroupChatForm({
     onSubmit,
 }: Props) {
+    const navigate = useNavigate();
     const fileRef = useRef<HTMLInputElement>(null);
     const { foodTypes, loading: categoriesLoading } = useFoodTypes();
 
@@ -37,9 +39,25 @@ export default function CreateGroupChatForm({
         <div className="min-h-screen bg-white">
             <div className="max-w-md mx-auto px-6 pb-10">
                 {/* 백 버튼 */}
-                <div>뒤로가기 추가 필요</div>
                 <div>
-
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-1 py-4 -ml-1.5 text-gray-600"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
                 </div>
 
                 {/* 제목 영역 */}
